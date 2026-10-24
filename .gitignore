@@ -1,0 +1,30 @@
+# ── 游戏本体 ─────────────────────────────────────────────────────────
+# 重打包游戏安装目录约 1.47 GB，不纳入版本控制。
+# 构建号、exe / 模组哈希、options.ini 关键项记录在 docs/task-contract.zh-CN.md §2。
+/The Binding of Isaac Rebirth Repentance/
+
+# ── Python 环境与缓存 ────────────────────────────────────────────────
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ── 嵌套的 SocketBridge 上游仓库元数据 ────────────────────────────────
+# SocketBridge/ 是从 https://github.com/EmptyEmeraldTablet/SocketBridge 克隆
+# （分支 refactor/v2，基线提交 89dab78）后在本地打补丁的副本。
+# 为避免被当作 submodule / gitlink，其版本库元数据已改名为 .upstream-git 并忽略；
+# 需要和上游比对时执行：git --git-dir=SocketBridge\.upstream-git <命令>
+/SocketBridge/.upstream-git/
+
+# ── 存档类二进制 ────────────────────────────────────────────────────
+# 备份目录中的 .dat 是游戏存档（含个人存档数据），不公开。
+# 同一目录下的文本证据（log.txt / *.ini）保留。
+artifacts/preflight-backup-*/**/*.dat
+
+# ── 运行时临时产物 ──────────────────────────────────────────────────
+artifacts/tmp-*/
+*.tmp
+Thumbs.db
+desktop.ini

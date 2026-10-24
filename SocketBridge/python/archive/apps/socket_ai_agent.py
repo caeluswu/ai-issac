@@ -1,0 +1,1066 @@
+"""
+SocketBridge Complete AI Agent
+
+Integrates all modules for complete game AI control:
+- DataProcessor: Game data parsing
+- EnvironmentModel: Environmental awareness
+- ThreatAnalyzer: Threat assessment
+- SmartAimingSystem: Smart aiming
+- BehaviorTree: Tactical decision making
+- Pathfinding: A* path planning
+- EvaluationSystem: Performance evaluation
+
+Usage:
+1. Replay test: python socket_ai_agent.py --replay
+2. Real-time game: python socket_ai_agent.py --realtime
+"""
+
+import sys
+import time
+import argparse
+import logging
+from pathlib import Path
+from typing import Dict, List, Optional, Any, Tuple
+from dataclasses import dataclass, field
+from enum import Enum
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+from models import Vector2D, GameStateData, ControlOutput, PlayerData, EnemyData
+from data_processor import DataProcessor
+from environment import EnvironmentModel
+from threat_analysis import ThreatLevel, ThreatAssessment, ThreatInfo
+from danger_system import DangerSystem
+from smart_aiming import SmartAimingSystem, ShotType, AimResult
+from behavior_tree import BehaviorTree, NodeContext, NodeStatus, BehaviorTreeBuilder
+from pathfinding import AStarPathfinder, PathfindingConfig
+from evaluation_system import EvaluationSystem
+from dynamic_strategy import DynamicStrategyAdapter, create_dynamic_strategy_adapter
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger("SocketAIAgent")
+
+
+class MovementMode(Enum):
+    KITING = "kiting"
+    AGGRESSIVE = "aggressive"
+    DEFENSIVE = "defensive"
+    BALANCED = "balanced"
+
+
+@dataclass
+class AIConfig:
+    decision_interval: float = 0.016
+    aim_interval: int = 1
+    combat_distance: float = 150.0
+    retreat_health_threshold: float = 0.3
+    shoot_confidence_threshold: float = 0.6
+    movement_mode: str = "balanced"
+    pathfinding_enabled: bool = True
+    stay_in_bounds: bool = True
+    evaluation_enabled: bool = True
+    verbose_output: bool = False
+
+    # Dynamic strategy weights - exposed for external adjustment
+    dynamic_weights: dict = field(
+        default_factory=lambda: {
+            # Aggression factor for shoot confidence threshold adjustment
+            "aggression_factor": 0.3,  # Higher = more aggressive shooting
+            # Mobility thresholds for movement mode switching
+            "mobility_threshold_high": 0.7,  # Above this -> aggressive mode
+            "mobility_threshold_low": 0.3,  # Below this -> defensive mode
+            # Fire rate factor for aim interval adjustment
+            "fire_rate_factor": 0.5,  # Higher = more frequent shooting at high fire rate
+            # Safety margin factor for distance calculations
+            "safety_margin_factor": 0.4,  # Higher = larger safety margins
+            # Combat power factor for aggression bias
+            "combat_power_factor": 1.0,  # Multiplier for combat power influence
+            # Mobility factor for distance reduction
+            "mobility_distance_factor": 0.3,  # Higher = more distance reduction with mobility
+            # Player capability analysis weights
+            "range_bonus_factor": 0.3,  # Range score contribution to aggression
+            "mobility_bonus_factor": 0.2,  # Mobility score contribution to aggression
+            "survival_penalty_factor": 0.2,  # Survival penalty factor
+            "range_factor": 0.5,  # Range factor for combat distance calculation
+            # Combat power weights
+            "damage_weight": 0.25,
+            "range_weight": 0.15,
+            "fire_rate_weight": 0.20,
+            "mobility_weight": 0.10,
+            "dps_weight": 0.20,
+            "accuracy_weight": 0.10,
+        }
+    )
+
+    # Current strategy adjustments (updated by dynamic strategy system)
+    strategy_adjustments: dict = field(default_factory=dict)
+
+
+class SocketAIAgent:
+    """Complete AI Agent integrating all modules."""
+
+    def __init__(self, config: Optional[AIConfig] = None):
+        self.config = config if config is not None else AIConfig()
+        self.enabled = True
+
+        self._init_modules()
+        self.current_frame = 0
+        self.performance = {
+            "total_frames": 0,
+            "total_decisions": 0,
+            "avg_decision_time_ms": 0.0,
+        }
+        self._last_bt_action = None
+        self.previous_enemy_hp = {}  # Track enemy HP for damage detection
+        self._strategy_adjustments = {}
+
+        logger.info("SocketAIAgent initialized")
+
+    def _init_modules(self):
+        # Phase 1: Data processing
+        self.data_processor = DataProcessor()
+
+        # Phase 2: Environment awareness
+        self.environment = EnvironmentModel()
+
+        # Phase 3: Threat analysis
+        self.danger_system = DangerSystem()
+
+        # Phase 4: Smart aiming
+        self.aiming = SmartAimingSystem()
+
+        # Phase 5: Behavior tree
+        self.behavior_tree = self._build_behavior_tree()
+
+        # Phase 6: Pathfinding
+        path_config = PathfindingConfig(
+            grid_size=40.0, allow_diagonal=True, smoothing_enabled=True
+        )
+        self.pathfinder = AStarPathfinder(path_config)
+
+        # Phase 7: Performance evaluation
+        self.evaluation = EvaluationSystem()
+
+        # Phase 8: Dynamic strategy adaptation
+        self.dynamic_strategy = DynamicStrategyAdapter()
+
+        # 绑定寻路器到环境模型，实现自动同步
+        self.environment.bind_pathfinder(self.pathfinder)
+
+        self.current_threat = None
+        self.target_enemy_id = None
+
+    def _build_behavior_tree(self) -> BehaviorTree:
+        builder = BehaviorTreeBuilder()
+        builder.selector("CombatRoot")
+
+        # Priority 1: Emergency dodge
+        builder.sequence("EmergencyDodge")
+        builder.condition("HasThreats", lambda ctx: len(ctx.projectiles) > 0)
+        builder.action("Dodge", self._bt_dodge)
+        builder.end()
+
+        # Priority 2: Combat
+        builder.sequence("Combat")
+        builder.condition("HasEnemies", lambda ctx: len(ctx.enemies) > 0)
+        builder.selector("CombatActions")
+        builder.action("Attack", self._bt_attack)
+        builder.end()
+        builder.end()
+
+        # Priority 3: Explore
+        builder.sequence("Explore")
+        builder.condition("NoEnemies", lambda ctx: len(ctx.enemies) == 0)
+        builder.action("Explore", self._bt_explore)
+        builder.end()
+
+        return builder.build()
+
+    def _bt_dodge(self, ctx):
+        """Behavior tree dodge action"""
+        ctx.action = "dodge"
+        return NodeStatus.SUCCESS
+
+    def _bt_attack(self, ctx):
+        """Behavior tree attack action"""
+        ctx.action = "attack"
+        return NodeStatus.SUCCESS
+
+    def _bt_explore(self, ctx):
+        """Behavior tree explore action"""
+        ctx.action = "explore"
+        return NodeStatus.SUCCESS
+
+    def initialize(self):
+        logger.info("SocketAIAgent initialized successfully")
+
+    def update(self, raw_message: Dict[str, Any]) -> ControlOutput:
+        if not self.enabled:
+            return ControlOutput()
+
+        start_time = time.time()
+        self.current_frame += 1
+        control = ControlOutput()
+
+        try:
+            # === DEBUG: 打印原始消息结构 ===
+            if self.config.verbose_output and self.current_frame <= 5:
+                print(f"[DEBUG] update() frame={self.current_frame}")
+                print(f"[DEBUG]   raw_message type: {type(raw_message)}")
+                if isinstance(raw_message, dict):
+                    print(f"[DEBUG]   raw_message keys: {list(raw_message.keys())}")
+                    if "payload" in raw_message:
+                        payload = raw_message["payload"]
+                        print(f"[DEBUG]   payload type: {type(payload)}")
+                        if isinstance(payload, dict):
+                            print(f"[DEBUG]   payload keys: {list(payload.keys())}")
+                        else:
+                            print(f"[DEBUG]   payload value: {payload}")
+                    else:
+                        print(f"[DEBUG]   NO 'payload' key in raw_message!")
+                else:
+                    print(f"[DEBUG]   raw_message is not a dict!")
+
+            # 1. Process game data
+            game_state = self.data_processor.process_message(raw_message)
+
+            # === DEBUG: 验证处理结果 ===
+            if self.config.verbose_output and self.current_frame <= 10:
+                print(f"[DEBUG] After process_message:")
+                print(f"[DEBUG]   frame: {game_state.frame}")
+                print(f"[DEBUG]   players: {list(game_state.players.keys())}")
+                print(f"[DEBUG]   player count: {len(game_state.players)}")
+                print(f"[DEBUG]   enemies: {len(game_state.active_enemies)}")
+                print(f"[DEBUG]   room_info: {game_state.room_info is not None}")
+
+            # === DEBUG: 打印房间信息（关键：grid_width和grid_height）===
+            if self.config.verbose_output and self.current_frame % 30 == 0:
+                if game_state.room_info:
+                    # 计算房间边界（假设每个格子40像素）
+                    room_left = 280  # 从Lua端获取的固定偏移
+                    room_top = 140
+                    room_width = game_state.room_info.grid_width * 40
+                    room_height = game_state.room_info.grid_height * 40
+                    room_right = room_left + room_width
+                    room_bottom = room_top + room_height
+
+                    print(
+                        f"[DEBUG-ROOM] grid={game_state.room_info.grid_width}x{game_state.room_info.grid_height}, "
+                        f"bounds=({room_left},{room_top})-({room_right},{room_bottom}), "
+                        f"enemy_count={game_state.room_info.enemy_count}"
+                    )
+                else:
+                    print("[DEBUG-ROOM] No room_info available")
+
+            player = game_state.get_primary_player()
+
+            if not player:
+                return control
+
+            # 2. Dynamic strategy adaptation
+            if hasattr(self, "dynamic_strategy") and self.dynamic_strategy:
+                # Record damage events by comparing enemy HP with previous frame
+                for enemy_id, enemy in game_state.enemies.items():
+                    prev_hp = self.previous_enemy_hp.get(enemy_id)
+                    if prev_hp is not None and enemy.hp < prev_hp:
+                        damage_dealt = prev_hp - enemy.hp
+                        self.dynamic_strategy.record_combat_event(
+                            "damage",
+                            damage_dealt=damage_dealt,
+                            enemy=enemy,
+                            enemy_before_hp=prev_hp,
+                        )
+                    self.previous_enemy_hp[enemy_id] = enemy.hp
+
+                strategy_adjustments = self.dynamic_strategy.update(player, game_state)
+                self._apply_strategy_adjustments(strategy_adjustments)
+
+            # 3. Update environment
+            if game_state.room_info:
+                # Build entity data from game_state for room entities
+                entity_data = {}
+                if game_state.fire_hazards:
+                    entity_data["FIRE_HAZARDS"] = [
+                        {
+                            "id": fid,
+                            "type": fh.fire_type,
+                            "pos": {"x": fh.position.x, "y": fh.position.y},
+                            "fireplace_type": fh.fire_type,
+                            "state": fh.state.value
+                            if hasattr(fh.state, "value")
+                            else fh.state,
+                            "collision_radius": fh.collision_radius,
+                            "is_extinguished": fh.is_extinguished,
+                            "is_shooting": fh.is_shooting,
+                            "hp": fh.hp,
+                            "max_hp": fh.max_hp,
+                            "distance": fh.position.distance_to(player.position)
+                            if player
+                            else 0.0,
+                        }
+                        for fid, fh in game_state.fire_hazards.items()
+                    ]
+
+                if game_state.buttons:
+                    entity_data["BUTTONS"] = {
+                        str(bid): {
+                            "type": btn.button_type,
+                            "variant": btn.variant,
+                            "variant_name": btn.variant_name,
+                            "x": btn.position.x,
+                            "y": btn.position.y,
+                            "state": btn.state,
+                            "is_pressed": btn.is_pressed,
+                            "distance": btn.distance,
+                        }
+                        for bid, btn in game_state.buttons.items()
+                    }
+
+                if game_state.interactables:
+                    entity_data["INTERACTABLES"] = [
+                        {
+                            "id": iid,
+                            "type": ent.entity_type,
+                            "variant": ent.variant,
+                            "variant_name": ent.variant_name,
+                            "pos": {"x": ent.position.x, "y": ent.position.y},
+                            "state": ent.state,
+                            "sub_type": ent.sub_type,
+                            "distance": ent.position.distance_to(player.position)
+                            if player
+                            else 0.0,
+                        }
+                        for iid, ent in game_state.interactables.items()
+                    ]
+
+                if game_state.obstacles:
+                    entity_data["DESTRUCTIBLES"] = [
+                        {
+                            "id": oid,
+                            "type": dest.obj_type,
+                            "variant": dest.variant,
+                            "variant_name": "DESTRUCTIBLE",
+                            "pos": {"x": dest.position.x, "y": dest.position.y},
+                            "state": dest.state.value
+                            if hasattr(dest.state, "value")
+                            else dest.state,
+                            "collision_radius": dest.collision_radius,
+                            "distance": dest.position.distance_to(player.position)
+                            if player
+                            else 0.0,
+                        }
+                        for oid, dest in game_state.obstacles.items()
+                    ]
+
+                if game_state.pickups:
+                    entity_data["PICKUPS"] = [
+                        {
+                            "id": pid,
+                            "type": p.pickup_type,
+                            "sub_type": p.sub_type,
+                            "variant": p.variant,
+                            "pos": {"x": p.position.x, "y": p.position.y},
+                            "is_shop_item": p.is_shop_item,
+                            "price": p.price,
+                            "distance": p.position.distance_to(player.position)
+                            if player
+                            else 0.0,
+                        }
+                        for pid, p in game_state.pickups.items()
+                    ]
+
+                if game_state.bombs:
+                    entity_data["BOMBS"] = [
+                        {
+                            "id": bid,
+                            "type": b.damage,
+                            "sub_type": b.subtype,
+                            "pos": {"x": b.position.x, "y": b.position.y},
+                            "timer": b.timer,
+                            "radius": b.radius,
+                            "explosion_radius": b.radius,
+                            "is_player_bomb": b.is_player_bomb,
+                            "variant_name": "NORMAL",  # 炸弹类型需要在Lua端添加
+                            "distance": b.position.distance_to(player.position)
+                            if player
+                            else 0.0,
+                        }
+                        for bid, b in game_state.bombs.items()
+                    ]
+
+                self.environment.update_room(
+                    room_info=game_state.room_info,
+                    enemies=game_state.enemies,
+                    projectiles=game_state.projectiles,
+                    room_layout=game_state.raw_room_layout,
+                    entity_data=entity_data if entity_data else None,
+                )
+
+            # Sync dynamic obstacles to pathfinder
+            # 注意：静态障碍物和危险区域已由 EnvironmentModel 自动同步
+            if hasattr(self, "pathfinder") and self.pathfinder is not None:
+                # 清除并重新添加动态障碍物（敌人、投射物）
+                self.pathfinder.clear_dynamic_obstacles()
+                obstacle_count = 0
+                for obstacle in self.environment.game_map.dynamic_obstacles:
+                    self.pathfinder.add_dynamic_obstacle(
+                        obstacle.position, obstacle.radius
+                    )
+                    obstacle_count += 1
+                # Debug output
+                if self.config.verbose_output and self.current_frame % 60 == 0:
+                    print(
+                        f"[DEBUG-PATH] Synced {obstacle_count} dynamic obstacles to pathfinder"
+                    )
+
+            # 3. Threat analysis using DangerSystem (high-frequency threats)
+            room_bounds = None
+            if game_state.room_info:
+                room_left = 280
+                room_top = 140
+                grid_size = 40
+                if game_state.room_info.pixel_width > 0:
+                    room_width = game_state.room_info.pixel_width
+                else:
+                    room_width = game_state.room_info.grid_width * grid_size
+                if game_state.room_info.pixel_height > 0:
+                    room_height = game_state.room_info.pixel_height
+                else:
+                    room_height = game_state.room_info.grid_height * grid_size
+                room_bounds = (
+                    room_left,
+                    room_top,
+                    room_left + room_width,
+                    room_top + room_height,
+                )
+
+            threat = self.danger_system.update(
+                frame=self.current_frame,
+                player_position=player.position,
+                enemies=game_state.enemies,
+                projectiles=game_state.projectiles,
+                room_bounds=room_bounds,
+                bombs=game_state.bombs,
+            )
+            self.current_threat = threat
+
+            # 4. Target selection
+            target_enemy = self._select_target(game_state, threat)
+            if target_enemy:
+                self.target_enemy_id = target_enemy.id
+
+            # 5. Smart aiming
+            aim_result = None
+            if target_enemy and self.current_frame % self.config.aim_interval == 0:
+                shot_type = ShotType.NORMAL
+                aim_result = self.aiming.aim(
+                    shooter_pos=player.position,
+                    target=target_enemy,
+                    shot_type=shot_type,
+                    check_los=True,
+                    environment_los_checker=self.environment,
+                )
+
+                # DEBUG: 打印瞄准结果和视线状态
+                if self.config.verbose_output and self.current_frame % 30 == 0:
+                    los_status = self.aiming.last_los_result or "N/A"
+                    if target_enemy:
+                        print(
+                            f"[DEBUG-AIM] Target={target_enemy.id} LOS={los_status} "
+                            f"Conf={aim_result.confidence:.2f} Reason={aim_result.reasoning} "
+                            f"TargetPos=({target_enemy.position.x:.0f},{target_enemy.position.y:.0f})"
+                        )
+
+            # 6. Movement computation
+            move_x, move_y = self._compute_movement(
+                game_state, player, threat, target_enemy
+            )
+
+            # DEBUG: 检查移动目标位置是否可走
+            if self.config.verbose_output and self.current_frame % 30 == 0:
+                if move_x != 0 or move_y != 0:
+                    target_pos = Vector2D(
+                        player.position.x + move_x * 50, player.position.y + move_y * 50
+                    )
+                    in_bounds = self.environment.game_map.is_in_bounds(target_pos)
+                    has_obstacle = self.environment.game_map.is_obstacle(
+                        target_pos, 15.0
+                    )
+                    can_reach = self.environment.can_reach_position(
+                        player.position, target_pos
+                    )
+
+                    # 额外调试：检查玩家当前位置是否在边界内
+                    player_in_bounds = self.environment.game_map.is_in_bounds(
+                        player.position
+                    )
+
+                    print(
+                        f"[DEBUG-MOVE] Move=({move_x:.2f},{move_y:.2f}) "
+                        f"Player=({player.position.x:.0f},{player.position.y:.0f})->Target=({target_pos.x:.0f},{target_pos.y:.0f}) "
+                        f"PlayerInBounds={player_in_bounds} TargetInBounds={in_bounds} Obstacle={has_obstacle} CanReach={can_reach}"
+                    )
+
+            control.move_x = int(max(-1, min(1, move_x)))
+            control.move_y = int(max(-1, min(1, move_y)))
+
+            # 7. Shooting decision
+            if (
+                aim_result
+                and aim_result.confidence > self.config.shoot_confidence_threshold
+            ):
+                # Record shot event for dynamic strategy
+                if hasattr(self, "dynamic_strategy") and self.dynamic_strategy:
+                    self.dynamic_strategy.record_combat_event(
+                        "shot",
+                        player_pos=player.position,
+                        target_pos=target_enemy.position
+                        if target_enemy
+                        else player.position,
+                    )
+                control.shoot = True
+                dx, dy = self._vector_to_direction(aim_result.direction)
+                control.shoot_x = dx
+                control.shoot_y = dy
+            elif target_enemy:
+                direction = target_enemy.position - player.position
+                if direction.magnitude() > 0:
+                    # Record shot event for dynamic strategy
+                    if hasattr(self, "dynamic_strategy") and self.dynamic_strategy:
+                        self.dynamic_strategy.record_combat_event(
+                            "shot",
+                            player_pos=player.position,
+                            target_pos=target_enemy.position,
+                        )
+                    dx, dy = self._vector_to_direction(direction)
+                    control.shoot = True
+                    control.shoot_x = dx
+                    control.shoot_y = dy
+
+            # 8. Behavior tree
+            bt_context = self._build_behavior_context(game_state, threat)
+            self.behavior_tree.context = bt_context
+            self.behavior_tree.update()
+
+            # Process behavior tree result
+            if bt_context.action:
+                if self.config.verbose_output and self.current_frame % 60 == 0:
+                    print(f"[DEBUG-BT] Behavior tree action: {bt_context.action}")
+                # Store the action for potential use in movement decisions
+                self._last_bt_action = bt_context.action
+            else:
+                self._last_bt_action = None
+
+            # 9. Bounds check
+            if self.config.stay_in_bounds:
+                control = self._apply_bounds_check(control, player, game_state)
+
+            # 10. Evaluation
+            if self.config.evaluation_enabled:
+                self.evaluation.update(
+                    decision="attack" if control.shoot else "move",
+                    action="attack" if control.shoot else "move",
+                    outcome="partial",
+                    latency_ms=(time.time() - start_time) * 1000,
+                    state=raw_message,
+                )
+
+            # Statistics
+            decision_time = (time.time() - start_time) * 1000
+            self.performance["total_frames"] += 1
+            self.performance["total_decisions"] += 1
+            self.performance["avg_decision_time_ms"] = (
+                self.performance["avg_decision_time_ms"] * 0.9 + decision_time * 0.1
+            )
+
+        except Exception as e:
+            logger.error(f"Error in AI update: {e}")
+
+        return control
+
+    def _select_target(
+        self, game_state: GameStateData, threat: ThreatAssessment
+    ) -> Optional[EnemyData]:
+        player = game_state.get_primary_player()
+        if not player:
+            return None
+
+        if threat.immediate_threats:
+            for t in threat.immediate_threats:
+                if t.source_id in game_state.enemies:
+                    return game_state.enemies[t.source_id]
+
+        return game_state.get_nearest_enemy(player.position)
+
+    def _compute_movement(
+        self,
+        game_state: GameStateData,
+        player: PlayerData,
+        threat: ThreatAssessment,
+        target: Optional[EnemyData],
+    ) -> Tuple[float, float]:
+        move_x, move_y = 0.0, 0.0
+
+        # 1. Emergency evasion
+        if threat.immediate_threats:
+            if threat.suggested_evasion_dir.magnitude() > 0:
+                evasion = threat.suggested_evasion_dir
+            else:
+                evasion = self._compute_evasion(player, threat.immediate_threats)
+            return self._normalize_direction(evasion)
+
+        # 2. Combat with pathfinding
+        if target:
+            direction = target.position - player.position
+            distance = direction.magnitude()
+
+            if distance > self.config.combat_distance:
+                # Use pathfinding for long-distance approach
+                path = self._find_path_to_target(player.position, target.position)
+                if path and len(path) > 1:
+                    # Follow the path
+                    return self._follow_path(player.position, path)
+                else:
+                    # Fallback to direct approach
+                    move_x, move_y = self._normalize_direction(direction)
+            elif distance < self.config.combat_distance * 0.5:
+                retreat = Vector2D(-direction.x, -direction.y)
+                move_x, move_y = self._normalize_direction(retreat)
+            else:
+                # Maintain combat distance with side movement
+                perpendicular = Vector2D(-direction.y, direction.x)
+                move_x, move_y = self._normalize_direction(perpendicular)
+
+        # 3. Explore mode
+        if not target and game_state.room_info:
+            center = Vector2D(
+                game_state.room_info.grid_width * 40 / 2,
+                game_state.room_info.grid_height * 40 / 2,
+            )
+            direction = center - player.position
+            move_x, move_y = self._normalize_direction(direction)
+
+        return move_x, move_y
+
+    def _compute_evasion(
+        self, player: PlayerData, threats: List[ThreatInfo]
+    ) -> Vector2D:
+        evasion = Vector2D(0, 0)
+        for t in threats:
+            direction = player.position - t.position
+            distance = direction.magnitude()
+            if distance > 0:
+                weight = 80.0 / distance
+                norm_x = direction.x / distance
+                norm_y = direction.y / distance
+                evasion.x += norm_x * weight
+                evasion.y += norm_y * weight
+        return evasion if evasion.magnitude() > 0 else Vector2D(1, 0)
+
+    def _normalize_direction(self, direction: Vector2D) -> Tuple[float, float]:
+        mag = direction.magnitude()
+        if mag < 0.1:
+            return 0.0, 0.0
+        return direction.x / mag, direction.y / mag
+
+    def _find_path_to_target(
+        self, start: Vector2D, goal: Vector2D
+    ) -> Optional[List[Vector2D]]:
+        """Find path from start to goal using A* pathfinder"""
+        if not hasattr(self, "pathfinder") or self.pathfinder is None:
+            return None
+
+        # Get static obstacles from environment
+        obstacles = set()
+        if hasattr(self.environment, "game_map"):
+            obstacles = self.environment.game_map.static_obstacles.copy()
+
+        # Find path
+        return self.pathfinder.find_path(start, goal, obstacles)
+
+    def _follow_path(
+        self, current_pos: Vector2D, path: List[Vector2D]
+    ) -> Tuple[float, float]:
+        """Follow a path by moving toward the next waypoint"""
+        if not path or len(path) < 2:
+            return 0.0, 0.0
+
+        # Find the nearest waypoint in the path
+        nearest_idx = 0
+        min_dist = float("inf")
+        for i, point in enumerate(path):
+            dist = current_pos.distance_to(point)
+            if dist < min_dist:
+                min_dist = dist
+                nearest_idx = i
+
+        # Move toward the next waypoint (or the one after if we're close to current)
+        next_idx = min(nearest_idx + 1, len(path) - 1)
+        target = path[next_idx]
+
+        direction = target - current_pos
+        return self._normalize_direction(direction)
+
+    def _vector_to_direction(self, vec: Vector2D) -> Tuple[int, int]:
+        x, y = 0, 0
+        threshold = 0.3
+        if vec.x > threshold:
+            x = 1
+        elif vec.x < -threshold:
+            x = -1
+        if vec.y > threshold:
+            y = 1
+        elif vec.y < -threshold:
+            y = -1
+        return x, y
+
+    def _build_behavior_context(
+        self, game_state: GameStateData, threat: ThreatAssessment
+    ) -> NodeContext:
+        player = game_state.get_primary_player()
+        context = NodeContext()
+        context.game_state = game_state
+        context.enemies = list(game_state.active_enemies)
+        context.projectiles = [t.source_id for t in threat.immediate_threats]
+
+        if player:
+            context.player_health = player.health / max(player.max_health, 1)
+            context.player_position = player.position.to_tuple()
+            context.nearest_enemy = game_state.get_nearest_enemy(player.position)
+
+        context.threat_level = threat.overall_threat_level.value / 3
+
+        # Apply dynamic strategy adjustments to behavior tree context
+        if hasattr(self, "dynamic_strategy") and self.dynamic_strategy:
+            context_dict = {
+                "debug_info": {},
+                "condition_thresholds": {},
+                "game_state": context.game_state,
+                "player_health": context.player_health,
+                "player_position": context.player_position,
+                "enemies": context.enemies,
+                "nearest_enemy": context.nearest_enemy,
+                "threat_level": context.threat_level,
+                "projectiles": context.projectiles,
+            }
+            updated_dict = self.dynamic_strategy.apply_to_behavior_tree(context_dict)
+
+            for key, value in updated_dict.items():
+                setattr(context, key, value)
+
+        # Add strategy adjustments for debug
+        context.debug_info["strategy_adjustments"] = self._strategy_adjustments
+
+        return context
+
+    def _apply_bounds_check(
+        self, control: ControlOutput, player: PlayerData, game_state: GameStateData
+    ) -> ControlOutput:
+        if not self.environment.game_map.is_in_bounds(player.position):
+            if player.position.x < 50:
+                control.move_x = 1
+            elif player.position.x > 470:
+                control.move_x = -1
+            if player.position.y < 50:
+                control.move_y = 1
+            elif player.position.y > 230:
+                control.move_y = -1
+        return control
+
+    def _apply_strategy_adjustments(self, adjustments: Dict[str, float]):
+        """Apply dynamic strategy adjustments to AI configuration and behavior tree."""
+
+        # Store adjustments in config for external access
+        self.config.strategy_adjustments = adjustments
+
+        # Update danger system with dynamic strategy adjustments
+        if hasattr(self, "danger_system") and self.danger_system:
+            config_updates = {}
+            # Safe distance multiplier based on safety_multiplier (already computed)
+            if "safety_multiplier" in adjustments:
+                config_updates["safe_distance_multiplier"] = adjustments[
+                    "safety_multiplier"
+                ]
+            # High threshold adjustment based on aggression bias
+            if "aggression_bias" in adjustments:
+                aggression = adjustments["aggression_bias"]
+                # aggression 0-1, adjust threshold -0.1 to +0.1
+                config_updates["high_threshold_adjustment"] = (aggression - 0.5) * 0.2
+            if config_updates:
+                self.danger_system.update_config(config_updates)
+
+        # Apply AI config adjustments from dynamic strategy
+        if hasattr(self, "dynamic_strategy") and self.dynamic_strategy:
+            config_updates = self.dynamic_strategy.get_ai_config_adjustments(
+                vars(self.config)
+            )
+            for key, value in config_updates.items():
+                if hasattr(self.config, key):
+                    setattr(self.config, key, value)
+                else:
+                    # Store in dynamic_weights if not a direct config attribute
+                    self.config.dynamic_weights[key] = value
+
+        # Also apply direct adjustments to config attributes that might not be covered by get_ai_config_adjustments
+        if "recommended_combat_distance" in adjustments:
+            self.config.combat_distance = adjustments["recommended_combat_distance"]
+
+        # Adjust shoot confidence threshold based on aggression bias using configurable factor
+        if "aggression_bias" in adjustments:
+            aggression = adjustments["aggression_bias"]
+            aggression_factor = self.config.dynamic_weights.get(
+                "aggression_factor", 0.3
+            )
+            base_threshold = self.config.shoot_confidence_threshold
+            adjusted = base_threshold * (1.0 - aggression * aggression_factor)
+            self.config.shoot_confidence_threshold = max(0.3, min(0.9, adjusted))
+
+        # Store adjustments for behavior tree context (backward compatibility)
+        self._strategy_adjustments = adjustments
+
+    def get_performance_stats(self) -> Dict[str, Any]:
+        return {
+            **self.performance,
+            "evaluation": self.evaluation.get_performance_summary()
+            if self.config.evaluation_enabled
+            else None,
+        }
+
+    def reset(self):
+        self.data_processor.reset()
+        self.pathfinder.clear_dynamic_obstacles()
+        if self.config.evaluation_enabled:
+            self.evaluation.reset()
+        self.current_frame = 0
+
+    def enable(self):
+        self.enabled = True
+
+    def disable(self):
+        self.enabled = False
+
+
+def run_replay_test(session_id: Optional[str] = None, verbose: bool = False):
+    from data_replay_system import LuaSimulator
+    import gzip
+    import json
+    from pathlib import Path
+
+    print("\n" + "=" * 60)
+    print("SocketAIAgent Replay Test")
+    print("=" * 60)
+
+    agent = SocketAIAgent(AIConfig(verbose_output=verbose))
+    agent.initialize()
+
+    # Find and load session
+    recordings_dir = Path("recordings")
+    if not recordings_dir.exists():
+        print("No recordings directory found")
+        return
+
+    if session_id is None:
+        chunks = list(recordings_dir.glob("*_chunk_*.json.gz"))
+        if chunks:
+            session_id = chunks[0].name.rsplit("_chunk_", 1)[0]
+
+    if session_id is None:
+        print("No replay session found")
+        return
+
+    print(f"Using session: {session_id}")
+
+    # Load messages directly
+    messages = []
+    for chunk_file in sorted(recordings_dir.glob(f"{session_id}_chunk_*.json.gz")):
+        with gzip.open(chunk_file, "rt", encoding="utf-8") as fp:
+            data = json.load(fp)
+            for msg_dict in data.get("messages", []):
+                from data_replay_system import RawMessage
+
+                messages.append(RawMessage.from_dict(msg_dict))
+
+    data_messages = [m for m in messages if m.msg_type == "DATA"]
+    print(f"Loaded {len(data_messages)} frames")
+
+    frame_count = 0
+    shoot_count = 0
+
+    for msg in data_messages:
+        control = agent.update(msg.to_dict())
+        if control.shoot:
+            shoot_count += 1
+        frame_count += 1
+
+        if verbose and frame_count % 100 == 0:
+            threat = agent.current_threat
+            threat_level = threat.overall_threat_level.name if threat else "N/A"
+            print(
+                f"Frame {frame_count}: Threat={threat_level}, Move=({control.move_x},{control.move_y}), Shoot={control.shoot}"
+            )
+
+    print("\n" + "-" * 60)
+    print(f"Total frames: {frame_count}")
+    print(
+        f"Shoot frames: {shoot_count} ({shoot_count / max(1, frame_count) * 100:.1f}%)"
+    )
+    print(f"Avg decision time: {agent.performance['avg_decision_time_ms']:.2f}ms")
+
+    if agent.config.evaluation_enabled:
+        print("\n" + "-" * 60)
+        print("Performance Evaluation:")
+        print(agent.get_performance_stats().get("evaluation", "N/A"))
+
+    print("\n" + "=" * 60)
+    print("Test Complete!")
+    print("=" * 60)
+
+
+def run_realtime_test(host: str = "127.0.0.1", port: int = 9527):
+    from isaac_bridge import IsaacBridge
+
+    print("\n" + "=" * 60)
+    print("SocketAIAgent Real-time Game Test")
+    print(f"Connecting to: {host}:{port}")
+    print("Press Ctrl+C to stop")
+    print("=" * 60)
+
+    agent = SocketAIAgent(AIConfig(verbose_output=True))
+    agent.initialize()
+
+    bridge = IsaacBridge(host=host, port=port)
+
+    @bridge.on("connected")
+    def on_connected(info):
+        print(f"Connected to {info['address']}")
+
+    @bridge.on("disconnected")
+    def on_disconnected():
+        print("Disconnected")
+        agent.disable()
+
+    @bridge.on("data")
+    def on_data(data):
+        # === DEBUG: 打印原始数据 ===
+        if agent.current_frame <= 3:
+            print(
+                f"[DEBUG] on_data called - type: {type(data)}, keys: {list(data.keys()) if isinstance(data, dict) else 'N/A'}"
+            )
+
+        # === 修复：重新组织数据格式 ===
+        # IsaacBridge 的 "data" 回调直接发送 payload dict
+        # DataProcessor.process_message() 需要完整的消息结构
+        raw_message = {
+            "type": "DATA",
+            "frame": bridge.state.frame,
+            "room_index": bridge.state.room_index,
+            "timestamp": 0,
+            "payload": data,
+            "channels": list(data.keys()) if isinstance(data, dict) else [],
+        }
+
+        # === DEBUG: 验证重组后的数据 ===
+        if agent.current_frame <= 3:
+            print(
+                f"[DEBUG] restructured: frame={raw_message['frame']}, room={raw_message['room_index']}"
+            )
+            print(f"[DEBUG] payload keys: {list(raw_message['payload'].keys())}")
+
+        control = agent.update(raw_message)
+
+        # === DEBUG: 打印处理结果 ===
+        if agent.current_frame <= 10 and agent.current_frame % 5 == 0:
+            state = agent.data_processor.current_state
+            print(
+                f"[DEBUG] After update - frame: {state.frame}, players: {list(state.players.keys())}, enemies: {len(state.active_enemies)}"
+            )
+            print(f"[DEBUG] Current threat: {agent.current_threat}")
+
+        if agent.enabled and (
+            control.move_x != 0 or control.move_y != 0 or control.shoot
+        ):
+            if control.shoot:
+                bridge.send_input(
+                    move=(control.move_x, control.move_y),
+                    shoot=(control.shoot_x, control.shoot_y),
+                )
+            else:
+                bridge.send_input(move=(control.move_x, control.move_y))
+
+        if agent.current_frame % 30 == 0:
+            state = agent.data_processor.current_state
+            player = state.get_primary_player()
+            threat = agent.current_threat
+
+            player_info = (
+                f"PlayerPos: ({player.position.x:.1f},{player.position.y:.1f})"
+                if player
+                else "NoPlayer"
+            )
+            enemy_count = len(state.active_enemies)
+            threat_level = threat.overall_threat_level.name if threat else "N/A"
+
+            # === DEBUG: 环境状态 ===
+            env = agent.environment
+            if hasattr(env, "game_map") and env.game_map:
+                game_map = env.game_map
+                map_size = f"MapSize: {game_map.width}x{game_map.height} ({game_map.pixel_width}x{game_map.pixel_height}px)"
+                static_obs = len(game_map.static_obstacles)
+                dynamic_obs = len(game_map.dynamic_obstacles)
+                env_info = f" StaticObs: {static_obs}, DynamicObs: {dynamic_obs}"
+            else:
+                map_size = "No map"
+                env_info = ""
+
+            print(
+                f"Frame {agent.current_frame:5d} | {player_info:20} | Enemies: {enemy_count:2} | "
+                f"Threat: {threat_level:8} | Move: ({control.move_x:2},{control.move_y:2}) | Shoot: {control.shoot}"
+            )
+            print(f"                | {map_size}{env_info}")
+
+    @bridge.on("event:PLAYER_DAMAGE")
+    def on_damage(data):
+        print(f"\nPlayer damaged! HP: {data.get('hp_after', '?')}")
+
+    @bridge.on("event:NPC_DEATH")
+    def on_npc_death(data):
+        print(f"\nEnemy killed!")
+
+    bridge.start()
+
+    try:
+        while bridge.running:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        print("\nStopping...")
+        agent.disable()
+        bridge.stop()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="SocketAIAgent - Complete AI System")
+    parser.add_argument("--replay", action="store_true", help="Run replay test")
+    parser.add_argument(
+        "--realtime", action="store_true", help="Run real-time game test"
+    )
+    parser.add_argument("--session", type=str, default=None, help="Replay session ID")
+    parser.add_argument(
+        "--host", type=str, default="127.0.0.1", help="Game server address"
+    )
+    parser.add_argument("--port", type=int, default=9527, help="Game server port")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+
+    args = parser.parse_args()
+
+    if args.replay:
+        run_replay_test(args.session, args.verbose)
+    elif args.realtime:
+        run_realtime_test(args.host, args.port)
+    else:
+        run_replay_test(args.session, args.verbose)
+
+
+if __name__ == "__main__":
+    main()

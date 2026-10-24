@@ -1,0 +1,2 @@
+{"kind": "error", "utc": "2026-10-24T08:46:24.287353+00:00", "reason": "TimeoutError: 60 秒内未收到新鲜的玩家位置数据"}
+{"kind": "summary", "utc": "2026-10-24T08:46:24.288347+00:00", "passed": false}

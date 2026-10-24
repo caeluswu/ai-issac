@@ -1,0 +1,254 @@
+# Mom Arena 任务契约 —— 机器可读版本
+# 对应文档：docs/task-contract.zh-CN.md
+# 状态：draft（未冻结）。标 TODO_CONFIRM 的字段必须由项目方拍定后填值，
+# 并把 status 改为 frozen、frozen_at 写时间。冻结前不得对外报告任何成功率。
+#
+# 校验：本文件当前无 schema。P1 阶段应补 configs/task/schema/task-contract.schema.json
+# 与加载器，加载时拒绝未知字段，避免配置静默漂移。
+
+schema_version: 1
+contract_version: 1
+task_id: t1-mom-arena
+kind: boss_arena
+status: draft
+frozen_at: null
+created: 2026-10-24
+based_on:
+  plan: docs/architecture-plan.zh-CN.md
+  guide: docs/control-mvp-guide.zh-CN.md
+  contract_doc: docs/task-contract.zh-CN.md
+
+# ── D01 环境（已核对的实测值，可直接冻结）─────────────────────────────
+environment:
+  game: "Binding of Isaac: Repentance"          # 原版，非 Repentance+
+  build: "1.7.9b.J835"                          # 运行日志实测
+  changelog_date: "2022-12-07"                  # changelog.txt 首节
+  platform: windows
+  distribution: local_repack                     # 存档目录名 CODEX-250900
+  executable:
+    path: "The Binding of Isaac Rebirth Repentance/isaac-ng.exe"
+    size: 8820736
+    sha256: BB9FDA2535D94AE72E7FD4CD7D4A87DC9BFC27417E86F8F9190BFEEB8C9F10C2
+  launch_args: ["--luadebug"]                    # Lua 需要 socket / 文件访问
+  mod:
+    name: socketbridge
+    main_lua_sha256: 19967F2E3B2BB9D184614F99BEDC53798BAFD9E8D28599AAD9AD64BF59F326E1
+    metadata_version: "1.0"
+    repentogon_required: false                   # metadata.xml 的描述与实际代码不符，见契约文档 §2
+  options_locked:
+    EnableMods: 1
+    Fullscreen: 1
+    VSync: 1
+    MusicEnabled: 0
+    PauseOnFocusLost: 1                          # 失焦即暂停：评测时必须保持焦点
+    EnableDebugConsole: 0                        # TODO_CONFIRM：场景机制 A 需要改为 1
+  update_frame_rate_hz: 29.5                     # 初步观测，P0 第 4 项正式测量后替代
+  update_frame_rate_status: provisional
+
+# ── D05 存档 ─────────────────────────────────────────────────────────
+save_profile:
+  save_dir: "C:\\Users\\wxt\\Documents\\My Games\\Binding of Isaac Repentance"
+  active_slot: null                              # TODO_CONFIRM：必须固定为单一槽位
+  restore_method: copy_from_snapshot              # 只通过副本还原，不在原文件上跑评测
+  record_hash_before_after: true
+  unlock_content_recorded: false                 # TODO_CONFIRM：解锁内容清单
+  known_drift:
+    note: "槽位 1 与槽位 3 在 2026-10-24 17:03/17:06 均被写过，违反 §2.3，必须先修复"
+    slot1: {name: 20261024.rep_persistentgamedata1.dat, size: 4956, sha256_prefix: BB18CB4D1D483F7D}
+    slot3: {name: 20261024.rep_persistentgamedata3.dat, size: 3956, sha256_prefix: E6130B7A81C77AF3}
+
+# ── D02 目标、D04 角色（建议值，待确认）────────────────────────────────
+target:
+  d02_choice: mom
+  display_name: "Mom"
+  # Boss 实体标识不得凭记忆填写，必须用 ENEMIES 通道在 Boss 房采样后回填
+  entity_type: null                              # TODO_CONFIRM
+  entity_variant: null                           # TODO_CONFIRM
+  max_hp: null                                   # TODO_CONFIRM
+  floor: null                                    # TODO_CONFIRM：楼层与房间标识需实机核对
+  room_identifier: null                          # TODO_CONFIRM
+  identifier_evidence: null                      # 采样 trace 路径，回填时填写
+
+player:
+  d04_character: null                            # TODO_CONFIRM（建议 Isaac）
+  d04_difficulty: null                           # TODO_CONFIRM（建议 Normal）
+  fixed_loadout:                                  # Arena 固定装备，必须在每次运行记录中写出
+    collectibles: []                             # TODO_CONFIRM
+    active_item: null                            # TODO_CONFIRM
+    starting_health: null                        # TODO_CONFIRM：红心/魂心上限
+    damage: null                                 # TODO_CONFIRM
+    tears: null                                  # TODO_CONFIRM
+    speed: null                                  # TODO_CONFIRM
+    luck: null                                   # TODO_CONFIRM
+    coins: null                                  # TODO_CONFIRM
+    bombs: null                                  # TODO_CONFIRM
+    keys: null                                   # TODO_CONFIRM
+
+# ── D03 起点与时间模式 ────────────────────────────────────────────────
+scope:
+  d03_start: boss_arena                          # Full Run 不纳入本轮验收
+  full_run_in_scope: false
+  d12_time_mode: realtime
+  pause_allowed_in_evaluation: false             # 禁止暂停等待规划器
+  slow_motion_allowed: false
+
+# ── D07 信息可见性 ───────────────────────────────────────────────────
+info_visibility:
+  d07_profile: current_room_plus_explored
+  channels_allowed:
+    - PLAYER_POSITION
+    - PLAYER_STATS
+    - PLAYER_HEALTH
+    - PLAYER_INVENTORY
+    - ENEMIES
+    - PROJECTILES
+    - ROOM_INFO
+    - ROOM_LAYOUT
+    - BOMBS
+    - FIRE_HAZARDS
+    - PICKUPS
+    - INTERACTABLES
+  forbidden_info:
+    - unexplored_rooms
+    - hidden_doors
+    - boss_internal_ai_phase
+    - boss_internal_timers
+    - future_rng
+  note: "12 个通道当前全部可用，但 PLAYER_* 统计类字段的实机有效性尚未逐项验证"
+
+# ── D06 辅助政策（已定）─────────────────────────────────────────────
+assist_profile:
+  d06_status: frozen
+  profile_name: state_assist_normal_combat
+  evaluation_mode:
+    allowed: [subscribe_state_channels, send_input]
+    forbidden_commands:
+      - EXEC_CONSOLE
+      - CONFIGURE_SENSOR          # 禁止在评测中放宽采集范围
+      - SET_CONTROL_MODE          # 仅允许 FORCE_AI/MANUAL，且由会话控制
+    forbidden_effects:
+      - invincibility
+      - damage_override
+      - instant_kill
+      - teleport
+      - position_or_speed_override
+      - collision_override
+  training_mode:
+    separate_entry_point_required: true
+    note: "训练/调试入口与评测会话分离；不得只靠提示词约束 LLM"
+  record_per_run: [assist_profile, all_assist_actions, resource_usage]
+
+# ── D31 成功判定 ────────────────────────────────────────────────────
+success_judgement:
+  d31_rule: boss_defeated_and_player_alive_or_revived
+  judge_module: evaluation/judge                      # 独立模块，不读控制器内部状态
+  rules:
+    target_lifecycle: required
+    cross_evidence: [boss_death_event, room_clear, entity_lifecycle]
+    evidence_level_recorded: true                     # 报告必须标注所用证据等级
+    simultaneous_death: fail                          # outcome_reason=simultaneous_death
+    revive_by_game_mechanics: allowed_and_recorded
+    cutscene_counts_toward_timer: false
+    screenshot_or_llm_as_sole_source: forbidden
+  confirmation_window_ticks: null                     # TODO_CONFIRM：P0 延迟实测后写死（暂用 60）
+  confirmation_window_status: provisional
+
+# ── D29/D30 统计口径 ────────────────────────────────────────────────
+metrics:
+  d29_generalization: unseen_seeds
+  d30_reporting: {point_estimate: true, wilson_95_lower_bound: true, run_stability: true}
+  primary: win_rate
+  secondary:
+    - damage_per_boss_fight
+    - boss_fight_game_seconds
+    - resource_waste
+    - crash_or_stall_count
+  grouping: report_by_seed_and_by_loadout      # 不合并不同配置成一均值
+  diagnostic_only: win_rate_among_valid_runs   # 不得替代总成功率
+
+denominator:
+  include: [crash, timeout, manual_takeover, stream_failure]
+  exclude_only_when:
+    - game_launch_failure
+    - mod_not_loaded
+    - tcp_not_established
+    - save_restore_failure
+  exclusion_recording: count_and_reason_per_run
+  seed_clustering: aggregate_by_seed
+
+# ── 场景初始化（Mom Arena 模板）──────────────────────────────────────
+scenario_init:
+  preferred: console
+  fallback: continue_save
+  methods:
+    console:
+      status: unverified                           # 2026-10-24 08:56 的 goto 未观测到换房
+      requires: {EnableDebugConsole: 1, launch_args: ["--luadebug"]}
+      candidate_commands: ["stage <floor>", "goto <room>"]   # 命令与房间标识需实机核对
+      init_in_timed_interval: false
+      resend_console_in_evaluation: false
+    continue_save:
+      status: available
+      requires_save_snapshot_before_boss_room: true
+      record_hash_before_after: true
+      replay_error_must_be_measured: true
+    walk_from_floor_start:
+      status: available
+      zero_injection: true
+      cost: high
+      use_for: full_run_subset_or_consistency_check
+  consistency_check: "同一 seed 下两种初始化方式的首帧状态差异必须进报告"
+
+seed_policy:
+  dev_seeds_file: configs/seeds/dev.yaml            # 待建
+  sealed_seeds_file: configs/seeds/sealed.yaml      # 待建，生成后仅记录哈希与数量
+  sealed_policy: {use_once: true, visible_during_tuning: false, retire_after_use: true}
+  same_seed_implies_same_trajectory: false          # 动作分叉后随机流不同
+
+# ── 每次运行的必填记录 ───────────────────────────────────────────────
+run_record_required:
+  - run_id
+  - task_id
+  - contract_version
+  - seed
+  - assist_profile
+  - init_method
+  - init_commands
+  - init_state_snapshot
+  - controller_version
+  - planner_version
+  - knowledge_version
+  - observations
+  - applied_actions_with_tick
+  - skill_boundaries
+  - damage_events
+  - death_and_revive_events
+  - outcome
+  - outcome_reason
+  - judgement_evidence_level
+  - save_hash_before
+  - save_hash_after
+
+# ── 未决项 ──────────────────────────────────────────────────────────
+open_questions:
+  - id: Q1
+    question: 存档固定哪个槽位，解锁内容清单是什么
+    blocks: [denominator, target_reachability]
+  - id: Q2
+    question: 目标是否为 Mom（D02）
+    blocks: [scenario_init, boss_adapter]
+  - id: Q3
+    question: 角色与难度（D04）
+    blocks: [judge_initial_state]
+  - id: Q4
+    question: 固定装备与初始血量/资源
+    blocks: [reproducibility]
+  - id: Q5
+    question: EnableDebugConsole=1 后 goto 是否生效
+    blocks: [scenario_init.console]
+  - id: Q6
+    question: Boss 实体 type/variant/max_hp
+    blocks: [success_judgement.target_lifecycle]
+  - id: Q7
+    question: confirmation_window_ticks 具体值
+    blocks: [success_judgement]

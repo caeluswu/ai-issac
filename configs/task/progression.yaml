@@ -1,0 +1,162 @@
+# 阶段任务契约；对应 docs/task-contract.zh-CN.md v0.3。
+# draft：存档、场景和数值门槛尚未冻结；配置加载器和 schema 尚未实现。
+schema_version: 1
+contract_version: 3
+status: draft
+contract_date: 2026-10-24
+contract_doc: docs/task-contract.zh-CN.md
+
+environment:
+  game: "Binding of Isaac: Repentance"
+  build: "1.7.9b.J835"
+  platform: windows
+  executable_sha256: BB9FDA2535D94AE72E7FD4CD7D4A87DC9BFC27417E86F8F9190BFEEB8C9F10C2
+  mod_main_lua_sha256: 19967F2E3B2BB9D184614F99BEDC53798BAFD9E8D28599AAD9AD64BF59F326E1
+  launch_args: ["--luadebug"]
+  verify_hashes_before_evaluation: true
+
+save_profile:
+  kind: fully_unlocked
+  provider: project_owner
+  delivered: false
+  active_slot: null
+  baseline_sha256: null
+  unlock_manifest: null
+  restore_method: copy_from_protected_baseline
+  record_hash_before_after: true
+
+seed_policy:
+  evaluation: random_precommitted
+  seed_domain: null
+  generation_method: null
+  list_hash: null
+  fixed_seed_use: debug_and_deterministic_regression_only
+  paired_ab_uses_same_seed_list: true
+  record_seed_per_run: true
+  repeated_seed_counts_as_generalization: false
+  no_outcome_based_seed_exclusion: true
+
+assist_profile:
+  name: structured_state_normal_combat
+  live_structured_state: allowed
+  default_visibility: current_room_plus_explored
+  hidden_or_future_state: separate_profile_required
+  normal_movement_shooting_and_game_items: required
+  debug_injection_during_timed_evaluation: forbidden
+  initialization_commands_recorded: true
+
+controller:
+  lower:
+    implementation: explicit_interruptible_state_machine
+    update_basis: game_update_frame
+    components: [navigate, target_select, weapon_aim_and_fire, evade, obstacle_avoid, release_input, align_door, verify_clear, recover_stall]
+    component_registry_required: true
+    component_contract: [weapon_item_compatibility, preconditions, parameter_schema,
+      parameter_bounds, termination, failure_reason, max_duration_frames]
+    states: [WAIT_READY, ASSESS, ENGAGE, REPOSITION, EVADE, VERIFY_CLEAR, EXIT, RECOVER, SAFE_STOP]
+    interrupt_on: [room_change, death, focus_loss, disconnect, planner_cancel]
+    observation_staleness_guard: required
+    action_ttl_guard: required
+  upper:
+    provider: deepseek
+    begins_at_milestone: m1-single-room
+    invocation: event_triggered
+    output: validated_component_ids_parameters_and_goals
+    select_from_registered_components_only: true
+    parameter_context: [weapon, room, enemies, items, health, resources]
+    reject_stale_room_or_observation: true
+    timeout_or_error_fallback: local_rule_component_selector
+    blocks_per_frame_control: false
+    model: null
+    endpoint: null
+    timeout_ms: null
+    per_run_call_budget: null
+    credential_source: environment_or_secret_store
+    compare_against_rule_upper: true
+
+milestones:
+  - task_id: m1-single-room
+    kind: randomized_single_combat_room
+    start: one_sampled_room_after_recorded_initialization
+    success: enemies_defeated_room_clear_player_actionable
+    controller_scope: same_lower_fsm_with_deepseek_and_rule_selectors
+    character: null
+    difficulty: null
+    room_distribution: null
+    enemy_distribution: null
+    initial_loadout: null
+    initial_health: null
+    timeout_game_seconds: null
+    provisional_gate:
+      wins_at_least: 90
+      random_seed_starts: 100
+      involuntary_health_loss_limit: null
+      resource_usage_limit: null
+      status: pending_approval
+  - task_id: m2-single-floor
+    kind: full_single_floor
+    start: specified_floor_entrance
+    success: floor_boss_defeated_and_normal_transition_to_next_floor
+    controller_scope: lower_fsm_plus_deepseek_upper
+    floor_identifier: null
+    stability_gate: null
+  - task_id: m3-floor1-to-mom
+    kind: continuous_long_run
+    start: normal_new_run_on_floor_one
+    success: floor_six_mom_defeated_player_actionable
+    controller_scope: lower_fsm_plus_deepseek_upper
+    target_name: Mom
+    target_entity_type: null
+    target_entity_variant: null
+    target_identifier_evidence: null
+    stability_gate: null
+
+evaluation:
+  independent_judge: required
+  judge_uses_controller_self_report: false
+  simultaneous_completion_and_death: fail
+  normal_game_revive: allowed_and_recorded
+  screenshot_or_llm_as_sole_evidence: forbidden
+  denominator_starts_after_valid_initialization: true
+  count_after_start: [death, timeout, disconnect, crash, stall, manual_takeover]
+  external_prestart_exclusions_must_be_recorded: true
+  report_milestones_separately: true
+  group_by: [task_id, seed, room_type, weapon_class]
+  primary: task_success_rate
+  secondary: [involuntary_health_loss, voluntary_health_spend, remaining_health,
+    bombs_used, keys_used, active_item_uses, elapsed_game_time]
+  involuntary_health_loss:
+    penalized_in_local_objective: true
+    causes: [enemy_contact, projectile, environmental_hazard, unapproved_other]
+    penalty_weight: null
+  voluntary_health_spend:
+    requires_prior_authorization: true
+    counted_in_resource_budget: true
+    never_reclassify_after_damage: true
+
+run_artifacts:
+  root: artifacts/runs
+  recorder_module: required_before_batch_evaluation
+  unique_run_directory: true
+  required: [manifest.json, trace.jsonl, result.json]
+  planner_log_when_called: planner.jsonl
+  append_and_periodic_flush: true
+  watchdog_writes_minimal_result_on_crash: true
+  record_game_frame_and_monotonic_time: true
+  record_actual_actions_fsm_transitions_components_and_parameters: true
+  record_health_loss_cause_heart_type_and_resource_delta: true
+  record_damage_death_room_floor_and_connection_events: true
+  record_versions_seed_save_hashes_and_assist_profile: true
+  preserve_partial_trace_after_crash: true
+  redact_api_secrets: true
+  verification: reconstruct_sampled_decision_damage_and_judgement
+
+open_items:
+  - fully_unlocked_save_slot_hash_and_manifest
+  - m1_room_enemy_distribution_character_difficulty_loadout_timeout
+  - m1_gate_health_and_resource_thresholds
+  - random_seed_domain_and_precommit_method
+  - reproducible_m1_m2_initialization
+  - floor_and_mom_entity_identifiers
+  - deepseek_model_endpoint_timeout_and_budget
+  - m2_m3_stability_gates_and_seed_sample_sizes

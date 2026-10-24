@@ -1,0 +1,12 @@
+{
+  "passed": false,
+  "control_chain_passed": false,
+  "motion_passed": false,
+  "room_transition": false,
+  "room_transition_method": "manual",
+  "watchdog": null,
+  "keyboard_recovered": null,
+  "errors": [],
+  "phases": [],
+  "trace": "D:\\internship1\\issac\\artifacts\\control-mvp\\probe-20261024T090122394604Z.jsonl"
+}

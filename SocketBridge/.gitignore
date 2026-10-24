@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+.conda-env/
+*.egg-info/
+dist/
+build/
+eggs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Local configuration
+config.local.*
+*.local
+
+# Analysis outputs and generated data
+python/analysis_reference/
+python/analyzed_rooms/
+python/room_data/
+python/recordings/
+reference_from_2026.1.11/
+*.analysis.json
+*.analysis.txt
+
+# Temporary analysis scripts (not part of core)
+python/analyze_rooms_detailed.py
+python/extract_room_data.py
+python/room_corner_collector.py
+python/room_data_analyzer_v2.py
+python/room_geometry_analyzer.py

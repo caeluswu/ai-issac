@@ -1,0 +1,298 @@
+{
+  "passed": false,
+  "motion_passed": true,
+  "room_transition": false,
+  "watchdog": {
+    "passed": false,
+    "initial_dx": 46.13543701172,
+    "late_speed": 0.70629638433456,
+    "tail_drift": 0.29495239258000083,
+    "silent_samples": 24,
+    "release_frame": 551
+  },
+  "keyboard_recovered": true,
+  "errors": [],
+  "phases": [
+    {
+      "cycle": 1,
+      "phase": "move_right",
+      "passed": true,
+      "criterion": "右移位移需超过 20 px",
+      "room": 84,
+      "start_frame": 60,
+      "end_frame": 93,
+      "dx": 227.98193359375,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 20,
+      "position_samples": 30
+    },
+    {
+      "cycle": 1,
+      "phase": "stop_after_move",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 93,
+      "end_frame": 115,
+      "dx": 21.23492431641,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 14,
+      "position_samples": 22
+    },
+    {
+      "cycle": 1,
+      "phase": "shoot_up",
+      "passed": true,
+      "criterion": "射击阶段需出现新泪弹 ID",
+      "room": 84,
+      "start_frame": 115,
+      "end_frame": 146,
+      "dx": -0.008911132820003331,
+      "dy": 0.0,
+      "new_tear_ids": [
+        7,
+        8
+      ],
+      "sent_count": 20,
+      "position_samples": 31
+    },
+    {
+      "cycle": 1,
+      "phase": "stop_after_shoot",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 146,
+      "end_frame": 168,
+      "dx": 0.0,
+      "dy": 0.0,
+      "new_tear_ids": [
+        9
+      ],
+      "sent_count": 14,
+      "position_samples": 22
+    },
+    {
+      "cycle": 1,
+      "phase": "move_left_and_shoot",
+      "passed": true,
+      "criterion": "左移超过 20 px 且出现新泪弹 ID",
+      "room": 84,
+      "start_frame": 168,
+      "end_frame": 201,
+      "dx": -254.45782470703,
+      "dy": 0.0,
+      "new_tear_ids": [
+        19,
+        21,
+        24
+      ],
+      "sent_count": 20,
+      "position_samples": 33
+    },
+    {
+      "cycle": 1,
+      "phase": "stop_after_both",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 201,
+      "end_frame": 225,
+      "dx": -45.60546875,
+      "dy": 0.0,
+      "new_tear_ids": [
+        28
+      ],
+      "sent_count": 14,
+      "position_samples": 24
+    },
+    {
+      "cycle": 2,
+      "phase": "move_right",
+      "passed": true,
+      "criterion": "右移位移需超过 20 px",
+      "room": 84,
+      "start_frame": 225,
+      "end_frame": 255,
+      "dx": 219.05670166016,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 20,
+      "position_samples": 30
+    },
+    {
+      "cycle": 2,
+      "phase": "stop_after_move",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 255,
+      "end_frame": 276,
+      "dx": 45.47045898437,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 14,
+      "position_samples": 21
+    },
+    {
+      "cycle": 2,
+      "phase": "shoot_up",
+      "passed": true,
+      "criterion": "射击阶段需出现新泪弹 ID",
+      "room": 84,
+      "start_frame": 276,
+      "end_frame": 308,
+      "dx": 0.22503662110000278,
+      "dy": 0.0,
+      "new_tear_ids": [
+        42,
+        43,
+        44
+      ],
+      "sent_count": 20,
+      "position_samples": 32
+    },
+    {
+      "cycle": 2,
+      "phase": "stop_after_shoot",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 308,
+      "end_frame": 330,
+      "dx": 0.0,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 14,
+      "position_samples": 22
+    },
+    {
+      "cycle": 2,
+      "phase": "move_left_and_shoot",
+      "passed": true,
+      "criterion": "左移超过 20 px 且出现新泪弹 ID",
+      "room": 84,
+      "start_frame": 330,
+      "end_frame": 363,
+      "dx": -254.45794677735,
+      "dy": 0.0,
+      "new_tear_ids": [
+        51,
+        53,
+        56
+      ],
+      "sent_count": 20,
+      "position_samples": 33
+    },
+    {
+      "cycle": 2,
+      "phase": "stop_after_both",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 363,
+      "end_frame": 385,
+      "dx": -36.74659729004,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 14,
+      "position_samples": 22
+    },
+    {
+      "cycle": 3,
+      "phase": "move_right",
+      "passed": true,
+      "criterion": "右移位移需超过 20 px",
+      "room": 84,
+      "start_frame": 385,
+      "end_frame": 416,
+      "dx": 236.67594909668,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 20,
+      "position_samples": 31
+    },
+    {
+      "cycle": 3,
+      "phase": "stop_after_move",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 416,
+      "end_frame": 438,
+      "dx": 45.53018188477,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 14,
+      "position_samples": 22
+    },
+    {
+      "cycle": 3,
+      "phase": "shoot_up",
+      "passed": true,
+      "criterion": "射击阶段需出现新泪弹 ID",
+      "room": 84,
+      "start_frame": 438,
+      "end_frame": 469,
+      "dx": 0.17437744141000167,
+      "dy": 0.0,
+      "new_tear_ids": [
+        78,
+        79,
+        80
+      ],
+      "sent_count": 20,
+      "position_samples": 31
+    },
+    {
+      "cycle": 3,
+      "phase": "stop_after_shoot",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 469,
+      "end_frame": 490,
+      "dx": 0.0,
+      "dy": 0.0,
+      "new_tear_ids": [],
+      "sent_count": 14,
+      "position_samples": 21
+    },
+    {
+      "cycle": 3,
+      "phase": "move_left_and_shoot",
+      "passed": true,
+      "criterion": "左移超过 20 px 且出现新泪弹 ID",
+      "room": 84,
+      "start_frame": 490,
+      "end_frame": 521,
+      "dx": -227.98199462891,
+      "dy": 0.0,
+      "new_tear_ids": [
+        85,
+        88
+      ],
+      "sent_count": 20,
+      "position_samples": 31
+    },
+    {
+      "cycle": 3,
+      "phase": "stop_after_both",
+      "passed": true,
+      "criterion": "停止后第 10 帧速度 <=0.5，末 5 次采样位移 <=5 px",
+      "room": 84,
+      "start_frame": 521,
+      "end_frame": 542,
+      "dx": -36.69793701172,
+      "dy": 0.0,
+      "new_tear_ids": [
+        91
+      ],
+      "sent_count": 14,
+      "position_samples": 21
+    }
+  ],
+  "trace": "D:\\internship1\\issac\\artifacts\\control-mvp\\probe-20261024T084836389501Z.jsonl"
+}
