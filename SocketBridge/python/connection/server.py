@@ -55,7 +55,7 @@ class BridgeServer:
         """Start listening for game connections."""
         self._running = True
         self._server = await asyncio.start_server(
-            self._handle_client, self.host, self.port,
+            self._handle_client, self.host, self.port, limit=1024 * 1024,
         )
         logger.info("Server listening on %s:%d", self.host, self.port)
         asyncio.create_task(self._accept_loop())

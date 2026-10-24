@@ -136,9 +136,20 @@ class SocketBridge:
                          use_bomb: bool = False,
                          use_card: bool = False,
                          use_pill: bool = False,
-                         drop: bool = False) -> bool:
+                         drop: bool = False,
+                         action_id: Optional[int] = None,
+                         room_visit_id: Optional[str] = None,
+                         observed_frame: Optional[int] = None) -> bool:
         """Send game input commands."""
-        cmd: dict[str, Any] = {}
+        cmd: dict[str, Any] = {"use_item": use_item, "use_bomb": use_bomb,
+                              "use_card": use_card, "use_pill": use_pill, "drop": drop}
+        move = move if move is not None else (0, 0)
+        shoot = shoot if shoot is not None else (0, 0)
+        if any(v not in (-1, 0, 1) for v in (*move, *shoot)):
+            raise ValueError("Input directions must be -1, 0 or 1")
+        if action_id is not None:
+            cmd.update(action_id=action_id, room_visit_id=room_visit_id,
+                       observed_frame=observed_frame)
         if move:
             cmd["move"] = {"x": move[0], "y": move[1]}
         if shoot:
@@ -212,10 +223,14 @@ class SocketBridge:
                     logger.error("command_result callback error: %s", e)
             return
 
+        if msg_type not in ("DATA", "FULL"):
+            return
+
         # Data message
         dm = DataMessage.from_dict(raw)
         self._frame = dm.frame
         if dm.room_index != self._room:
+            self._data.clear()
             self._prev_room = self._room
             self._room = dm.room_index
             if self._entities:

@@ -49,6 +49,8 @@ local State = {
     -- Room tracking
     currentRoom = -1,
     roomEntered = false,
+    roomVisit = 0,
+    runId = "boot",
 
     -- Subscription
     subscribedSensors = {},  -- {["ENEMIES"] = true, ...}
@@ -174,12 +176,15 @@ end
 
 function Network.receive()
     if not State.connected then return nil end
-    local success, line, err = pcall(function()
-        return State.socket:receive("*l")
+    local success, line, err, partial = pcall(function()
+        return State.socket:receive("*l", State.receivePartial or "")
     end)
     if success and line then
+        State.receivePartial = nil
         local ok, data = pcall(json.decode, line)
         if ok then return data end
+    elseif success and err == "timeout" then
+        State.receivePartial = partial
     elseif not success or (err and err ~= "timeout") then
         Network.disconnect()
     end
@@ -227,6 +232,7 @@ function Protocol.createFullStateMessage(payload, sensorNames, sensorMeta)
     local msg = {
         version = Protocol.VERSION,
         type = Protocol.MessageType.FULL,
+        room_index = State.currentRoom,
         timestamp = Isaac.GetTime(),
         frame = State.updateCount,
         seq = State.messageSeq,
@@ -649,7 +655,7 @@ SensorRegistry:register("ENEMIES", {
     cache = { strategy = "hash" },
     triggers = { "MC_POST_NPC_DEATH", "MC_POST_NEW_ROOM" },
     extract = function(entity, player)
-        if not entity:IsActiveEnemy(false) or not entity:IsVulnerableEnemy() then
+        if not entity:IsActiveEnemy(false) then
             return nil
         end
         local npc = entity:ToNPC()
@@ -660,6 +666,11 @@ SensorRegistry:register("ENEMIES", {
         end
         return {
             id = entity.Index,
+            instance_id = tostring(entity.InitSeed) .. ":" .. tostring(entity.Index),
+            vulnerable = entity:IsVulnerableEnemy(),
+            collision_class = entity.EntityCollisionClass,
+            friendly = entity:HasEntityFlags(EntityFlag.FLAG_FRIENDLY),
+            dead = entity:IsDead(),
             type = entity.Type, variant = entity.Variant, subtype = entity.SubType,
             pos = Helpers.vectorToTable(entity.Position),
             vel = Helpers.vectorToTable(entity.Velocity),
@@ -742,8 +753,10 @@ SensorRegistry:register("BOMBS", {
             sub_type = entity.SubType,
             pos = Helpers.vectorToTable(entity.Position),
             vel = Helpers.vectorToTable(entity.Velocity),
-            explosion_radius = bomb and bomb.ExplosionRadius or 0,
-            timer = bomb and bomb.Timer or 0,
+            -- Vanilla Repentance exposes RadiusMultiplier, not ExplosionRadius
+            -- or Timer. Treat an unknown fuse as imminent, never as harmless.
+            explosion_radius = 100 * (bomb and bomb.RadiusMultiplier or 1),
+            radius_estimated = true, timer = 0, timer_known = false,
             distance = dist,
         }
     end,
@@ -837,9 +850,9 @@ SensorRegistry:register("FIRE_HAZARDS", {
             end
         elseif entity.Type == 33 then  -- ENTITY_FIREPLACE
             local variant = entity.Variant
-            local isExtinguished = entity.State == 1000
-            local isShooting = false
             local npc = entity:ToNPC()
+            local isExtinguished = npc and npc.State == 1000
+            local isShooting = false
             if npc and (variant == 1 or variant == 3) then
                 isShooting = (npc.State == 8)
             end
@@ -849,7 +862,7 @@ SensorRegistry:register("FIRE_HAZARDS", {
                 variant = variant, sub_variant = entity.SubType,
                 pos = Helpers.vectorToTable(entity.Position),
                 hp = entity.HitPoints, max_hp = entity.MaxHitPoints,
-                state = entity.State, is_extinguished = isExtinguished,
+                state = npc and npc.State or 0, is_extinguished = isExtinguished,
                 collision_radius = entity.Size > 0 and entity.Size or 25,
                 distance = dist, is_shooting = isShooting,
                 sprite_scale = entity.SpriteScale.X,
@@ -877,6 +890,8 @@ function CustomCollectors.PLAYER_POSITION()
             fire_dir = player:GetFireDirection(),
             head_dir = player:GetHeadDirection(),
             aim_dir = Helpers.vectorToTable(player:GetAimDirection()),
+            dead = player:IsDead(),
+            collision_radius = player.Size,
         }
     end
     return data
@@ -890,6 +905,8 @@ function CustomCollectors.PLAYER_STATS()
             player_type = player:GetPlayerType(),
             damage = player.Damage, speed = player.MoveSpeed,
             tears = player.MaxFireDelay,
+            max_fire_delay = player.MaxFireDelay,
+            weapon_type = player:HasWeaponType(WeaponType.WEAPON_TEARS) and 1 or -1,
             range = player.TearRange, tear_range = player.TearRange,
             shot_speed = player.ShotSpeed, luck = player.Luck,
             tear_height = player.TearHeight,
@@ -960,7 +977,7 @@ end
 function CustomCollectors.PROJECTILES()
     local player = Isaac.GetPlayer(0)
     if not player then return { enemy_projectiles = {}, player_tears = {}, lasers = {} } end
-    local data = { enemy_projectiles = {}, player_tears = {}, lasers = {} }
+    local data = { enemy_projectiles = {}, player_tears = {}, lasers = {}, friendly_tears = {} }
     for _, entity in ipairs(Isaac.GetRoomEntities()) do
         if entity.Type == EntityType.ENTITY_PROJECTILE then
             local proj = entity:ToProjectile()
@@ -977,6 +994,7 @@ function CustomCollectors.PROJECTILES()
             local tear = entity:ToTear()
             local tearData = {
                 id = entity.Index,
+                instance_id = tostring(entity.InitSeed) .. ":" .. tostring(entity.Index),
                 pos = Helpers.vectorToTable(entity.Position),
                 vel = Helpers.vectorToTable(entity.Velocity),
                 variant = entity.Variant, collision_radius = entity.Size,
@@ -986,7 +1004,7 @@ function CustomCollectors.PROJECTILES()
             if entity.SpawnerType == EntityType.ENTITY_PLAYER then
                 table.insert(data.player_tears, tearData)
             else
-                table.insert(data.enemy_projectiles, tearData)
+                table.insert(data.friendly_tears, tearData)
             end
         elseif entity.Type == EntityType.ENTITY_LASER then
             local laser = entity:ToLaser()
@@ -995,7 +1013,9 @@ function CustomCollectors.PROJECTILES()
                     id = entity.Index,
                     pos = Helpers.vectorToTable(entity.Position),
                     angle = laser.Angle, max_distance = laser.MaxDistance,
-                    is_enemy = entity:IsEnemy(),
+                    is_enemy = not (entity.SpawnerType == EntityType.ENTITY_PLAYER or
+                        entity.SpawnerType == EntityType.ENTITY_FAMILIAR),
+                    collision_radius = entity.Size,
                 })
             end
         end
@@ -1013,6 +1033,7 @@ function CustomCollectors.ROOM_INFO()
     return {
         room_type = room:GetType(), room_shape = room:GetRoomShape(),
         room_idx = level:GetCurrentRoomIndex(),
+        is_starting_room = level:GetCurrentRoomIndex() == level:GetStartingRoomIndex(),
         stage = level:GetStage(), stage_type = level:GetStageType(),
         difficulty = Game().Difficulty,
         is_clear = room:IsClear(), is_first_visit = room:IsFirstVisit(),
@@ -1026,9 +1047,13 @@ end
 function CustomCollectors.ROOM_LAYOUT()
     local room = Game():GetRoom()
     if not room then return nil end
-    local grid, doors = {}, {}
+    local grid, doors, cells = {}, {}, {}
     local width = room:GetGridWidth()
     for i = 0, room:GetGridSize() - 1 do
+        local cellPos = room:GetGridPosition(i)
+        cells[tostring(i)] = {x = cellPos.X, y = cellPos.Y,
+            inside = room:IsPositionInRoom(cellPos, 0),
+            collision = room:GetGridCollision(i)}
         local gridEntity = room:GetGridEntity(i)
         if gridEntity then
             local gridType = gridEntity:GetType()
@@ -1056,7 +1081,7 @@ function CustomCollectors.ROOM_LAYOUT()
         end
     end
     return {
-        grid = grid, doors = doors,
+        grid = grid, doors = doors, cells = cells,
         grid_size = room:GetGridSize(), width = width, height = room:GetGridHeight(),
     }
 end
@@ -1150,6 +1175,7 @@ InputExecutor = {
     shootDirection = { x = 0, y = 0 },
     useItem = false, useBomb = false,
     useCard = false, usePill = false, drop = false,
+    edgeFrames = {},
 }
 
 function InputExecutor.applyCommand(command)
@@ -1158,6 +1184,17 @@ function InputExecutor.applyCommand(command)
        command.use_item == nil and command.use_bomb == nil and
        command.use_card == nil and command.use_pill == nil and
        command.drop == nil then return end
+    if command.action_id then
+        local visit = State.runId .. ":" .. tostring(State.roomVisit)
+        local valid = command.room_visit_id == visit and
+            type(command.observed_frame) == "number" and
+            State.updateCount - command.observed_frame <= 2 and
+            command.observed_frame <= State.updateCount and
+            State.controlMode == "FORCE_AI" and not Game():IsPaused()
+        Network.send({type = "ACTION_RECEIPT", action_id = command.action_id,
+            accepted = valid, frame = State.updateCount, room_visit_id = visit})
+        if not valid then InputExecutor.reset(); return end
+    end
     local hasInput = false
     if command.move then
         InputExecutor.moveDirection = command.move
@@ -1174,6 +1211,7 @@ function InputExecutor.applyCommand(command)
     if command.drop ~= nil then InputExecutor.drop = command.drop; if command.drop then hasInput = true end end
     State.aiActive = hasInput
     InputExecutor.lastInputFrame = State.updateCount
+    InputExecutor.actionId = command.action_id
 end
 
 function InputExecutor.reset()
@@ -1183,6 +1221,8 @@ function InputExecutor.reset()
     InputExecutor.useCard = false; InputExecutor.usePill = false
     InputExecutor.drop = false
     InputExecutor.lastInputFrame = nil
+    InputExecutor.actionId = nil
+    InputExecutor.edgeFrames = {}
     State.aiActive = false
 end
 
@@ -1401,6 +1441,60 @@ end)
 -- Mod Callbacks
 -- ============================================================================
 
+-- Atomic, opt-in combat observation. No hash suppression: an unchanged value
+-- is still a fresh observation. All fields share one game update counter.
+SensorRegistry:register("COMBAT_FRAME", {
+    name = "COMBAT_FRAME", search = {strategy = "callback"},
+    enabled = false,
+    throttle = {base_interval = 1, dynamic = false}, cache = {strategy = "snapshot"},
+})
+
+function CustomCollectors.COMBAT_FRAME()
+    local player = Isaac.GetPlayer(0)
+    if not player then return nil end
+    local enemies, bombs, hazards = {}, {}, {}
+    for _, e in ipairs(Isaac.GetRoomEntities()) do
+        if e:ToNPC() and e:IsActiveEnemy(false) then
+            local value = SensorRegistry.sensors.ENEMIES.extract(e, player)
+            if value then table.insert(enemies, value) end
+        end
+        if e.Type == EntityType.ENTITY_BOMB then
+            table.insert(bombs, SensorRegistry.sensors.BOMBS.extract(e, player))
+        end
+        local hazard = SensorRegistry.sensors.FIRE_HAZARDS.extract(e, player)
+        if hazard then table.insert(hazards, hazard) end
+    end
+    local inherited = {}
+    for _, d in ipairs({Vector(1,0), Vector(-1,0), Vector(0,1), Vector(0,-1)}) do
+        local ok, value = pcall(function() return player:GetTearMovementInheritance(d) end)
+        if ok then inherited[tostring(d.X) .. "," .. tostring(d.Y)] = Helpers.vectorToTable(value) end
+    end
+    return {schema_version = 1, run_id = State.runId,
+        room_visit_id = State.runId .. ":" .. tostring(State.roomVisit),
+        frame = State.updateCount, paused = Game():IsPaused(), mode = State.controlMode,
+        room = CustomCollectors.ROOM_INFO(), layout = CustomCollectors.ROOM_LAYOUT(),
+        player = CustomCollectors.PLAYER_POSITION()[1], stats = CustomCollectors.PLAYER_STATS()[1],
+        health = CustomCollectors.PLAYER_HEALTH()[1], inventory = CustomCollectors.PLAYER_INVENTORY()[1],
+        enemies = enemies, projectiles = CustomCollectors.PROJECTILES(), bombs = bombs, hazards = hazards,
+        movement_inheritance = inherited,
+        applied_action_id = InputExecutor.appliedActionId,
+        applied_frame = InputExecutor.appliedFrame,
+        seed = Game():GetSeeds():GetStartSeedString()}
+end
+
+local function pumpCommands()
+    for _ = 1, 16 do
+        local command = Network.receive()
+        if not command then break end
+        local result = CommandHandler.process(command)
+        if result then
+            Network.send({type = "CMD", frame = State.updateCount,
+                request_id = command.request_id, result = result})
+        end
+        InputExecutor.applyCommand(command)
+    end
+end
+
 -- MC_POST_UPDATE — main game loop (30 tps, respects pause)
 mod:AddCallback(ModCallbacks.MC_POST_UPDATE, function()
     State.updateCount = State.updateCount + 1
@@ -1484,6 +1578,7 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, function()
             InputExecutor.reset()
             State.controlMode = "MANUAL"
             State.currentRoom = currentRoom
+            State.roomVisit = State.roomVisit + 1
             State.roomEntered = true
 
             if Config.DEBUG then
@@ -1556,25 +1651,22 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, function()
         EventSystem.flush()
 
         -- Receive commands
-        local command = Network.receive()
-        if command then
-            local result = CommandHandler.process(command)
-            if result then
-                Network.send({
-                    version = Protocol.VERSION,
-                    type = Protocol.MessageType.COMMAND,
-                    frame = State.updateCount,
-                    result = result,
-                })
-            end
-            InputExecutor.applyCommand(command)
-        end
+        pumpCommands()
     end
 end)
 
 -- MC_POST_RENDER — render loop (60 tps, ignores pause)
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, function()
     State.renderCount = State.renderCount + 1
+    if State.connected and Game():IsPaused() then
+        InputExecutor.reset()
+        pumpCommands()
+        if State.renderCount % 6 == 0 then
+            Network.send({type = "HEARTBEAT", paused = true, frame = State.updateCount,
+                room_visit_id = State.runId .. ":" .. tostring(State.roomVisit),
+                mode = State.controlMode})
+        end
+    end
 
     -- Mode indicator
     if State.showModeMessage and State.modeMessageTimer > 0 then
@@ -1602,7 +1694,17 @@ mod:AddCallback(ModCallbacks.MC_INPUT_ACTION, function(_, entity, hook, action)
     if not shouldAIControl() then return nil end
 
     local function ret(isActive)
-        if hook == InputHook.IS_ACTION_PRESSED or hook == InputHook.IS_ACTION_TRIGGERED then
+        local edge = InputExecutor.edgeFrames[action]
+        if isActive and not edge then
+            edge = State.updateCount
+            InputExecutor.edgeFrames[action] = edge
+        elseif not isActive then InputExecutor.edgeFrames[action] = nil end
+        if hook == InputHook.IS_ACTION_TRIGGERED then
+            return isActive and edge == State.updateCount
+        end
+        InputExecutor.appliedActionId = InputExecutor.actionId
+        InputExecutor.appliedFrame = State.updateCount
+        if hook == InputHook.IS_ACTION_PRESSED then
             return isActive
         end
         if hook == InputHook.GET_ACTION_VALUE then
@@ -1641,10 +1743,10 @@ end)
 mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, entity, amount, flags, source)
     if entity.Type ~= EntityType.ENTITY_PLAYER then return end
     local player = entity:ToPlayer()
-    EventSystem.emit("PLAYER_DAMAGE", {
+    EventSystem.emit("PLAYER_DAMAGE_ATTEMPT", {
         amount = amount, flags = flags,
         source_type = source and source.Type or -1,
-        hp_after = player:GetHearts() + player:GetSoulHearts(),
+        hp_before = player:GetHearts() + player:GetSoulHearts(),
     })
 end)
 
@@ -1671,6 +1773,8 @@ mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, continued)
     State.updateCount = 0
     Network.lastRetryFrame = -Network.retryInterval
     State.currentRoom = -1
+    State.roomVisit = 0
+    State.runId = tostring(Game():GetSeeds():GetStartSeed()) .. ":" .. tostring(Isaac.GetTime())
     State.messageSeq = 0
     State.prevFrameSent = 0
     InputExecutor.reset()
