@@ -28,3 +28,8 @@ artifacts/tmp-*/
 *.tmp
 Thumbs.db
 desktop.ini
+
+# Local credentials and reproducible runtime traces
+.env.local
+artifacts/runs/
+configs/knowledge/cache/
