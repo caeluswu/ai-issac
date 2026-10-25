@@ -19,6 +19,15 @@ class SnapshotAssembler:
         if self.latest and s.run_id == self.latest.run_id:
             if s.frame < self.latest.frame: return None
             if s.snapshot_id == self.latest.snapshot_id and s.paused == self.latest.paused: return None
+        residual = []
+        if self.latest and s.room_visit_id == self.latest.room_visit_id:
+            residual = [h for h in getattr(self.latest, "environment_residuals", []) if h["expires_frame"] >= s.frame]
+            previous_grid = self.latest.layout["grid"] or {}
+            for index, grid in (s.layout["grid"] or {}).items():
+                old = previous_grid.get(index)
+                if grid["type"] == 12 and old and old["state"] != grid["state"] and grid["state"] == 4:
+                    residual.append({"id": index, "x": grid["x"], "y": grid["y"], "expires_frame": s.frame+6})
+        s.environment_residuals = residual
         self.latest, self.received_at = s, time.monotonic()
         self.generation += 1; self.error = None
         return s

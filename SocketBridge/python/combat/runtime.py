@@ -16,9 +16,10 @@ import importlib.metadata
 from .models import ContextRef, RoomReport, ActionReceipt, Vec
 from .catalog import compile_plan, default_plan
 from .controller import BuildResolver, JointActionSolver
-from .geometry import door_route
+from .geometry import door_route, GeometryService
 from .observation import SnapshotAssembler, CombatJudge
 from .supervision import ProgressSupervisor
+from .environment import EnvironmentController
 
 
 class RunLog:
@@ -297,6 +298,10 @@ class CombatSession:
         self.visited = set()
         self.latest_acted = None
         self.started_at = time.monotonic()
+        self.task_judge = CombatJudge()
+        self.task_started = False
+        self.task_start_frame = None
+        self.environment_ticks = 0
         bridge.on_message(self.on_message)
 
     def on_message(self, raw):
@@ -313,6 +318,9 @@ class CombatSession:
             self.heartbeat, self.heartbeat_at = raw, time.monotonic()
         s = self.observation.consume(raw)
         if s:
+            if self.task_started and not s.paused:
+                self.task_judge.observe(s)
+                if s.player.dead or s.hp <= 0: self.death_observed = True
             if s.applied_action_id is not None: self.applied.add(s.applied_action_id)
             if s.room_visit_id == self.target_room and not s.paused:
                 if s.player.dead or s.hp <= 0: self.death_observed = True
@@ -398,7 +406,7 @@ class CombatSession:
             # During a rejected Escape (entry animation), defend locally while
             # waiting for a confirmed native pause. No attack before LLM setup.
             current = self.observation.latest
-            if current and current.hostiles and current.frame > pressed_frame and current.room_visit_id == s.room_visit_id and not current.paused and self.observation.fresh() and self.latest_acted != current.snapshot_id:
+            if current and (current.hostiles or current.bombs or current.hazards) and current.frame > pressed_frame and current.room_visit_id == s.room_visit_id and not current.paused and self.observation.fresh() and self.latest_acted != current.snapshot_id:
                 build = self.build_resolver.update(current)
                 guard = await asyncio.to_thread(self.solver.solve, current, default_plan(self.context_ref(current, build)), build, True)
                 try: await self.send_action(current, guard.move, (0, 0), guard.model_dump())
@@ -506,8 +514,73 @@ class CombatSession:
             # Transitional snapshots can precede enemy creation. Observe a few
             # updates before classifying a newly entered room as empty.
             for _ in range(3): s = await self.next_snapshot(after=s.snapshot_id)
-            if s.hostiles or not s.room["is_clear"]: return s
+            if s.blocking_combat: return s
+            if not s.room["is_clear"]:
+                s = await self.resolve_environment(s)
+                if s.blocking_combat: return s
         raise RuntimeError("NO_COMBAT_ROOM_FOUND")
+
+    async def resolve_environment(self, s):
+        controller, solver = EnvironmentController(), JointActionSolver()
+        began = progress = s.frame
+        signature = controller.signature(s)
+        goal_key, best_distance = None, float("inf")
+        request, requests, last_request = None, 0, -1000
+        await self.set_mode("FORCE_AI")
+        self.log("environment_entered", frame=s.frame, room_visit_id=s.room_visit_id)
+        try:
+            while not s.blocking_combat and not s.room["is_clear"]:
+                if s.player.dead or s.hp <= 0: raise RuntimeError("DEAD_DURING_ENVIRONMENT")
+                if s.frame-began >= 600: raise TimeoutError("ENVIRONMENT_TIMEOUT")
+                if s.frame-progress >= 240: raise TimeoutError("ENVIRONMENT_STALL_UNRECOVERED")
+                objective = controller.objective(s)
+                current_signature = controller.signature(s)
+                if signature != current_signature:
+                    progress, signature = s.frame, current_signature
+                key = (objective.kind, objective.allowed_devices)
+                if key != goal_key: goal_key, best_distance = key, float("inf")
+                if objective.goal:
+                    path = GeometryService(s, objective.allowed_devices).path(s.player.pos, objective.goal)
+                    distance = sum(a.distance(b) for a, b in zip([s.player.pos]+path, path))
+                    if distance < best_distance-8: progress, best_distance = s.frame, distance
+                if request and request.done():
+                    try:
+                        diagnosis = request.result()
+                        self.log("environment_diagnosis", frame=s.frame, plan=diagnosis.model_dump())
+                    except Exception as exc: self.log("environment_diagnosis_failed", error=type(exc).__name__+": "+str(exc))
+                    request = None
+                if s.frame-progress >= 60 and self.planner and request is None and requests < 2 and s.frame-last_request >= 90:
+                    requests += 1; last_request = s.frame
+                    build = self.build_resolver.update(s)
+                    feedback = {"reasons": ["environment_no_progress"], "objective": objective.kind,
+                                "age_ticks": s.frame-progress, "authority": "diagnosis_only_environment_allowlist"}
+                    request = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 20))
+                    self.log("environment_replan_started", frame=s.frame, feedback=feedback)
+                build = self.build_resolver.update(s)
+                solver.recovery_level = 2 if s.frame-progress >= 120 else 1 if s.frame-progress >= 30 else 0
+                action = await asyncio.to_thread(solver.solve, s, default_plan(self.context_ref(s, build)), build,
+                                                True, objective.goal, objective.allowed_devices)
+                action.state = "ENVIRONMENT"
+                action.diagnostics["environment_objective"] = objective.kind
+                try: await self.send_action(s, action.move, (0, 0), action.model_dump())
+                except TimeoutError as exc:
+                    if "STALE_ACTION" not in str(exc): raise
+                    self.log("environment_stale_decision", frame=s.frame)
+                prior = s
+                s = await self.next_snapshot(after=s.snapshot_id)
+                if s.room_visit_id != prior.room_visit_id: raise RuntimeError("UNEXPECTED_ENVIRONMENT_ROOM_CHANGE")
+                self.environment_ticks += s.frame-prior.frame
+            self.log("environment_resolved", frame=s.frame, is_clear=s.room["is_clear"], blocking_combat=s.blocking_combat)
+            await self.release()
+            # Environmental damage is in the whole-task ledger. The combat
+            # clock begins at actual combat, not at an empty pressure-plate room.
+            self.judge = CombatJudge()
+            self.judge_result = self.judge.observe(s)
+            self.event_reasons.clear()
+            return s
+        finally:
+            if request:
+                request.cancel(); await asyncio.gather(request, return_exceptions=True)
 
     async def engage(self, s):
         self.target_room = s.room_visit_id
@@ -624,6 +697,8 @@ class CombatSession:
                 for _ in range(3): initial = await self.next_snapshot(after=initial.snapshot_id)
                 if self.seed and initial.seed != self.seed: raise RuntimeError("SEED_NOT_CONFIRMED")
             self.log("run_start", seed=initial.seed, snapshot_id=initial.snapshot_id)
+            self.task_started, self.task_start_frame = True, initial.frame
+            self.task_judge.observe(initial)
             if on_ready: await on_ready(self)
             if startup_only:
                 if not initial.room.get("is_starting_room") or initial.room["stage"] != 1 or initial.room["difficulty"] != 0:
@@ -659,7 +734,9 @@ class CombatSession:
         if result == "CLEARED" and self.death_observed: result = "DEAD"
         report = RoomReport(result=result, success=result == "CLEARED" and self.transitions > 0,
             llm_configured=self.llm_configured, completed_door_transition=self.transitions > 0,
-            damage_half_hearts=self.judge.damage, lost_bone_hearts=self.judge.bones_lost,
+            damage_half_hearts=self.task_judge.damage, lost_bone_hearts=self.task_judge.bones_lost,
+            combat_damage_half_hearts=self.judge.damage, task_ticks=max(0, s.frame-self.task_start_frame) if s and self.task_start_frame is not None else 0,
+            environment_ticks=self.environment_ticks,
             remaining_half_hearts=s.hp if s else None,
             combat_ticks=max(0, (self.judge.previous.frame-self.judge.started)) if self.judge.previous else 0,
             wall_seconds=time.monotonic()-self.started_at, pause_seconds=self.pause_seconds,

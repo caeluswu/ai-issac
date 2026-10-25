@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from facade import SocketBridge
 from combat.catalog import default_plan
+from combat.models import Vec
 from combat.runtime import CombatSession, RunLog
 from tests.combat_fixtures import snapshot, context
 
@@ -106,6 +107,43 @@ class FixturePlanner:
 
 
 class TestSession(unittest.IsolatedAsyncioTestCase):
+    async def test_pressure_plate_room_is_traversed_and_navigation_damage_is_counted(self):
+        class PlateBeforeCombat(SimulatedRoom):
+            entered = False
+            async def data(self):
+                if self.s.room_visit_id == "test:2":
+                    if not self.entered:
+                        self.entered = True
+                        self.s.health["red_hearts"] = 5
+                    self.s.enemies = []
+                    clear = self.s.player.pos.distance(Vec(x=400, y=160)) < 20 or self.s.room["is_clear"]
+                    self.s.room.update(is_clear=clear, enemy_count=0)
+                    self.s.layout["grid"]["70"] = {"type": 20, "variant": 0, "state": 0, "collision": 0, "x": 400, "y": 160}
+                    self.s.layout["doors"]["2"].update(is_open=clear, target_room=86)
+                    if self.s.player.pos.x >= 530:
+                        frame = self.s.frame
+                        self.s = snapshot(frame=frame)
+                        self.s.room_visit_id = "test:3"; self.s.room.update(room_idx=86, is_starting_room=False)
+                        self.s.health["red_hearts"] = 5; self.s.mode = "MANUAL"
+                        self.move = self.shoot = (0, 0)
+                elif self.s.room_visit_id == "test:3":
+                    if self.shoot != (0, 0): self.hit_ticks += 1
+                    if self.hit_ticks >= self.hit_threshold:
+                        self.s.room.update(is_clear=True, enemy_count=0); self.s.enemies = []
+                await super().data()
+        with tempfile.TemporaryDirectory() as directory:
+            game = PlateBeforeCombat(); bridge = SocketBridge(port=0); log = RunLog(Path(directory)/"run")
+            session = CombatSession(bridge, FixturePlanner(), game, log, ready_timeout=3)
+            async def boot(_): await game.connect(bridge._server._server.sockets[0].getsockname()[1])
+            try:
+                report = await asyncio.wait_for(session.run(bootstrap=boot), 20)
+                self.assertTrue(report.success, report.model_dump())
+                self.assertEqual(report.damage_half_hearts, 1)
+                self.assertEqual(report.combat_damage_half_hearts, 0)
+                self.assertGreater(report.environment_ticks, 0)
+                self.assertEqual(game.s.room_visit_id, "test:3")
+            finally: await game.close()
+
     async def test_death_during_cleanup_cannot_be_reported_as_clear(self):
         with tempfile.TemporaryDirectory() as directory:
             game = SimulatedRoom(); bridge = SocketBridge(port=0); log = RunLog(Path(directory)/"run")

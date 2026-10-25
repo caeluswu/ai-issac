@@ -22,6 +22,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--through", choices=("regression", "development", "holdout"), default="holdout")
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--development-seeds", type=Path, help="Replay a previously exposed development manifest; never label it held out")
     args = parser.parse_args()
     output = args.output_dir or ROOT/"artifacts/phase-1-optimization-20261026"/("qualification-"+datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     output.mkdir(parents=True, exist_ok=False)
@@ -58,7 +59,7 @@ def main():
                 print(json.dumps(verdict, ensure_ascii=False, indent=2), flush=True)
                 return 1
         if args.through == "regression": result["passed"] = True; save(); return 0
-        directory, code = run_batch("development", "llm", count=30)
+        directory, code = run_batch("development", "llm", seeds=args.development_seeds, count=30)
         summary = json.loads((directory/"summary.json").read_text(encoding="utf-8"))
         failures = [r for r in summary["reports"] if not r["success"] or not r["llm_configured"]]
         result["stages"].append({"stage": "development", "directory": str(directory), "planned": 30,

@@ -1,0 +1,3370 @@
+[
+  {
+    "inventory": {
+      "pill_0": 0,
+      "coins": 0,
+      "card_0": 0,
+      "trinket_0": 0,
+      "keys": 0,
+      "active_items": {
+        "0": {
+          "item": 105,
+          "battery_charge": 0,
+          "max_charge": 6,
+          "charge": 6
+        }
+      },
+      "collectible_count": 1,
+      "trinket_1": 0,
+      "bombs": 1,
+      "collectibles": {
+        "105": 1,
+        "733": 1065353216
+      }
+    },
+    "paused": false,
+    "applied_frame": 56,
+    "player": {
+      "fire_dir": -1,
+      "aim_dir": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "collision_radius": 10.0,
+      "head_dir": 3,
+      "pos": {
+        "y": 280.0,
+        "x": 80.0
+      },
+      "vel": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "dead": false,
+      "move_dir": -1
+    },
+    "run_id": "2376704790:34745081",
+    "schema_version": 1,
+    "enemies": [],
+    "frame": 57,
+    "mode": "MANUAL",
+    "seed": "SKDP 343R",
+    "health": {
+      "rotten_hearts": 0,
+      "black_hearts": 0,
+      "bone_hearts": 0,
+      "red_hearts": 6,
+      "extra_lives": 0,
+      "broken_hearts": 0,
+      "max_hearts": 6,
+      "eternal_hearts": 0,
+      "soul_hearts": 0,
+      "golden_hearts": 0
+    },
+    "room": {
+      "grid_height": 9,
+      "is_first_visit": true,
+      "room_type": 1,
+      "enemy_count": 0,
+      "room_shape": 1,
+      "has_boss": false,
+      "bottom_right": {
+        "y": 420.0,
+        "x": 580.0
+      },
+      "is_starting_room": false,
+      "room_variant": 779,
+      "room_idx": 85,
+      "is_clear": false,
+      "stage": 1,
+      "grid_width": 15,
+      "stage_type": 2,
+      "difficulty": 0,
+      "top_left": {
+        "y": 140.0,
+        "x": 60.0
+      }
+    },
+    "recent_deaths": [],
+    "hazards": [
+      {
+        "is_shooting": false,
+        "is_extinguished": false,
+        "collision_radius": 13.0,
+        "id": 3,
+        "variant": 0,
+        "distance": 494.77267456055,
+        "sprite_scale": 1.0,
+        "state": 8,
+        "hp": 5.0,
+        "max_hp": 5.0,
+        "pos": {
+          "y": 400.0,
+          "x": 560.0
+        },
+        "fireplace_type": "NORMAL",
+        "type": "FIREPLACE",
+        "sub_variant": 1
+      }
+    ],
+    "room_visit_id": "2376704790:34745081:2",
+    "bombs": [
+      {
+        "sub_type": 0,
+        "distance": 240.0,
+        "id": 19,
+        "vel": {
+          "y": 0.0,
+          "x": 0.0
+        },
+        "variant": 3,
+        "radius_estimated": true,
+        "timer": 0,
+        "timer_known": false,
+        "explosion_radius": 100.0,
+        "pos": {
+          "y": 280.0,
+          "x": 320.0
+        },
+        "type": 4,
+        "variant_name": "TROLL"
+      }
+    ],
+    "movement_inheritance": {
+      "-1.0,0.0": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "1.0,0.0": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "0.0,1.0": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "0.0,-1.0": {
+        "y": 0.0,
+        "x": 0.0
+      }
+    },
+    "projectiles": {
+      "enemy_projectiles": [],
+      "player_tears": [],
+      "friendly_tears": [],
+      "lasers": []
+    },
+    "stats": {
+      "can_fly": false,
+      "player_type": 0,
+      "shot_speed": 1.0,
+      "sprite_scale": 1.0,
+      "tear_range": 260.0,
+      "tear_falling_speed": -0.18337345123291,
+      "damage": 3.5,
+      "range": 260.0,
+      "max_fire_delay": 10.0,
+      "size": 10.0,
+      "tear_height": -23.75,
+      "tears": 10.0,
+      "luck": 0.0,
+      "speed": 1.0,
+      "weapon_type": 1
+    },
+    "layout": {
+      "grid": {
+        "108": {
+          "grid_index": 108,
+          "x": 160.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1001
+        },
+        "115": {
+          "grid_index": 115,
+          "x": 440.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1001
+        },
+        "12": {
+          "grid_index": 12,
+          "x": 520.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "22": {
+          "grid_index": 22,
+          "x": 320.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 0,
+          "type": 20,
+          "variant": 0
+        },
+        "129": {
+          "grid_index": 129,
+          "x": 400.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "131": {
+          "grid_index": 131,
+          "x": 480.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "114": {
+          "grid_index": 114,
+          "x": 400.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1000
+        },
+        "89": {
+          "grid_index": 89,
+          "x": 600.0,
+          "collision": 4,
+          "y": 320.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "85": {
+          "grid_index": 85,
+          "x": 440.0,
+          "collision": 2,
+          "y": 320.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "75": {
+          "grid_index": 75,
+          "x": 40.0,
+          "collision": 4,
+          "y": 320.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "110": {
+          "grid_index": 110,
+          "x": 240.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1
+        },
+        "45": {
+          "grid_index": 45,
+          "x": 40.0,
+          "collision": 4,
+          "y": 240.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "35": {
+          "grid_index": 35,
+          "x": 240.0,
+          "collision": 2,
+          "y": 200.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "19": {
+          "grid_index": 19,
+          "x": 200.0,
+          "collision": 3,
+          "y": 160.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1
+        },
+        "123": {
+          "grid_index": 123,
+          "x": 160.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "107": {
+          "grid_index": 107,
+          "x": 120.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1000
+        },
+        "59": {
+          "grid_index": 59,
+          "x": 600.0,
+          "collision": 4,
+          "y": 240.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "39": {
+          "grid_index": 39,
+          "x": 400.0,
+          "collision": 2,
+          "y": 200.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "29": {
+          "grid_index": 29,
+          "x": 600.0,
+          "collision": 4,
+          "y": 160.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "102": {
+          "grid_index": 102,
+          "x": 520.0,
+          "collision": 0,
+          "y": 360.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "9": {
+          "grid_index": 9,
+          "x": 400.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "8": {
+          "grid_index": 8,
+          "x": 360.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "7": {
+          "grid_index": 7,
+          "x": 320.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "6": {
+          "grid_index": 6,
+          "x": 280.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "11": {
+          "grid_index": 11,
+          "x": 480.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "60": {
+          "grid_index": 60,
+          "x": 40.0,
+          "collision": 4,
+          "y": 280.0,
+          "state": 1,
+          "type": 16,
+          "variant": 8
+        },
+        "74": {
+          "grid_index": 74,
+          "x": 600.0,
+          "collision": 4,
+          "y": 280.0,
+          "state": 1,
+          "type": 16,
+          "variant": 8
+        },
+        "50": {
+          "grid_index": 50,
+          "x": 240.0,
+          "collision": 0,
+          "y": 240.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "54": {
+          "grid_index": 54,
+          "x": 400.0,
+          "collision": 0,
+          "y": 240.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "44": {
+          "grid_index": 44,
+          "x": 600.0,
+          "collision": 4,
+          "y": 200.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "26": {
+          "grid_index": 26,
+          "x": 480.0,
+          "collision": 2,
+          "y": 160.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "36": {
+          "grid_index": 36,
+          "x": 280.0,
+          "collision": 3,
+          "y": 200.0,
+          "state": 1,
+          "type": 2,
+          "variant": 0
+        },
+        "128": {
+          "grid_index": 128,
+          "x": 360.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "14": {
+          "grid_index": 14,
+          "x": 600.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "109": {
+          "grid_index": 109,
+          "x": 200.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 2
+        },
+        "20": {
+          "grid_index": 20,
+          "x": 240.0,
+          "collision": 3,
+          "y": 160.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1
+        },
+        "30": {
+          "grid_index": 30,
+          "x": 40.0,
+          "collision": 4,
+          "y": 200.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "10": {
+          "grid_index": 10,
+          "x": 440.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "1": {
+          "grid_index": 1,
+          "x": 80.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "0": {
+          "grid_index": 0,
+          "x": 40.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "106": {
+          "grid_index": 106,
+          "x": 80.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 0
+        },
+        "5": {
+          "grid_index": 5,
+          "x": 240.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "4": {
+          "grid_index": 4,
+          "x": 200.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "3": {
+          "grid_index": 3,
+          "x": 160.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "2": {
+          "grid_index": 2,
+          "x": 120.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "134": {
+          "grid_index": 134,
+          "x": 600.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "27": {
+          "grid_index": 27,
+          "x": 520.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "57": {
+          "grid_index": 57,
+          "x": 520.0,
+          "collision": 2,
+          "y": 240.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "47": {
+          "grid_index": 47,
+          "x": 120.0,
+          "collision": 2,
+          "y": 240.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "122": {
+          "grid_index": 122,
+          "x": 120.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "105": {
+          "grid_index": 105,
+          "x": 40.0,
+          "collision": 4,
+          "y": 400.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "132": {
+          "grid_index": 132,
+          "x": 520.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "125": {
+          "grid_index": 125,
+          "x": 240.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "130": {
+          "grid_index": 130,
+          "x": 440.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "127": {
+          "grid_index": 127,
+          "x": 320.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "13": {
+          "grid_index": 13,
+          "x": 560.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "126": {
+          "grid_index": 126,
+          "x": 280.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "124": {
+          "grid_index": 124,
+          "x": 200.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "104": {
+          "grid_index": 104,
+          "x": 600.0,
+          "collision": 4,
+          "y": 360.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "121": {
+          "grid_index": 121,
+          "x": 80.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "133": {
+          "grid_index": 133,
+          "x": 560.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "82": {
+          "grid_index": 82,
+          "x": 320.0,
+          "collision": 3,
+          "y": 320.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1
+        },
+        "119": {
+          "grid_index": 119,
+          "x": 600.0,
+          "collision": 4,
+          "y": 400.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "116": {
+          "grid_index": 116,
+          "x": 480.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1000
+        },
+        "24": {
+          "grid_index": 24,
+          "x": 400.0,
+          "collision": 3,
+          "y": 160.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1
+        },
+        "79": {
+          "grid_index": 79,
+          "x": 200.0,
+          "collision": 2,
+          "y": 320.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "52": {
+          "grid_index": 52,
+          "x": 320.0,
+          "collision": 2,
+          "y": 240.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "120": {
+          "grid_index": 120,
+          "x": 40.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "95": {
+          "grid_index": 95,
+          "x": 240.0,
+          "collision": 0,
+          "y": 360.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "18": {
+          "grid_index": 18,
+          "x": 160.0,
+          "collision": 2,
+          "y": 160.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "117": {
+          "grid_index": 117,
+          "x": 520.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1001
+        },
+        "90": {
+          "grid_index": 90,
+          "x": 40.0,
+          "collision": 4,
+          "y": 360.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "25": {
+          "grid_index": 25,
+          "x": 440.0,
+          "collision": 3,
+          "y": 160.0,
+          "state": 1,
+          "type": 2,
+          "variant": 1
+        },
+        "15": {
+          "grid_index": 15,
+          "x": 40.0,
+          "collision": 4,
+          "y": 160.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "66": {
+          "grid_index": 66,
+          "x": 280.0,
+          "collision": 2,
+          "y": 280.0,
+          "state": 0,
+          "type": 12,
+          "variant": 0
+        },
+        "38": {
+          "grid_index": 38,
+          "x": 360.0,
+          "collision": 3,
+          "y": 200.0,
+          "state": 1,
+          "type": 2,
+          "variant": 0
+        }
+      },
+      "cells": {
+        "112": {
+          "y": 400.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "129": {
+          "y": 440.0,
+          "x": 400.0,
+          "collision": 4,
+          "inside": false
+        },
+        "95": {
+          "y": 360.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "85": {
+          "y": 320.0,
+          "x": 440.0,
+          "collision": 2,
+          "inside": true
+        },
+        "75": {
+          "y": 320.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "65": {
+          "y": 280.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "55": {
+          "y": 240.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "45": {
+          "y": 240.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "35": {
+          "y": 200.0,
+          "x": 240.0,
+          "collision": 2,
+          "inside": true
+        },
+        "123": {
+          "y": 440.0,
+          "x": 160.0,
+          "collision": 4,
+          "inside": false
+        },
+        "107": {
+          "y": 400.0,
+          "x": 120.0,
+          "collision": 3,
+          "inside": true
+        },
+        "25": {
+          "y": 160.0,
+          "x": 440.0,
+          "collision": 3,
+          "inside": true
+        },
+        "15": {
+          "y": 160.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "105": {
+          "y": 400.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "94": {
+          "y": 360.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "76": {
+          "y": 320.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "86": {
+          "y": 320.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "84": {
+          "y": 320.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "54": {
+          "y": 240.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "64": {
+          "y": 280.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "34": {
+          "y": 200.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "44": {
+          "y": 200.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "16": {
+          "y": 160.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "26": {
+          "y": 160.0,
+          "x": 480.0,
+          "collision": 2,
+          "inside": true
+        },
+        "36": {
+          "y": 200.0,
+          "x": 280.0,
+          "collision": 3,
+          "inside": true
+        },
+        "46": {
+          "y": 240.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "56": {
+          "y": 240.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "20": {
+          "y": 160.0,
+          "x": 240.0,
+          "collision": 3,
+          "inside": true
+        },
+        "30": {
+          "y": 200.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "10": {
+          "y": 120.0,
+          "x": 440.0,
+          "collision": 4,
+          "inside": false
+        },
+        "77": {
+          "y": 320.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "67": {
+          "y": 280.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "97": {
+          "y": 360.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "87": {
+          "y": 320.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "5": {
+          "y": 120.0,
+          "x": 240.0,
+          "collision": 4,
+          "inside": false
+        },
+        "4": {
+          "y": 120.0,
+          "x": 200.0,
+          "collision": 4,
+          "inside": false
+        },
+        "3": {
+          "y": 120.0,
+          "x": 160.0,
+          "collision": 4,
+          "inside": false
+        },
+        "2": {
+          "y": 120.0,
+          "x": 120.0,
+          "collision": 4,
+          "inside": false
+        },
+        "17": {
+          "y": 160.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "134": {
+          "y": 440.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "37": {
+          "y": 200.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "27": {
+          "y": 160.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "57": {
+          "y": 240.0,
+          "x": 520.0,
+          "collision": 2,
+          "inside": true
+        },
+        "47": {
+          "y": 240.0,
+          "x": 120.0,
+          "collision": 2,
+          "inside": true
+        },
+        "122": {
+          "y": 440.0,
+          "x": 120.0,
+          "collision": 4,
+          "inside": false
+        },
+        "125": {
+          "y": 440.0,
+          "x": 240.0,
+          "collision": 4,
+          "inside": false
+        },
+        "101": {
+          "y": 360.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "88": {
+          "y": 320.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "98": {
+          "y": 360.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "68": {
+          "y": 280.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "78": {
+          "y": 320.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "120": {
+          "y": 440.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "18": {
+          "y": 160.0,
+          "x": 160.0,
+          "collision": 2,
+          "inside": true
+        },
+        "117": {
+          "y": 400.0,
+          "x": 520.0,
+          "collision": 3,
+          "inside": true
+        },
+        "48": {
+          "y": 240.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "58": {
+          "y": 240.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "28": {
+          "y": 160.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "38": {
+          "y": 200.0,
+          "x": 360.0,
+          "collision": 3,
+          "inside": true
+        },
+        "108": {
+          "y": 400.0,
+          "x": 160.0,
+          "collision": 3,
+          "inside": true
+        },
+        "115": {
+          "y": 400.0,
+          "x": 440.0,
+          "collision": 3,
+          "inside": true
+        },
+        "12": {
+          "y": 120.0,
+          "x": 520.0,
+          "collision": 4,
+          "inside": false
+        },
+        "22": {
+          "y": 160.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "131": {
+          "y": 440.0,
+          "x": 480.0,
+          "collision": 4,
+          "inside": false
+        },
+        "99": {
+          "y": 360.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "89": {
+          "y": 320.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "51": {
+          "y": 240.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "69": {
+          "y": 280.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "110": {
+          "y": 400.0,
+          "x": 240.0,
+          "collision": 3,
+          "inside": true
+        },
+        "91": {
+          "y": 360.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "81": {
+          "y": 320.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "19": {
+          "y": 160.0,
+          "x": 200.0,
+          "collision": 3,
+          "inside": true
+        },
+        "59": {
+          "y": 240.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "49": {
+          "y": 240.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "39": {
+          "y": 200.0,
+          "x": 400.0,
+          "collision": 2,
+          "inside": true
+        },
+        "29": {
+          "y": 160.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "102": {
+          "y": 360.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "9": {
+          "y": 120.0,
+          "x": 400.0,
+          "collision": 4,
+          "inside": false
+        },
+        "8": {
+          "y": 120.0,
+          "x": 360.0,
+          "collision": 4,
+          "inside": false
+        },
+        "7": {
+          "y": 120.0,
+          "x": 320.0,
+          "collision": 4,
+          "inside": false
+        },
+        "6": {
+          "y": 120.0,
+          "x": 280.0,
+          "collision": 4,
+          "inside": false
+        },
+        "31": {
+          "y": 200.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "21": {
+          "y": 160.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "11": {
+          "y": 120.0,
+          "x": 480.0,
+          "collision": 4,
+          "inside": false
+        },
+        "60": {
+          "y": 280.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "70": {
+          "y": 280.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "40": {
+          "y": 200.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "50": {
+          "y": 240.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "100": {
+          "y": 360.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "80": {
+          "y": 320.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "90": {
+          "y": 360.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "128": {
+          "y": 440.0,
+          "x": 360.0,
+          "collision": 4,
+          "inside": false
+        },
+        "14": {
+          "y": 120.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "24": {
+          "y": 160.0,
+          "x": 400.0,
+          "collision": 3,
+          "inside": true
+        },
+        "83": {
+          "y": 320.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "73": {
+          "y": 280.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "93": {
+          "y": 360.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "43": {
+          "y": 200.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "33": {
+          "y": 200.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "63": {
+          "y": 280.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "53": {
+          "y": 240.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "103": {
+          "y": 360.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "133": {
+          "y": 440.0,
+          "x": 560.0,
+          "collision": 4,
+          "inside": false
+        },
+        "132": {
+          "y": 440.0,
+          "x": 520.0,
+          "collision": 4,
+          "inside": false
+        },
+        "130": {
+          "y": 440.0,
+          "x": 440.0,
+          "collision": 4,
+          "inside": false
+        },
+        "118": {
+          "y": 400.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "127": {
+          "y": 440.0,
+          "x": 320.0,
+          "collision": 4,
+          "inside": false
+        },
+        "126": {
+          "y": 440.0,
+          "x": 280.0,
+          "collision": 4,
+          "inside": false
+        },
+        "74": {
+          "y": 280.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "124": {
+          "y": 440.0,
+          "x": 200.0,
+          "collision": 4,
+          "inside": false
+        },
+        "114": {
+          "y": 400.0,
+          "x": 400.0,
+          "collision": 3,
+          "inside": true
+        },
+        "79": {
+          "y": 320.0,
+          "x": 200.0,
+          "collision": 2,
+          "inside": true
+        },
+        "121": {
+          "y": 440.0,
+          "x": 80.0,
+          "collision": 4,
+          "inside": false
+        },
+        "119": {
+          "y": 400.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "23": {
+          "y": 160.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "13": {
+          "y": 120.0,
+          "x": 560.0,
+          "collision": 4,
+          "inside": false
+        },
+        "71": {
+          "y": 280.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "61": {
+          "y": 280.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "41": {
+          "y": 200.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "116": {
+          "y": 400.0,
+          "x": 480.0,
+          "collision": 3,
+          "inside": true
+        },
+        "72": {
+          "y": 280.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "82": {
+          "y": 320.0,
+          "x": 320.0,
+          "collision": 3,
+          "inside": true
+        },
+        "92": {
+          "y": 360.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "113": {
+          "y": 400.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "32": {
+          "y": 200.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "42": {
+          "y": 200.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "52": {
+          "y": 240.0,
+          "x": 320.0,
+          "collision": 2,
+          "inside": true
+        },
+        "62": {
+          "y": 280.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "111": {
+          "y": 400.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "109": {
+          "y": 400.0,
+          "x": 200.0,
+          "collision": 3,
+          "inside": true
+        },
+        "106": {
+          "y": 400.0,
+          "x": 80.0,
+          "collision": 3,
+          "inside": true
+        },
+        "104": {
+          "y": 360.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "66": {
+          "y": 280.0,
+          "x": 280.0,
+          "collision": 2,
+          "inside": true
+        },
+        "96": {
+          "y": 360.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "1": {
+          "y": 120.0,
+          "x": 80.0,
+          "collision": 4,
+          "inside": false
+        },
+        "0": {
+          "y": 120.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        }
+      },
+      "doors": {
+        "2": {
+          "y": 280.0,
+          "target_room": 86,
+          "is_locked": false,
+          "is_open": false,
+          "x": 600.0,
+          "target_room_type": 1
+        },
+        "0": {
+          "y": 280.0,
+          "target_room": 84,
+          "is_locked": false,
+          "is_open": false,
+          "x": 40.0,
+          "target_room_type": 1
+        }
+      },
+      "height": 9,
+      "width": 15,
+      "grid_size": 135
+    }
+  },
+  {
+    "inventory": {
+      "pill_0": 0,
+      "coins": 0,
+      "card_0": 0,
+      "trinket_0": 0,
+      "keys": 0,
+      "active_items": {
+        "0": {
+          "item": 105,
+          "battery_charge": 0,
+          "max_charge": 6,
+          "charge": 6
+        }
+      },
+      "collectible_count": 1,
+      "trinket_1": 0,
+      "bombs": 1,
+      "collectibles": {
+        "105": 1,
+        "733": 1065353216
+      }
+    },
+    "paused": false,
+    "applied_frame": 123,
+    "player": {
+      "fire_dir": -1,
+      "aim_dir": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "collision_radius": 10.0,
+      "head_dir": 3,
+      "pos": {
+        "y": 292.92877197266,
+        "x": 67.07120513916
+      },
+      "vel": {
+        "y": -0.028692215681076,
+        "x": 0.028692215681076
+      },
+      "dead": false,
+      "move_dir": -1
+    },
+    "run_id": "2376704790:34745081",
+    "schema_version": 1,
+    "enemies": [],
+    "frame": 124,
+    "mode": "FORCE_AI",
+    "seed": "SKDP 343R",
+    "applied_action_id": 109,
+    "health": {
+      "rotten_hearts": 0,
+      "black_hearts": 0,
+      "bone_hearts": 0,
+      "red_hearts": 4,
+      "extra_lives": 0,
+      "broken_hearts": 0,
+      "max_hearts": 6,
+      "eternal_hearts": 0,
+      "soul_hearts": 0,
+      "golden_hearts": 0
+    },
+    "room": {
+      "grid_height": 9,
+      "is_first_visit": true,
+      "room_type": 1,
+      "enemy_count": 0,
+      "room_shape": 1,
+      "has_boss": false,
+      "bottom_right": {
+        "y": 420.0,
+        "x": 580.0
+      },
+      "is_starting_room": false,
+      "room_variant": 779,
+      "room_idx": 85,
+      "is_clear": false,
+      "stage": 1,
+      "grid_width": 15,
+      "stage_type": 2,
+      "difficulty": 0,
+      "top_left": {
+        "y": 140.0,
+        "x": 60.0
+      }
+    },
+    "recent_deaths": [],
+    "hazards": [
+      {
+        "is_shooting": false,
+        "is_extinguished": false,
+        "collision_radius": 13.0,
+        "id": 3,
+        "variant": 0,
+        "distance": 504.42349243164,
+        "sprite_scale": 1.0,
+        "state": 8,
+        "hp": 5.0,
+        "max_hp": 5.0,
+        "pos": {
+          "y": 400.0,
+          "x": 560.0
+        },
+        "fireplace_type": "NORMAL",
+        "type": "FIREPLACE",
+        "sub_variant": 1
+      }
+    ],
+    "room_visit_id": "2376704790:34745081:2",
+    "bombs": [],
+    "movement_inheritance": {
+      "-1.0,0.0": {
+        "y": 0.5727573633194,
+        "x": -0.5727573633194
+      },
+      "1.0,0.0": {
+        "y": 0.5727573633194,
+        "x": 0.0
+      },
+      "0.0,1.0": {
+        "y": 0.5727573633194,
+        "x": -0.5727573633194
+      },
+      "0.0,-1.0": {
+        "y": 0.0,
+        "x": -0.5727573633194
+      }
+    },
+    "projectiles": {
+      "enemy_projectiles": [],
+      "player_tears": [],
+      "friendly_tears": [],
+      "lasers": []
+    },
+    "stats": {
+      "can_fly": false,
+      "player_type": 0,
+      "shot_speed": 1.0,
+      "sprite_scale": 1.0,
+      "tear_range": 260.0,
+      "tear_falling_speed": -0.18337345123291,
+      "damage": 3.5,
+      "range": 260.0,
+      "max_fire_delay": 10.0,
+      "size": 10.0,
+      "tear_height": -23.75,
+      "tears": 10.0,
+      "luck": 0.0,
+      "speed": 1.0,
+      "weapon_type": 1
+    },
+    "layout": {
+      "grid": {
+        "108": {
+          "grid_index": 108,
+          "x": 160.0,
+          "collision": 0,
+          "y": 400.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1001
+        },
+        "115": {
+          "grid_index": 115,
+          "x": 440.0,
+          "collision": 0,
+          "y": 400.0,
+          "state": 2,
+          "type": 2,
+          "variant": 2
+        },
+        "12": {
+          "grid_index": 12,
+          "x": 520.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "22": {
+          "grid_index": 22,
+          "x": 320.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 0,
+          "type": 20,
+          "variant": 0
+        },
+        "129": {
+          "grid_index": 129,
+          "x": 400.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "131": {
+          "grid_index": 131,
+          "x": 480.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "114": {
+          "grid_index": 114,
+          "x": 400.0,
+          "collision": 0,
+          "y": 400.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1000
+        },
+        "89": {
+          "grid_index": 89,
+          "x": 600.0,
+          "collision": 4,
+          "y": 320.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "85": {
+          "grid_index": 85,
+          "x": 440.0,
+          "collision": 0,
+          "y": 320.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "75": {
+          "grid_index": 75,
+          "x": 40.0,
+          "collision": 4,
+          "y": 320.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "110": {
+          "grid_index": 110,
+          "x": 240.0,
+          "collision": 0,
+          "y": 400.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1
+        },
+        "45": {
+          "grid_index": 45,
+          "x": 40.0,
+          "collision": 4,
+          "y": 240.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "35": {
+          "grid_index": 35,
+          "x": 240.0,
+          "collision": 0,
+          "y": 200.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "19": {
+          "grid_index": 19,
+          "x": 200.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1
+        },
+        "123": {
+          "grid_index": 123,
+          "x": 160.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "107": {
+          "grid_index": 107,
+          "x": 120.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 0
+        },
+        "59": {
+          "grid_index": 59,
+          "x": 600.0,
+          "collision": 4,
+          "y": 240.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "39": {
+          "grid_index": 39,
+          "x": 400.0,
+          "collision": 0,
+          "y": 200.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "29": {
+          "grid_index": 29,
+          "x": 600.0,
+          "collision": 4,
+          "y": 160.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "102": {
+          "grid_index": 102,
+          "x": 520.0,
+          "collision": 0,
+          "y": 360.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "9": {
+          "grid_index": 9,
+          "x": 400.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "8": {
+          "grid_index": 8,
+          "x": 360.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "7": {
+          "grid_index": 7,
+          "x": 320.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "6": {
+          "grid_index": 6,
+          "x": 280.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "11": {
+          "grid_index": 11,
+          "x": 480.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "60": {
+          "grid_index": 60,
+          "x": 40.0,
+          "collision": 5,
+          "y": 280.0,
+          "state": 2,
+          "type": 16,
+          "variant": 8
+        },
+        "74": {
+          "grid_index": 74,
+          "x": 600.0,
+          "collision": 5,
+          "y": 280.0,
+          "state": 2,
+          "type": 16,
+          "variant": 8
+        },
+        "50": {
+          "grid_index": 50,
+          "x": 240.0,
+          "collision": 0,
+          "y": 240.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "54": {
+          "grid_index": 54,
+          "x": 400.0,
+          "collision": 0,
+          "y": 240.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "44": {
+          "grid_index": 44,
+          "x": 600.0,
+          "collision": 4,
+          "y": 200.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "26": {
+          "grid_index": 26,
+          "x": 480.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "36": {
+          "grid_index": 36,
+          "x": 280.0,
+          "collision": 0,
+          "y": 200.0,
+          "state": 2,
+          "type": 2,
+          "variant": 0
+        },
+        "128": {
+          "grid_index": 128,
+          "x": 360.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "14": {
+          "grid_index": 14,
+          "x": 600.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "109": {
+          "grid_index": 109,
+          "x": 200.0,
+          "collision": 0,
+          "y": 400.0,
+          "state": 2,
+          "type": 2,
+          "variant": 2
+        },
+        "20": {
+          "grid_index": 20,
+          "x": 240.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1
+        },
+        "30": {
+          "grid_index": 30,
+          "x": 40.0,
+          "collision": 4,
+          "y": 200.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "10": {
+          "grid_index": 10,
+          "x": 440.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "1": {
+          "grid_index": 1,
+          "x": 80.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "0": {
+          "grid_index": 0,
+          "x": 40.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "106": {
+          "grid_index": 106,
+          "x": 80.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 0
+        },
+        "5": {
+          "grid_index": 5,
+          "x": 240.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "4": {
+          "grid_index": 4,
+          "x": 200.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "3": {
+          "grid_index": 3,
+          "x": 160.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "2": {
+          "grid_index": 2,
+          "x": 120.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "134": {
+          "grid_index": 134,
+          "x": 600.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "27": {
+          "grid_index": 27,
+          "x": 520.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "57": {
+          "grid_index": 57,
+          "x": 520.0,
+          "collision": 0,
+          "y": 240.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "47": {
+          "grid_index": 47,
+          "x": 120.0,
+          "collision": 0,
+          "y": 240.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "122": {
+          "grid_index": 122,
+          "x": 120.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "105": {
+          "grid_index": 105,
+          "x": 40.0,
+          "collision": 4,
+          "y": 400.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "132": {
+          "grid_index": 132,
+          "x": 520.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "125": {
+          "grid_index": 125,
+          "x": 240.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "130": {
+          "grid_index": 130,
+          "x": 440.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "127": {
+          "grid_index": 127,
+          "x": 320.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "13": {
+          "grid_index": 13,
+          "x": 560.0,
+          "collision": 4,
+          "y": 120.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "126": {
+          "grid_index": 126,
+          "x": 280.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "124": {
+          "grid_index": 124,
+          "x": 200.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "104": {
+          "grid_index": 104,
+          "x": 600.0,
+          "collision": 4,
+          "y": 360.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "121": {
+          "grid_index": 121,
+          "x": 80.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "133": {
+          "grid_index": 133,
+          "x": 560.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "82": {
+          "grid_index": 82,
+          "x": 320.0,
+          "collision": 0,
+          "y": 320.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1
+        },
+        "119": {
+          "grid_index": 119,
+          "x": 600.0,
+          "collision": 4,
+          "y": 400.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "116": {
+          "grid_index": 116,
+          "x": 480.0,
+          "collision": 0,
+          "y": 400.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1000
+        },
+        "24": {
+          "grid_index": 24,
+          "x": 400.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1
+        },
+        "79": {
+          "grid_index": 79,
+          "x": 200.0,
+          "collision": 0,
+          "y": 320.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "52": {
+          "grid_index": 52,
+          "x": 320.0,
+          "collision": 0,
+          "y": 240.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "120": {
+          "grid_index": 120,
+          "x": 40.0,
+          "collision": 4,
+          "y": 440.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "95": {
+          "grid_index": 95,
+          "x": 240.0,
+          "collision": 0,
+          "y": 360.0,
+          "state": 0,
+          "type": 1,
+          "variant": 0
+        },
+        "18": {
+          "grid_index": 18,
+          "x": 160.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "117": {
+          "grid_index": 117,
+          "x": 520.0,
+          "collision": 3,
+          "y": 400.0,
+          "state": 1,
+          "type": 2,
+          "variant": 2
+        },
+        "90": {
+          "grid_index": 90,
+          "x": 40.0,
+          "collision": 4,
+          "y": 360.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "25": {
+          "grid_index": 25,
+          "x": 440.0,
+          "collision": 0,
+          "y": 160.0,
+          "state": 2,
+          "type": 2,
+          "variant": 1
+        },
+        "15": {
+          "grid_index": 15,
+          "x": 40.0,
+          "collision": 4,
+          "y": 160.0,
+          "state": 0,
+          "type": 15,
+          "variant": 0
+        },
+        "66": {
+          "grid_index": 66,
+          "x": 280.0,
+          "collision": 0,
+          "y": 280.0,
+          "state": 4,
+          "type": 12,
+          "variant": 0
+        },
+        "38": {
+          "grid_index": 38,
+          "x": 360.0,
+          "collision": 0,
+          "y": 200.0,
+          "state": 2,
+          "type": 2,
+          "variant": 0
+        }
+      },
+      "cells": {
+        "112": {
+          "y": 400.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "129": {
+          "y": 440.0,
+          "x": 400.0,
+          "collision": 4,
+          "inside": false
+        },
+        "95": {
+          "y": 360.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "85": {
+          "y": 320.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "75": {
+          "y": 320.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "65": {
+          "y": 280.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "55": {
+          "y": 240.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "45": {
+          "y": 240.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "35": {
+          "y": 200.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "123": {
+          "y": 440.0,
+          "x": 160.0,
+          "collision": 4,
+          "inside": false
+        },
+        "107": {
+          "y": 400.0,
+          "x": 120.0,
+          "collision": 3,
+          "inside": true
+        },
+        "25": {
+          "y": 160.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "15": {
+          "y": 160.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "105": {
+          "y": 400.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "94": {
+          "y": 360.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "76": {
+          "y": 320.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "86": {
+          "y": 320.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "84": {
+          "y": 320.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "54": {
+          "y": 240.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "64": {
+          "y": 280.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "34": {
+          "y": 200.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "44": {
+          "y": 200.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "16": {
+          "y": 160.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "26": {
+          "y": 160.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "36": {
+          "y": 200.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "46": {
+          "y": 240.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "56": {
+          "y": 240.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "20": {
+          "y": 160.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "30": {
+          "y": 200.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "10": {
+          "y": 120.0,
+          "x": 440.0,
+          "collision": 4,
+          "inside": false
+        },
+        "77": {
+          "y": 320.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "67": {
+          "y": 280.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "97": {
+          "y": 360.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "87": {
+          "y": 320.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "5": {
+          "y": 120.0,
+          "x": 240.0,
+          "collision": 4,
+          "inside": false
+        },
+        "4": {
+          "y": 120.0,
+          "x": 200.0,
+          "collision": 4,
+          "inside": false
+        },
+        "3": {
+          "y": 120.0,
+          "x": 160.0,
+          "collision": 4,
+          "inside": false
+        },
+        "2": {
+          "y": 120.0,
+          "x": 120.0,
+          "collision": 4,
+          "inside": false
+        },
+        "17": {
+          "y": 160.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "134": {
+          "y": 440.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "37": {
+          "y": 200.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "27": {
+          "y": 160.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "57": {
+          "y": 240.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "47": {
+          "y": 240.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "122": {
+          "y": 440.0,
+          "x": 120.0,
+          "collision": 4,
+          "inside": false
+        },
+        "125": {
+          "y": 440.0,
+          "x": 240.0,
+          "collision": 4,
+          "inside": false
+        },
+        "101": {
+          "y": 360.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "88": {
+          "y": 320.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "98": {
+          "y": 360.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "68": {
+          "y": 280.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "78": {
+          "y": 320.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "120": {
+          "y": 440.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "18": {
+          "y": 160.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "117": {
+          "y": 400.0,
+          "x": 520.0,
+          "collision": 3,
+          "inside": true
+        },
+        "48": {
+          "y": 240.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "58": {
+          "y": 240.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "28": {
+          "y": 160.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "38": {
+          "y": 200.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "108": {
+          "y": 400.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "115": {
+          "y": 400.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "12": {
+          "y": 120.0,
+          "x": 520.0,
+          "collision": 4,
+          "inside": false
+        },
+        "22": {
+          "y": 160.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "131": {
+          "y": 440.0,
+          "x": 480.0,
+          "collision": 4,
+          "inside": false
+        },
+        "99": {
+          "y": 360.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "89": {
+          "y": 320.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "51": {
+          "y": 240.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "69": {
+          "y": 280.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "110": {
+          "y": 400.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "91": {
+          "y": 360.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "81": {
+          "y": 320.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "19": {
+          "y": 160.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "59": {
+          "y": 240.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "49": {
+          "y": 240.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "39": {
+          "y": 200.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "29": {
+          "y": 160.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "102": {
+          "y": 360.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "9": {
+          "y": 120.0,
+          "x": 400.0,
+          "collision": 4,
+          "inside": false
+        },
+        "8": {
+          "y": 120.0,
+          "x": 360.0,
+          "collision": 4,
+          "inside": false
+        },
+        "7": {
+          "y": 120.0,
+          "x": 320.0,
+          "collision": 4,
+          "inside": false
+        },
+        "6": {
+          "y": 120.0,
+          "x": 280.0,
+          "collision": 4,
+          "inside": false
+        },
+        "31": {
+          "y": 200.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "21": {
+          "y": 160.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "11": {
+          "y": 120.0,
+          "x": 480.0,
+          "collision": 4,
+          "inside": false
+        },
+        "60": {
+          "y": 280.0,
+          "x": 40.0,
+          "collision": 5,
+          "inside": false
+        },
+        "70": {
+          "y": 280.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "40": {
+          "y": 200.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "50": {
+          "y": 240.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "100": {
+          "y": 360.0,
+          "x": 440.0,
+          "collision": 0,
+          "inside": true
+        },
+        "80": {
+          "y": 320.0,
+          "x": 240.0,
+          "collision": 0,
+          "inside": true
+        },
+        "90": {
+          "y": 360.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        },
+        "128": {
+          "y": 440.0,
+          "x": 360.0,
+          "collision": 4,
+          "inside": false
+        },
+        "14": {
+          "y": 120.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "24": {
+          "y": 160.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "83": {
+          "y": 320.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "73": {
+          "y": 280.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "93": {
+          "y": 360.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "43": {
+          "y": 200.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "33": {
+          "y": 200.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "63": {
+          "y": 280.0,
+          "x": 160.0,
+          "collision": 0,
+          "inside": true
+        },
+        "53": {
+          "y": 240.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "103": {
+          "y": 360.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "133": {
+          "y": 440.0,
+          "x": 560.0,
+          "collision": 4,
+          "inside": false
+        },
+        "132": {
+          "y": 440.0,
+          "x": 520.0,
+          "collision": 4,
+          "inside": false
+        },
+        "130": {
+          "y": 440.0,
+          "x": 440.0,
+          "collision": 4,
+          "inside": false
+        },
+        "118": {
+          "y": 400.0,
+          "x": 560.0,
+          "collision": 0,
+          "inside": true
+        },
+        "127": {
+          "y": 440.0,
+          "x": 320.0,
+          "collision": 4,
+          "inside": false
+        },
+        "126": {
+          "y": 440.0,
+          "x": 280.0,
+          "collision": 4,
+          "inside": false
+        },
+        "74": {
+          "y": 280.0,
+          "x": 600.0,
+          "collision": 5,
+          "inside": false
+        },
+        "124": {
+          "y": 440.0,
+          "x": 200.0,
+          "collision": 4,
+          "inside": false
+        },
+        "114": {
+          "y": 400.0,
+          "x": 400.0,
+          "collision": 0,
+          "inside": true
+        },
+        "79": {
+          "y": 320.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "121": {
+          "y": 440.0,
+          "x": 80.0,
+          "collision": 4,
+          "inside": false
+        },
+        "119": {
+          "y": 400.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "23": {
+          "y": 160.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "13": {
+          "y": 120.0,
+          "x": 560.0,
+          "collision": 4,
+          "inside": false
+        },
+        "71": {
+          "y": 280.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "61": {
+          "y": 280.0,
+          "x": 80.0,
+          "collision": 0,
+          "inside": true
+        },
+        "41": {
+          "y": 200.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "116": {
+          "y": 400.0,
+          "x": 480.0,
+          "collision": 0,
+          "inside": true
+        },
+        "72": {
+          "y": 280.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "82": {
+          "y": 320.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "92": {
+          "y": 360.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "113": {
+          "y": 400.0,
+          "x": 360.0,
+          "collision": 0,
+          "inside": true
+        },
+        "32": {
+          "y": 200.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "42": {
+          "y": 200.0,
+          "x": 520.0,
+          "collision": 0,
+          "inside": true
+        },
+        "52": {
+          "y": 240.0,
+          "x": 320.0,
+          "collision": 0,
+          "inside": true
+        },
+        "62": {
+          "y": 280.0,
+          "x": 120.0,
+          "collision": 0,
+          "inside": true
+        },
+        "111": {
+          "y": 400.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "109": {
+          "y": 400.0,
+          "x": 200.0,
+          "collision": 0,
+          "inside": true
+        },
+        "106": {
+          "y": 400.0,
+          "x": 80.0,
+          "collision": 3,
+          "inside": true
+        },
+        "104": {
+          "y": 360.0,
+          "x": 600.0,
+          "collision": 4,
+          "inside": false
+        },
+        "66": {
+          "y": 280.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "96": {
+          "y": 360.0,
+          "x": 280.0,
+          "collision": 0,
+          "inside": true
+        },
+        "1": {
+          "y": 120.0,
+          "x": 80.0,
+          "collision": 4,
+          "inside": false
+        },
+        "0": {
+          "y": 120.0,
+          "x": 40.0,
+          "collision": 4,
+          "inside": false
+        }
+      },
+      "doors": {
+        "2": {
+          "y": 280.0,
+          "target_room": 86,
+          "is_locked": false,
+          "is_open": true,
+          "x": 600.0,
+          "target_room_type": 1
+        },
+        "0": {
+          "y": 280.0,
+          "target_room": 84,
+          "is_locked": false,
+          "is_open": true,
+          "x": 40.0,
+          "target_room_type": 1
+        }
+      },
+      "height": 9,
+      "width": 15,
+      "grid_size": 135
+    }
+  }
+]

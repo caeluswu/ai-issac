@@ -27,7 +27,8 @@ def assess(directory, role, holdout=False):
             issues.extend(f"{row['index']}:{issue}" for issue in audit["issues"])
         else: issues.append(f"{row['index']}:MISSING_RAW_EVIDENCE")
         if row.get("seed") != seeds["seeds"][row["index"]-1]: issues.append(f"{row['index']}:SEED_MISMATCH")
-        if row["result"] in ("STALL_UNRECOVERED", "COMBAT_TIMEOUT", "PROCESS_TIMEOUT"): issues.append(f"{row['index']}:FORBIDDEN_STALL_OR_TIMEOUT")
+        if any(word in (row["result"]+" "+(row.get("error") or "")) for word in ("STALL", "TIMEOUT")):
+            issues.append(f"{row['index']}:FORBIDDEN_STALL_OR_TIMEOUT")
         if role == "llm" and row["success"] and not row["llm_configured"]: issues.append(f"{row['index']}:NO_LLM_CONFIGURATION")
     wins = sum(r["success"] and r.get("exit_code") == 0 for r in reports)
     if len(hashes) != 1: issues.append("MIXED_IMPLEMENTATIONS")

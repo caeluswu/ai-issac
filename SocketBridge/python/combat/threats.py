@@ -149,9 +149,29 @@ class ThreatField:
             self.threats.append(ThreatForecast("bullet:"+str(p.get("instance_id", i)),
                 p["pos"]["x"], p["pos"]["y"], p["vel"]["x"], p["vel"]["y"], p["collision_radius"], uncertainty=5))
         for b in s.bombs:
+            known = b.get("timer_known", False)
             self.threats.append(ThreatForecast("bomb:"+str(b.get("id", 0)), b["pos"]["x"], b["pos"]["y"],
                 b.get("vel", {}).get("x", 0), b.get("vel", {}).get("y", 0), b["explosion_radius"],
-                start=max(0, b["timer"]-3), end=max(0, b["timer"])+6, uncertainty=4))
+                start=max(0, b["timer"]-3) if known else 0, end=max(0, b["timer"])+6 if known else 45,
+                uncertainty=4, source="known_fuse" if known else "unknown_fuse_full_horizon"))
+        # A live explosion can propagate through TNT. Idle TNT is a solid
+        # obstacle, not a permanent blast field. Destroyed cells retain a short
+        # transition field assembled from consecutive raw observations.
+        frontier = [(b["pos"]["x"], b["pos"]["y"], b["explosion_radius"]) for b in s.bombs
+                    if not b.get("timer_known", False) or b["timer"] <= 45]
+        residuals = getattr(s, "environment_residuals", [])
+        frontier += [(h["x"], h["y"], 100) for h in residuals]
+        for h in residuals:
+            self.threats.append(ThreatForecast("tnt_residual:"+str(h["id"]), h["x"], h["y"], 0, 0, 100,
+                end=max(0, h["expires_frame"]-s.frame), uncertainty=8, source="observed_tnt_transition"))
+        remaining = {i: c for i, c in (s.layout["grid"] or {}).items() if c["type"] == 12 and c["collision"] != 0}
+        for x, y, radius in frontier:
+            for index, cell in list(remaining.items()):
+                if math.hypot(cell["x"]-x, cell["y"]-y) > radius+20: continue
+                del remaining[index]
+                frontier.append((cell["x"], cell["y"], 100))
+                self.threats.append(ThreatForecast("tnt_chain:"+str(index), cell["x"], cell["y"], 0, 0, 100,
+                    uncertainty=8, source="potential_tnt_chain"))
         for i, laser in enumerate(s.projectiles["lasers"] or []):
             if not laser["is_enemy"]: continue
             angle = math.radians(laser["angle"])

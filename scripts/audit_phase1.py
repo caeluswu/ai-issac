@@ -64,18 +64,18 @@ def audit_run(directory):
         s = snapshot(row)
         if s is None: continue
         if measured: rooms.add(s["room_visit_id"])
-        if measured and s["room_visit_id"] == target:
+        if measured and (s["room_visit_id"] == target or report.get("damage_scope") == "task"):
             hp = s["health"]["red_hearts"]+s["health"]["soul_hearts"]
             if previous:
                 old = previous["health"]["red_hearts"]+previous["health"]["soul_hearts"]
                 loss += max(0, old-hp)
             blockers = [e for e in s["enemies"] if e.get("can_shut_doors", True)
                         and not e["dead"] and not e["friendly"] and e["hp"] > 0]
-            if (not s["paused"] and s["room"]["is_clear"] and s["room"]["enemy_count"] == 0
+            if (s["room_visit_id"] == target and not s["paused"] and s["room"]["is_clear"] and s["room"]["enemy_count"] == 0
                     and not blockers and not s["player"]["dead"] and hp > 0):
                 clears[s["frame"]] = {"frame": s["frame"], "room_visit_id": target,
                     "is_clear": True, "enemy_count": 0, "blocking_hostiles": 0, "hp": hp}
-            elif not s["paused"]:
+            elif s["room_visit_id"] == target and not s["paused"]:
                 clears.clear()
         previous = s
     if report["damage_half_hearts"] != loss: issues.append("DAMAGE_REPORT_MISMATCH")

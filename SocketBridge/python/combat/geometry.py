@@ -12,7 +12,7 @@ def segment_distance(point: Vec, start: Vec, end: Vec) -> float:
 
 
 class GeometryService:
-    def __init__(self, snapshot: WorldSnapshot):
+    def __init__(self, snapshot: WorldSnapshot, allowed_devices=()):
         self.cells = snapshot.layout["cells"]
         self.width = int(snapshot.layout["width"])
         self.fly = snapshot.stats["can_fly"]
@@ -30,7 +30,8 @@ class GeometryService:
         # Spikes, trapdoors and pressure devices are not navigated in phase one.
         grid = snapshot.layout["grid"] or {}
         for i, c in grid.items():
-            if c["type"] in (8, 9, 17, 20, 23, 25): self.dangerous.add(int(i))
+            if c["type"] in (8, 9, 17, 20, 23, 25) and not (c["type"] == 20 and int(i) in allowed_devices):
+                self.dangerous.add(int(i))
         self.walkable -= self.dangerous
         self.neighbors = {i: [j for j in (i-1, i+1, i-self.width, i+self.width)
                               if j in self.walkable and self.positions[i].distance(self.positions[j]) <= 41]
@@ -67,18 +68,41 @@ class GeometryService:
 
     def sweep(self, position, velocity):
         proposed = position+velocity
-        if self.line_clear(position, proposed, radius=self.physical_radius): return proposed, velocity, False, False
+        if self.motion_clear(position, proposed): return proposed, velocity, False, False
         if self.touches_danger(proposed): return position, velocity, True, True
         # Solid terrain blocks movement; it does not inflict collision damage.
         # Resolve axes so the rollout can follow a wall instead of rejecting an
         # otherwise valid escape command at its first blocked update.
         x = Vec(x=proposed.x, y=position.y)
-        if not self.line_clear(position, x, radius=self.physical_radius): x = position
+        if not self.motion_clear(position, x): x = position
         y = Vec(x=x.x, y=proposed.y)
-        if not self.line_clear(x, y, radius=self.physical_radius): y = x
+        if not self.motion_clear(x, y): y = x
         adjusted = Vec(x=velocity.x if y.x != position.x else 0,
                        y=velocity.y if y.y != position.y else 0)
         return y, adjusted, True, False
+
+    def motion_clear(self, start, end):
+        if self.line_clear(start, end, radius=self.physical_radius): return True
+        # Entity.Size is the NPC contact radius, not an exact grid footprint.
+        # Knockback can leave a valid observed position inside our conservative
+        # wall margin. Permit only motion out of existing overlap; never cross
+        # a solid cell or enter a dangerous device to repair a model mismatch.
+        if self.touches_danger(end) or self.cell(start) not in self.walkable: return False
+        r = self.physical_radius
+        offsets = ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
+                   (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707))
+        bad = {n for n, (x, y) in enumerate(offsets) if self.cell_xy(start.x+x, start.y+y) not in self.walkable}
+        if not bad: return False
+        # Compare the distance to a safe cell center for every offending sample.
+        # Tangential sliding is allowed; movement deeper into a wall is not.
+        for n, (x, y) in enumerate(offsets):
+            a, b = Vec(x=start.x+x, y=start.y+y), Vec(x=end.x+x, y=end.y+y)
+            if n not in bad:
+                if not self.line_clear(a, b, radius=0): return False
+            elif self.cell(b) not in self.walkable:
+                nearest = self.positions[self.nearest(a)]
+                if b.distance(nearest) > a.distance(nearest)+1e-6: return False
+        return self.cell(end) in self.walkable
 
     def nearest(self, p):
         if not self.walkable: raise ValueError("No walkable cells")

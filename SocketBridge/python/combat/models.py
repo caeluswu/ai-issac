@@ -99,6 +99,8 @@ class WorldSnapshot(Observed):
     @property
     def hostiles(self): return [e for e in self.enemies if not e.friendly and not e.dead and e.hp > 0]
     @property
+    def blocking_combat(self): return self.room["enemy_count"] > 0 or any(e.can_shut_doors for e in self.hostiles)
+    @property
     def hp(self): return int(self.health["red_hearts"])+int(self.health["soul_hearts"])
     @property
     def snapshot_id(self): return f"{self.room_visit_id}:{self.frame}"
@@ -241,3 +243,7 @@ class RoomReport(Strict):
     safe_clear_ticks: int = 0
     discarded_decisions: int = 0
     contract_override_count: int = 0
+    damage_scope: str = "task"
+    combat_damage_half_hearts: int = 0
+    task_ticks: int = 0
+    environment_ticks: int = 0

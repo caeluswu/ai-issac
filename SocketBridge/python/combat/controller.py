@@ -157,7 +157,7 @@ class JointActionSolver:
         if shot == (0, 0): return 0.
         return self.registry.create(profile.fire).hit_score(s, build, self.registry.create(profile.aim), target, shot, velocity, geometry)
 
-    def solve(self, s, plan, build, movement_only=False):
+    def solve(self, s, plan, build, movement_only=False, navigation_goal=None, allowed_devices=()):
         started = time.perf_counter()
         name, profile = self.select_profile(s, plan, build)
         key = profile.model_dump_json()
@@ -169,15 +169,20 @@ class JointActionSolver:
             begin = getattr(module, "begin_frame", None)
             if begin: begin(s, build)
         target = None if movement_only else self.target(s, profile, build)
-        geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]))
+        geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices))
         if geometry_key != self.geometry_key:
-            self.geometry, self.geometry_key = GeometryService(s), geometry_key
+            self.geometry, self.geometry_key = GeometryService(s, allowed_devices), geometry_key
         g = self.geometry
         if modules["recovery"].reject_goal(s.frame, self.recovery_level, self.last_recovery_route):
             if self.last_route_goal: self.failed_goals.append(self.last_route_goal)
             self.last_recovery_route = s.frame
             self.route_failures += 1
         route = list(modules["position"].route(g, s, target.pos, build, modules["fire"], self.failed_goals).waypoints) if target else []
+        if navigation_goal is not None:
+            route = g.path(s.player.pos, navigation_goal)+[navigation_goal]
+            # The start grid center is an A* bookkeeping node. Requiring a
+            # return to it creates a two-cell oscillation near cell bisectors.
+            if len(route) > 1 and g.line_clear(s.player.pos, route[1], radius=g.physical_radius): route.pop(0)
         weapon_capabilities = getattr(modules["fire"], "capabilities", None)
         if target and not route and weapon_capabilities and weapon_capabilities.break_plain_poop:
             # Normal tears can open an otherwise sealed lane through ordinary
@@ -258,12 +263,15 @@ class JointActionSolver:
                 damage_risk = max(0, -clearance)
                 utility = hit*6+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)-blocked_steps*.02
                 if movement_only: utility = min(100, clearance)/20+escape+max(0, slack)/45-blocked_steps*.05
+                if movement_only and waypoint:
+                    utility += (s.player.pos.distance(waypoint)-closest_waypoint)*.25
                 if not s.hostiles and move != (0, 0): utility -= .08
                 if wall: utility -= 100
                 candidates.append({"move": move, "shoot": shot, "safe": safety.safe,
                                    "clearance": clearance, "wall": wall, "hit": hit, "escape": escape,
                                    "escape_slack": slack, "escape_directions": exit_directions,
                                    "early_risk": max(0, -early_clearance), "first_contact": first_contact, "blocked_steps": blocked_steps,
+                                   "exposure": sum(max(0, -gap) for gap in gaps),
                                    "utility": utility, "risk": damage_risk+(100 if not postkill_safe else 0), "fire_reason": attack.reason,
                                    "attack_target": attack_target.instance_id if attack_target else None,
                                    "wait": attack.wait.__dict__ if attack.wait else None})
@@ -274,7 +282,7 @@ class JointActionSolver:
         # Safety is lexicographic. If every option is unsafe, minimize modelled
         # penetration before considering output; this is not a guarantee of life.
         best = max(candidates, key=lambda c: (c["safe"], not c["wall"], -c["early_risk"], c["escape_directions"] > 0,
-                                             -c["risk"], c["first_contact"], c["utility"]))
+                                             -c["risk"], -c["exposure"], c["first_contact"], c["utility"]))
         self.last_candidates = candidates
         component_failures = [failure for module in modules.values() if (failure := module.pop_failure())]
         self.previous_move = best["move"]

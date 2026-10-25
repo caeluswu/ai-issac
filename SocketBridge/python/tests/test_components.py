@@ -202,7 +202,7 @@ class TestThreats(unittest.TestCase):
 
     def test_bomb_only_dangerous_during_explosion_window(self):
         s = snapshot(); s.enemies = []
-        s.bombs = [{"id": 1, "pos": {"x": 280, "y": 160}, "timer": 30, "explosion_radius": 100}]
+        s.bombs = [{"id": 1, "pos": {"x": 280, "y": 160}, "timer": 30, "timer_known": True, "explosion_radius": 100}]
         field = ThreatField(s)
         self.assertGreater(field.gap((280, 160), (280, 160), 1, 10), 0)
         self.assertLess(field.gap((280, 160), (280, 160), 30, 10), 0)
