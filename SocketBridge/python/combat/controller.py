@@ -14,6 +14,21 @@ MOVES = tuple((x, y) for y in (-1, 0, 1) for x in (-1, 0, 1))
 SHOTS = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
 
 
+def select_joint_action(candidates, uncertainty_px=8):
+    """Safe actions first; permit escape within an uncertain penetration band.
+
+    Predicted overlap is a distance approximation, not damage probability.
+    A tiny difference between two already unsafe paths cannot outweigh an
+    actual withdrawal route. A contact-free near future still takes priority.
+    """
+    feasible = [c for c in candidates if not c["wall"]] or candidates
+    minimum = min(c["early_risk"] for c in feasible)
+    return max(candidates, key=lambda c: (
+        c["safe"], not c["wall"], c["early_risk"] == 0,
+        c["early_risk"] <= minimum+uncertainty_px,
+        c["escape_directions"] > 0, -c["risk"], -c["exposure"], c["first_contact"], c["utility"]))
+
+
 class NormalTearsBuild:
     def __init__(self):
         self.profile = BuildProfile()
@@ -282,8 +297,7 @@ class JointActionSolver:
                                        "utility": utility-hit*6, "risk": damage_risk, "fire_reason": "attack_safety_withdrawal"})
         # Safety is lexicographic. If every option is unsafe, minimize modelled
         # penetration before considering output; this is not a guarantee of life.
-        best = max(candidates, key=lambda c: (c["safe"], not c["wall"], -c["early_risk"], c["escape_directions"] > 0,
-                                             -c["risk"], -c["exposure"], c["first_contact"], c["utility"]))
+        best = select_joint_action(candidates)
         self.last_candidates = candidates
         component_failures = [failure for module in modules.values() if (failure := module.pop_failure())]
         self.previous_move = best["move"]
@@ -298,5 +312,6 @@ class JointActionSolver:
                                "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"],
                                "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),
                                "blocked_steps": best["blocked_steps"],
+                               "near_risk_tolerance_px": 8,
                                "component_failures": component_failures},
                            decision_ms=(time.perf_counter()-started)*1000)

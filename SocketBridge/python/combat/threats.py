@@ -329,6 +329,12 @@ class ThreatField:
                     if slack >= 6:
                         directions.add(branch)
                         best_slack = max(best_slack, slack)
+                        # The normalized route score saturates at two initial
+                        # directions. Once both have validated temporal paths
+                        # (>=6 reserve) and one has >=12 updates, further expansion
+                        # cannot improve the required safety predicate.
+                        if len(directions) >= 2 and best_slack >= 12:
+                            return 1., best_slack, len(directions)
                 queue.append((neighbor, arrival, branch))
         count = len(directions)
         fraction = min(1., count/2)
