@@ -12,6 +12,7 @@ import platform
 import statistics
 import subprocess
 import time
+import importlib.metadata
 from .models import ContextRef, RoomReport, ActionReceipt, Vec
 from .catalog import compile_plan, default_plan
 from .controller import BuildResolver, JointActionSolver
@@ -56,6 +57,7 @@ class RunLog:
                   root/"run-first-room.ps1"])
         files = [p for p in files if p.is_file()]
         value = {"schema_version": 1, "platform": platform.platform(), "python": platform.python_version(),
+                 "dependencies": {name: importlib.metadata.version(name) for name in ("pydantic", "httpx", "numpy")},
                  "model": model, "game_expected": "Repentance 1.7.9b.J835", "normal_inputs_only": True,
                  "source_hashes": {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}}
         try: value["git_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
@@ -277,6 +279,7 @@ class CombatSession:
         self.clear_started = None
         self.clear_safe_since = None
         self.deadline_misses = []
+        self.death_observed = False
         self.plan = None
         self.revision = 0
         self.pending = None
@@ -296,6 +299,7 @@ class CombatSession:
 
     def on_message(self, raw):
         self.log("game_message", message=raw)
+        if self.target_room and raw.get("event") == "PLAYER_DEATH": self.death_observed = True
         request = raw.get("request_id")
         if request in self.rpc_waiters and not self.rpc_waiters[request].done():
             self.rpc_waiters[request].set_result(raw.get("result", {}))
@@ -309,6 +313,7 @@ class CombatSession:
         if s:
             if s.applied_action_id is not None: self.applied.add(s.applied_action_id)
             if s.room_visit_id == self.target_room and not s.paused:
+                if s.player.dead or s.hp <= 0: self.death_observed = True
                 self.judge_result = self.judge.observe(s)
                 self.event_reasons.update(self.judge.events)
                 if self.judge.events: self.log.trigger(s.frame, self.judge.events)
@@ -637,6 +642,7 @@ class CombatSession:
                 except Exception as exc: self.log("cleanup_error", error=str(exc))
             await self.bridge.stop()
         s = self.observation.latest
+        if result == "CLEARED" and self.death_observed: result = "DEAD"
         report = RoomReport(result=result, success=result == "CLEARED" and self.transitions > 0,
             llm_configured=self.llm_configured, completed_door_transition=self.transitions > 0,
             damage_half_hearts=self.judge.damage, lost_bone_hearts=self.judge.bones_lost,

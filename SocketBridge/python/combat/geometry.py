@@ -17,6 +17,7 @@ class GeometryService:
         self.width = int(snapshot.layout["width"])
         self.fly = snapshot.stats["can_fly"]
         self.radius = snapshot.player.collision_radius+2
+        self.physical_radius = snapshot.player.collision_radius
         self.origin = Vec(x=min(c["x"] for c in self.cells.values()), y=min(c["y"] for c in self.cells.values()))
         self.positions = {int(i): Vec(x=c["x"], y=c["y"]) for i, c in self.cells.items()}
         self.walkable, self.shootable = set(), set()
@@ -29,7 +30,7 @@ class GeometryService:
         # Spikes, trapdoors and pressure devices are not navigated in phase one.
         grid = snapshot.layout["grid"] or {}
         for i, c in grid.items():
-            if c["type"] in (8, 9, 17, 20, 23): self.dangerous.add(int(i))
+            if c["type"] in (8, 9, 17, 20, 23, 25): self.dangerous.add(int(i))
         self.walkable -= self.dangerous
         self.neighbors = {i: [j for j in (i-1, i+1, i-self.width, i+self.width)
                               if j in self.walkable and self.positions[i].distance(self.positions[j]) <= 41]
@@ -48,15 +49,36 @@ class GeometryService:
                    for dx, dy in ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
                                   (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707)))
 
-    def line_clear(self, a, b, *, shot=False):
+    def line_clear(self, a, b, *, shot=False, radius=None):
         n = max(1, math.ceil(a.distance(b)/8))
         allowed = self.shootable if shot else self.walkable
-        r = 0 if shot else self.radius
+        r = 0 if shot else self.radius if radius is None else radius
         offsets = ((0, 0),) if shot else ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
                                         (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707))
         dx, dy = b.x-a.x, b.y-a.y
         return all(self.cell_xy(a.x+dx*i/n+ox, a.y+dy*i/n+oy) in allowed
                    for i in range(n+1) for ox, oy in offsets)
+
+    def touches_danger(self, point):
+        r = self.radius
+        return any(self.cell_xy(point.x+dx, point.y+dy) in self.dangerous
+                   for dx, dy in ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
+                                  (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707)))
+
+    def sweep(self, position, velocity):
+        proposed = position+velocity
+        if self.line_clear(position, proposed, radius=self.physical_radius): return proposed, velocity, False, False
+        if self.touches_danger(proposed): return position, velocity, True, True
+        # Solid terrain blocks movement; it does not inflict collision damage.
+        # Resolve axes so the rollout can follow a wall instead of rejecting an
+        # otherwise valid escape command at its first blocked update.
+        x = Vec(x=proposed.x, y=position.y)
+        if not self.line_clear(position, x, radius=self.physical_radius): x = position
+        y = Vec(x=x.x, y=proposed.y)
+        if not self.line_clear(x, y, radius=self.physical_radius): y = x
+        adjusted = Vec(x=velocity.x if y.x != position.x else 0,
+                       y=velocity.y if y.y != position.y else 0)
+        return y, adjusted, True, False
 
     def nearest(self, p):
         if not self.walkable: raise ValueError("No walkable cells")

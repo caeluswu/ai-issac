@@ -2,6 +2,7 @@
 from collections import defaultdict, deque
 from dataclasses import dataclass
 import math
+import numpy as np
 from .models import Vec
 
 
@@ -168,29 +169,91 @@ class ThreatField:
                 self.threats.append(ThreatForecast("death:"+death["instance_id"], death["pos"]["x"], death["pos"]["y"],
                     0, 0, radius, end=6-(s.frame-death["frame"]), source="confirmed_death_approximate_radius"))
         self.buckets = defaultdict(set)
+        self.dynamic = []
+        self.static = []
+        self.indexed_bins = set()
+        self.dense = len(self.threats) >= 128
+        self.segments = [t for t in self.threats if t.segment_end]
+        circles = [(t.x, t.y, t.vx, t.vy, t.radius+t.uncertainty, t.start, t.end) for t in self.threats if not t.segment_end]
+        self.circle_data = np.asarray(circles, dtype=float).reshape(-1, 7) if self.dense else None
+        if self.circle_data is not None: self.circle_data.setflags(write=False)
+        self.static_ready = not self.dense
         for i, t in enumerate(self.threats):
-            bins = range(8) if t.vx or t.vy else (-1,)
-            for step in bins:
-                begin, end = (max(0, step*6-1), min(45, (step+1)*6)) if step >= 0 else (0, 0)
-                xs, ys = [t.x+t.vx*begin, t.x+t.vx*end], [t.y+t.vy*begin, t.y+t.vy*end]
-                if t.segment_end: xs.append(t.segment_end[0]); ys.append(t.segment_end[1])
-                r = t.radius+t.uncertainty
-                for x in range(math.floor((min(xs)-r)/64), math.floor((max(xs)+r)/64)+1):
-                    for y in range(math.floor((min(ys)-r)/64), math.floor((max(ys)+r)/64)+1): self.buckets[step, x, y].add(i)
+            if t.vx or t.vy: self.dynamic.append(i)
+            else:
+                self.static.append(i)
+                if self.static_ready: self.index_threat(i, -1)
+
+    def circle_gaps(self, a, b, tick, radius, begin=None):
+        begin = max(0, tick-1) if begin is None else begin
+        return self.circle_gaps_arrays(a[0], a[1], b[0], b[1], tick, radius, begin)
+
+    def circle_gaps_arrays(self, ax, ay, bx, by, tick, radius, begin):
+        data = self.circle_data
+        if data is None or not len(data): return None
+        active = (tick >= data[:, 5]) & (begin <= data[:, 6])
+        low, high = np.maximum(begin, data[:, 5]), np.minimum(tick, data[:, 6])
+        duration = np.maximum(1e-9, tick-begin)
+        startx, starty, deltax, deltay = ax, ay, bx-ax, by-ay
+        ax = startx+deltax*(low-begin)/duration-data[:, 0]-data[:, 2]*low
+        ay = starty+deltay*(low-begin)/duration-data[:, 1]-data[:, 3]*low
+        bx = startx+deltax*(high-begin)/duration-data[:, 0]-data[:, 2]*high
+        by = starty+deltay*(high-begin)/duration-data[:, 1]-data[:, 3]*high
+        dx, dy = bx-ax, by-ay
+        phase = np.clip(-(ax*dx+ay*dy)/np.maximum(1e-9, dx*dx+dy*dy), 0, 1)
+        return np.where(active, np.hypot(ax+phase*dx, ay+phase*dy)-data[:, 4]-radius, 1000.)
+
+    def path_gaps(self, trajectory, radius):
+        if len(trajectory) < 2: return []
+        if not self.dense:
+            return [self.gap((a.x, a.y), (b.x, b.y), tick, radius)
+                    for tick, (a, b) in enumerate(zip(trajectory, trajectory[1:]), 1)]
+        p = np.asarray([(v.x, v.y) for v in trajectory], dtype=float)
+        ticks = np.arange(1, len(p), dtype=float)[:, None]
+        gaps = self.circle_gaps_arrays(p[:-1, 0, None], p[:-1, 1, None], p[1:, 0, None], p[1:, 1, None], ticks, radius, ticks-1)
+        result = np.min(gaps, axis=1) if gaps is not None else np.full(len(p)-1, 1000.)
+        if self.segments:
+            for index in range(len(result)):
+                result[index] = min(result[index], *(t.gap(p[index], p[index+1], index+1, radius) for t in self.segments))
+        return result.tolist()
+
+    def index_threat(self, i, step):
+        t = self.threats[i]
+        begin, end = (max(0, step*6-1), min(45, (step+1)*6)) if step >= 0 else (0, 0)
+        xs, ys = [t.x+t.vx*begin, t.x+t.vx*end], [t.y+t.vy*begin, t.y+t.vy*end]
+        if t.segment_end: xs.append(t.segment_end[0]); ys.append(t.segment_end[1])
+        r = t.radius+t.uncertainty
+        for x in range(math.floor((min(xs)-r)/64), math.floor((max(xs)+r)/64)+1):
+            for y in range(math.floor((min(ys)-r)/64), math.floor((max(ys)+r)/64)+1): self.buckets[step, x, y].add(i)
 
     def query(self, a, b, radius, tick, begin=None):
         indices = set()
+        if not self.static_ready:
+            for i in self.static: self.index_threat(i, -1)
+            self.static_ready = True
+        bins = range(min(7, int((tick if begin is None else begin)//6)), min(7, int(tick//6))+1)
+        for step in bins:
+            if step not in self.indexed_bins:
+                for i in self.dynamic: self.index_threat(i, step)
+                self.indexed_bins.add(step)
         for x in range(math.floor((min(a[0], b[0])-radius)/64), math.floor((max(a[0], b[0])+radius)/64)+1):
             for y in range(math.floor((min(a[1], b[1])-radius)/64), math.floor((max(a[1], b[1])+radius)/64)+1):
                 indices.update(self.buckets.get((-1, x, y), ()))
-                for step in range(min(7, int((tick if begin is None else begin)//6)), min(7, int(tick//6))+1):
+                for step in bins:
                     indices.update(self.buckets.get((step, x, y), ()))
         return (self.threats[i] for i in indices)
 
     def gap(self, a, b, tick, radius):
+        if self.dense:
+            gaps = self.circle_gaps(a, b, tick, radius)
+            values = ([float(np.min(gaps))] if gaps is not None else [])+[t.gap(a, b, tick, radius) for t in self.segments]
+            return min(values, default=1000.)
         return min((t.gap(a, b, tick, radius) for t in self.query(a, b, radius, tick)), default=1000.)
 
     def collides(self, a, b, tick, radius, begin=None):
+        if self.dense:
+            gaps = self.circle_gaps(a, b, tick, radius, begin)
+            return bool(gaps is not None and np.any(gaps <= 0)) or any(t.gap(a, b, tick, radius, begin) <= 0 for t in self.segments)
         return any(t.gap(a, b, tick, radius, begin) <= 0 for t in self.query(a, b, radius, tick, begin))
 
     def edge_safe(self, a, b, begin, end, radius):
@@ -206,6 +269,8 @@ class ThreatField:
         origin = geometry.cell(position)
         if origin not in geometry.walkable: return 0., -45., 0
         if not self.threats: return 1., 45., 2
+        point = (position.x, position.y)
+        if self.collides(point, point, start_tick, radius, start_tick): return 0., -45., 0
         # Time-expanded reachability: each traversed edge is checked at its
         # actual arrival time, including the six-update withdrawal reserve.
         queue, seen, directions = deque([(origin, start_tick, None)]), {origin}, set()
@@ -216,6 +281,7 @@ class ThreatField:
             for neighbor in geometry.neighbors.get(cell, []):
                 if neighbor in seen: continue
                 a, b = position if cell == origin else geometry.positions[cell], geometry.positions[neighbor]
+                if cell == origin and not geometry.line_clear(a, b, radius=geometry.physical_radius): continue
                 arrival = tick+a.distance(b)/max(1., speed)
                 if arrival+6 > 45: continue
                 valid = self.edge_safe(a, b, tick, arrival, radius)

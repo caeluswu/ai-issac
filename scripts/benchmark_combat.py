@@ -5,6 +5,9 @@ from pathlib import Path
 import platform
 import statistics
 import sys
+import hashlib
+import subprocess
+import importlib.metadata
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/"SocketBridge/python"))
@@ -19,6 +22,10 @@ def main():
     parser.add_argument("--repeats", type=int, default=100)
     args = parser.parse_args()
     result = {"platform": platform.platform(), "python": platform.python_version(), "repeats": args.repeats, "cases": []}
+    result["implementation_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    result["source_hashes"] = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
+                                for p in (ROOT/"SocketBridge/python/combat").glob("*.py")}
+    result["dependencies"] = {name: importlib.metadata.version(name) for name in ("numpy", "pydantic", "httpx")}
     for n in (0, 50, 200, 500):
         s = snapshot()
         s.projectiles["enemy_projectiles"] = [{"pos": {"x": (i*37)%520+40, "y": (i*53)%240+40},

@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import unittest
+import random
 from unittest.mock import patch
 from combat.catalog import default_plan, compile_plan
 from combat.components import EXECUTABLES, Registry, AttackProposal, CapabilitySet
@@ -99,6 +100,36 @@ class TestReplaceableComponents(unittest.TestCase):
 
 
 class TestThreats(unittest.TestCase):
+    def test_dense_backend_matches_all_threats_without_pruning(self):
+        rng = random.Random(718)
+        s = snapshot(enemies=False)
+        s.projectiles["enemy_projectiles"] = [{"pos": {"x": rng.uniform(0, 640), "y": rng.uniform(0, 400)},
+            "vel": {"x": rng.uniform(-12, 12), "y": rng.uniform(-12, 12)}, "collision_radius": rng.uniform(2, 9)} for _ in range(200)]
+        s.bombs = [{"id": 1, "pos": {"x": 300, "y": 200}, "timer": 15, "explosion_radius": 80}]
+        s.projectiles["lasers"] = [{"is_enemy": True, "pos": {"x": 100, "y": 100}, "angle": 30, "max_distance": 300, "collision_radius": 4}]
+        field = ThreatField(s)
+        self.assertTrue(field.dense)
+        path = [Vec(x=250+i*2, y=200-i) for i in range(13)]
+        batched = field.path_gaps(path, 14)
+        for tick, value in enumerate(batched, 1):
+            self.assertAlmostEqual(value, min(t.gap((path[tick-1].x, path[tick-1].y), (path[tick].x, path[tick].y), tick, 14) for t in field.threats), places=7)
+        for tick in (1, 6, 12, 15, 22, 30, 45):
+            a = (rng.uniform(100, 500), rng.uniform(100, 300)); b = (a[0]+5, a[1]-3)
+            brute = min(t.gap(a, b, tick, 14) for t in field.threats)
+            self.assertAlmostEqual(field.gap(a, b, tick, 14), brute, places=7)
+            begin = max(0, tick-4)
+            self.assertEqual(field.collides(a, b, tick, 14, begin), any(t.gap(a, b, tick, 14, begin) <= 0 for t in field.threats))
+    def test_escape_is_checked_for_each_distinct_rollout_endpoint(self):
+        endpoints = []
+        original = ThreatField.escape
+        def observe(field, geometry, position, *args):
+            endpoints.append((position.x, position.y))
+            return original(field, geometry, position, *args)
+        s = snapshot()
+        with patch.object(ThreatField, "escape", observe):
+            JointActionSolver().solve(s, default_plan(context(s)), BuildResolver().update(s))
+        self.assertEqual(len(set(endpoints)), 9)
+
     def test_ticking_spider_kill_is_unsafe_near_player(self):
         s = snapshot(); e = s.enemies[0]; e.type = 250; e.hp = 1
         self.assertFalse(ThreatField(s).attack_safe(e, BuildResolver().update(s), [e.pos]*13, 1))

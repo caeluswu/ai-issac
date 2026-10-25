@@ -106,6 +106,22 @@ class FixturePlanner:
 
 
 class TestSession(unittest.IsolatedAsyncioTestCase):
+    async def test_death_during_cleanup_cannot_be_reported_as_clear(self):
+        with tempfile.TemporaryDirectory() as directory:
+            game = SimulatedRoom(); bridge = SocketBridge(port=0); log = RunLog(Path(directory)/"run")
+            session = CombatSession(bridge, FixturePlanner(), game, log, ready_timeout=3)
+            original = session.set_mode
+            async def mode(mode):
+                await original(mode)
+                if mode == "MANUAL" and session.target_room:
+                    session.on_message({"type": "EVENT", "event": "PLAYER_DEATH", "frame": game.s.frame})
+            session.set_mode = mode
+            async def boot(_): await game.connect(bridge._server._server.sockets[0].getsockname()[1])
+            try:
+                report = await asyncio.wait_for(session.run(bootstrap=boot), 15)
+                self.assertEqual(report.result, "DEAD")
+                self.assertFalse(report.success)
+            finally: await game.close()
     async def test_stale_solve_is_discarded_and_recomputed_from_fresh_state(self):
         from combat.controller import JointActionSolver
         loop = asyncio.get_running_loop()

@@ -198,20 +198,26 @@ class JointActionSolver:
             desired = Vec(x=move[0], y=move[1]).unit()*build.move_speed
             position, velocity = s.player.pos, s.player.vel
             trajectory = [position]
+            firing_velocity = velocity
             closest_waypoint = s.player.pos.distance(waypoint) if waypoint else 0
             clearance, wall = 1000., False
+            early_clearance, first_contact, blocked_steps = 1000., 13, 0
             for tick in range(1, 13):
                 velocity = velocity*.75+desired*.25
-                new_position = position+velocity
-                if not g.line_clear(position, new_position): wall = True; break
-                clearance = min(clearance, threats.gap((position.x, position.y), (new_position.x, new_position.y),
-                                                      tick, s.player.collision_radius+extra))
+                new_position, velocity, blocked, unsafe = g.sweep(position, velocity)
+                blocked_steps += blocked
+                if unsafe: wall = True; break
+                if tick == 1: firing_velocity = velocity
                 position = new_position
                 trajectory.append(position)
                 if waypoint: closest_waypoint = min(closest_waypoint, position.distance(waypoint))
-            cell = g.cell(position)
-            if cell not in routes: routes[cell] = threats.escape(g, position, build.move_speed, s.player.collision_radius+extra)
-            escape, slack, exit_directions = routes[cell]
+            gaps = threats.path_gaps(trajectory, s.player.collision_radius+extra)
+            clearance = min(gaps, default=1000.)
+            early_clearance = min(gaps[:3], default=1000.)
+            first_contact = next((tick for tick, gap in enumerate(gaps, 1) if gap <= 0), 13)
+            endpoint = (position.x, position.y)
+            if endpoint not in routes: routes[endpoint] = threats.escape(g, position, build.move_speed, s.player.collision_radius+extra)
+            escape, slack, exit_directions = routes[endpoint]
             stance = 0.
             if target:
                 delta = target.pos-position
@@ -223,16 +229,18 @@ class JointActionSolver:
                     # a nearby waypoint and makes zero input a local optimum.
                     stance += (s.player.pos.distance(waypoint)-closest_waypoint)*(.35 if recovering else .15)
             evade = modules["evade"].score(clearance, desired)
-            for attack in modules["fire"].propose(s, build, profile, target, desired, g, modules["aim"]):
+            for attack in modules["fire"].propose(s, build, profile, target, firing_velocity, g, modules["aim"]):
                 shot, hit = attack.shoot, attack.hit_score
                 postkill_safe = threats.attack_safe(target, build, trajectory, hit)
                 safety = SafetyAssessment(clearance, slack, exit_directions, wall, postkill_safe)
                 damage_risk = max(0, -clearance)
-                utility = hit*6+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)
+                utility = hit*6+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)-blocked_steps*.02
+                if not s.hostiles and move != (0, 0): utility -= .08
                 if wall: utility -= 100
                 candidates.append({"move": move, "shoot": shot, "safe": safety.safe,
                                    "clearance": clearance, "wall": wall, "hit": hit, "escape": escape,
                                    "escape_slack": slack, "escape_directions": exit_directions,
+                                   "early_risk": max(0, -early_clearance), "first_contact": first_contact, "blocked_steps": blocked_steps,
                                    "utility": utility, "risk": damage_risk+(100 if not postkill_safe else 0), "fire_reason": attack.reason,
                                    "wait": attack.wait.__dict__ if attack.wait else None})
                 if not postkill_safe:
@@ -241,7 +249,8 @@ class JointActionSolver:
                                        "utility": utility-hit*6, "risk": damage_risk, "fire_reason": "death_effect_withdrawal"})
         # Safety is lexicographic. If every option is unsafe, minimize modelled
         # penetration before considering output; this is not a guarantee of life.
-        best = max(candidates, key=lambda c: (c["safe"], not c["wall"], -c["risk"], c["utility"]))
+        best = max(candidates, key=lambda c: (c["safe"], not c["wall"], -c["early_risk"], c["escape_directions"] > 0,
+                                             -c["risk"], c["first_contact"], c["utility"]))
         self.last_candidates = candidates
         component_failures = [failure for module in modules.values() if (failure := module.pop_failure())]
         self.previous_move = best["move"]
@@ -249,10 +258,11 @@ class JointActionSolver:
         return ActionFrame(frame=s.frame, room_visit_id=s.room_visit_id, move=best["move"], shoot=best["shoot"],
                            profile=name, target=target.instance_id if target else None,
                            state="RECOVER" if recovering else "EVADE" if best["clearance"] < 20 else "ENGAGE",
-                           score={k: best[k] for k in ("clearance", "hit", "escape", "utility", "risk", "escape_slack")},
+                           score={k: best[k] for k in ("clearance", "hit", "escape", "utility", "risk", "escape_slack", "early_risk", "first_contact")},
                            diagnostics={"route_goal": [round(route_goal.x), round(route_goal.y)] if route_goal else None,
                                "route_remaining": sum(a.distance(b) for a, b in zip([s.player.pos]+route, route)),
                                "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"],
                                "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),
+                               "blocked_steps": best["blocked_steps"],
                                "component_failures": component_failures},
                            decision_ms=(time.perf_counter()-started)*1000)

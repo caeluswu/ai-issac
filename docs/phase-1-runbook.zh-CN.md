@@ -96,9 +96,19 @@ uv pip install --python .venv\Scripts\python.exe -r SocketBridge\python\requirem
 
 动作求解枚举九种移动；武器模块提出攻击候选，普通泪弹最多四方向，有效攻击不存在时才提出停火。先计算 12 更新帧的运动与危险，并检查 45 帧内逃生路径及至少六帧余量，再执行一个动作。组件的 `begin_frame` 只在每次求解开始执行，候选生成不得推进武器状态；组件应自行对相同游戏帧去重。v1 计划经显式转换为 v2。参数校验后才允许装载计划。规划上下文使用运行、房间访问、构筑、组件目录及计划版本；旧房间结果被拒绝，单纯游戏帧前进不会使有效计划过期。
 
+新增武器时，向 `BuildResolver` 注册对应游戏武器类型的构筑适配器，并注册匹配的武器、瞄准组件及能力声明。武器的 `firing_route` 决定攻击几何，`propose` 返回 `AttackProposal`；站位组件包装成 `MotionProposal`，调度器不假设所有武器都使用四方向弹道。状态只在 `begin_frame` 推进，候选评估必须只读。首阶段生产注册表只允许普通泪弹；模拟蓄力族验证完整注册、编译、站位和攻击替换。未注册的真实武器直接停止。
+
+敌人通过 `EnemyAdapters` 按类型/变体注册预测模块，输出带有效时间和误差的 `ThreatForecast`。固定安全服务生成 `SafetyAssessment`，`ProgressSupervisor` 输出 `ProgressEvidence` 与 `BoundaryEvent`；这些契约不是自由文本指令。组件抛出异常时通过 `ResilientComponent` 切换到预置替代实现，并记录故障、计入降级次数和请求诊断。
+
+导航使用带余量的半径，物理滚动预测使用真实碰撞半径。普通墙体碰撞会阻挡对应轴，允许沿墙滑动；尖刺等危险区域继续禁止进入。所有候选均不安全时，先降低最近三帧的风险，保留实际逃生路径，再比较整段风险与进攻收益。开火使用下一更新帧预测速度，包含墙体阻挡后的变化，不以期望方向代替真实移动继承。
+
+稀疏危险使用按需建立的时空索引；至少 128 个预测危险时使用 NumPy 批量计算整条运动轨迹。两种后端都保留全部危险实体，密集后端与逐实体计算有数值等价回归。逃生结果按连续终点分别检查，不能把同一网格内不同站位视为相同安全状态。
+
 战中请求由独立监督器与已确认失血、新敌人实例等事件触发。一般请求至少相隔 90 更新帧，严重边界不受普通冷却限制；每房最多六次请求，普通事件最多使用前四次，同时最多一个请求在途。战中直接重配，最多一次修复，总预算 20 墙钟秒。已恢复的停滞事件返回旧配置时拒绝装载。本地控制继续运行，返回结果在下一动作边界校验后替换。新敌人实例是保守重规划信号，不等于已经识别出一种新机制。
 
 无理由零动作或移动受阻一秒触发本地恢复，两秒无有效进展触发强制诊断，四秒切换替代站位，八秒仍无进展判 `STALL_UNRECOVERED`。LLM 不能关闭边界，切换计划不能重置计时。停滞、120 游戏秒总超时及进程超时均计失败。原生恢复必须看到未暂停的新更新帧；仅在确认仍持有暂停时有限重试，不以发出 Escape 作为恢复成功证据。
+
+入房动画可能忽略首次暂停键；暂停协调器在三秒内有限重试，等待期间用当前状态避险移动，正式配置前不射击。过期求解结果先释放输入，再从新快照重算；一秒内三次计算期限失误判 `CONTROL_DEADLINE_MISSES`。不会发送过期动作，也不会用反复丢弃掩盖持续控制失效。
 
 ## 模型与知识边界
 
@@ -121,9 +131,13 @@ Wiki 索引位于 `configs/knowledge/index.json`，缓存位于同目录的 `cac
 
 清房需连续三份更新快照同时满足游戏清房标志、游戏敌人数为零、没有存活且能封门的敌对实体。原版 `EntityNPC.CanShutDoors` 用于区分封门敌人与清房后仍存在的环境危险；字段缺失时保守视为封门实体。暂时无敌敌人和环境危险都保留在观测与避险模型中，不能用“不可受伤”直接判清房。伤害回调记录的是尝试和扣血前生命；报告累加后续快照的生命下降，回血不抵消历史损失。接口依据：[EntityNPC.CanShutDoors](https://wofsauge.github.io/IsaacDocs/rep/EntityNPC.html#canshutdoors)。
 
-清房基础判据成立后，再进行至少 15 更新帧的安全收尾；90 帧仍不能满足安全条件判 `CLEAR_UNSAFE`。收尾伤害计入房间损失。普通 Boom Fly 的爆炸死亡后果有独立适配器，100 像素为待校准的保守模型半径；不宣称覆盖其他变体或冠军机制。桥接保存带实例 ID 的近期死亡证据，单纯实体消失不会算作击杀。地面效果观测区分敌方与玩家来源；未知或减速地面采用保守危险模型。静态尖刺与机关区域保持避让，尚不解释所有机关状态数值。类型编号依据固定安装包 `resources/scripts/enums.lua`；API 依据 [EntityEffect](https://wofsauge.github.io/IsaacDocs/rep/EntityEffect.html)、[EntityNPC](https://wofsauge.github.io/IsaacDocs/rep/EntityNPC.html)，机制资料索引见 [Boom Fly](https://bindingofisaacrebirth.wiki.gg/wiki/Boom_Fly)。
+清房基础判据成立后，再进行至少 15 更新帧的安全收尾；90 帧仍不能满足安全条件判 `CLEAR_UNSAFE`。收尾伤害计入房间损失。普通 Boom Fly、Ticking Spider 的爆炸死亡后果有独立适配器，100 像素为待校准的保守模型半径；Ticking Spider 的爆炸性质有本地死亡与伤害标志证据。攻击这些目标时持续保留爆炸距离，不能等最后一发泪弹在途后才撤退。
+
+追逐、突进和 Hopper 落地采用多个运动假设及额外误差；这些是未校准的保守预测，不把未知内部状态编号解释成已知攻击阶段。适配器只覆盖所登记的普通变体，不宣称覆盖全部怪物或冠军机制。桥接保存带实例 ID 的近期死亡证据，单纯实体消失不会算作击杀。地面效果观测区分敌方与玩家来源；未知或减速地面采用保守危险模型。静态尖刺与机关区域保持避让，尚不解释所有机关状态数值。类型编号依据固定安装包 `resources/scripts/enums.lua`；API 依据 [EntityEffect](https://wofsauge.github.io/IsaacDocs/rep/EntityEffect.html)、[EntityNPC](https://wofsauge.github.io/IsaacDocs/rep/EntityNPC.html)，机制资料索引见 [Boom Fly](https://bindingofisaacrebirth.wiki.gg/wiki/Boom_Fly)。
 
 报告新增进展指标、强制边界次数、战中请求数、决策 p99 与安全收尾帧数。候选日志包含停火理由、逃生余量、路线目标、剩余路径成本和预算是否耗尽。密度基准可执行 `python scripts/benchmark_combat.py --output artifacts/tmp-benchmark.json`；批次门槛由 `scripts/evaluate_phase1_optimization.py` 独立审计，混用实现版本、种子不符、缺少收尾证据或遗漏失败都不能通过。
+
+`ActionFrame.decision_ms` 是求解器内部耗时，`diagnostics.decision_wall_ms` 与房间报告延迟包含线程调度和等待，使用高分辨率 `perf_counter` 测量。正式回归、开发与留出链可执行 `.\.venv\Scripts\python.exe scripts/qualify_phase1.py`：先要求规则与 LLM 各十例通过，再执行三十例开发，最后冻结五十个新种子配对评测。任一前置门槛未通过时停止并写 `qualification.json`；不会消耗留出样本掩盖开发失败。`--through regression` 或 `--through development` 可限定一次验证的终点。
 
 ## 回归测试
 
