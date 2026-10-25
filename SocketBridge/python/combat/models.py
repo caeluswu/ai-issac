@@ -185,7 +185,7 @@ class BattleAssessment(Strict):
 
 
 class BuildProfile(Strict):
-    family: Literal["normal_tears"] = "normal_tears"
+    family: str = "normal_tears"
     revision: int = 1
     move_speed: float = 4.2
     tear_speed: float = 10.0

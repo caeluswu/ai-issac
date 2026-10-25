@@ -60,10 +60,30 @@ class ExplosiveDeath(GenericEnemy):
     def death_radius(self, enemy): return 100
 
 
+class Pursuer(GenericEnemy):
+    def forecast(self, enemy, snapshot):
+        predictions = super().forecast(enemy, snapshot)
+        if enemy.collision_class == 0: return predictions
+        direction = (snapshot.player.pos-enemy.pos).unit()
+        speed = max(1.5, enemy.vel.length())
+        predictions.append(ThreatForecast(enemy.instance_id+":turn", enemy.pos.x, enemy.pos.y,
+            direction.x*speed, direction.y*speed, enemy.collision_radius, uncertainty=8,
+            source="pursuit_hypothesis_uncalibrated"))
+        return predictions
+
+
+class BurstMover(Pursuer):
+    def forecast(self, enemy, snapshot):
+        return [ThreatForecast(t.identity, t.x, t.y, t.vx, t.vy, t.radius, t.start, t.end,
+                               max(t.uncertainty, 18+enemy.vel.length()*3), source="burst_turn_bound_uncalibrated")
+                for t in super().forecast(enemy, snapshot)]
+
+
 class EnemyAdapters:
     def __init__(self):
         self.default = GenericEnemy()
-        self.adapters = {(25, 0): ExplosiveDeath()}
+        self.adapters = {(25, 0): ExplosiveDeath(), (10, 0): Pursuer(), (18, 0): Pursuer(),
+                         (85, 0): BurstMover(), (94, 0): BurstMover()}
     def resolve(self, enemy): return self.adapters.get((enemy.type, enemy.variant), self.default)
     def register(self, kind, variant, adapter): self.adapters[kind, variant] = adapter
 
@@ -157,7 +177,11 @@ class ThreatField:
     def attack_safe(self, target, build, positions, hit):
         if target is None or hit <= 0: return True
         radius = self.adapters.resolve(target).death_radius(target)
-        if not radius or target.hp > float(self.snapshot.stats.get("damage", 3.5)): return True
+        pending = 0.
+        for tear in self.snapshot.projectiles["player_tears"] or []:
+            if target.pos.distance(Vec(**tear["pos"])) < 60:
+                pending += float(self.snapshot.stats.get("damage", 3.5))*.6
+        if not radius or target.hp > float(self.snapshot.stats.get("damage", 3.5))+pending: return True
         flight = max(1., target.pos.distance(self.snapshot.player.pos)/build.tear_speed)
         point = positions[min(len(positions)-1, round(flight))]
         predicted = target.pos+target.vel*min(flight, 12)

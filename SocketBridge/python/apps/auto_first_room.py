@@ -49,6 +49,7 @@ async def main(args):
         report = await session.run(bootstrap=launcher, startup_only=args.startup_only, on_ready=freeze_seeds)
     finally:
         launcher.collect_evidence()
+        if client: await client.aclose()
     print(report.model_dump_json(indent=2), flush=True)
     if args.startup_only: return 0 if report.result == "STARTUP_READY" else 1
     return 0 if report.success and (args.local_only or report.llm_configured) else 1

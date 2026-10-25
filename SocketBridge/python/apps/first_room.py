@@ -23,7 +23,9 @@ async def main(args):
                             log, ready_timeout=args.ready_timeout,
                             new_run=args.new_run, seed=args.seed)
     print(f"Waiting for a fresh Isaac Normal run; the game window may stay in the background. Trace: {log.directory}", flush=True)
-    report = await session.run()
+    try: report = await session.run()
+    finally:
+        if client: await client.aclose()
     print(report.model_dump_json(indent=2), flush=True)
     return 0 if report.success and (args.local_only or report.llm_configured) else 1
 

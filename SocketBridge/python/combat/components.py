@@ -43,6 +43,48 @@ class Registry:
         return self.factories[choice.component](dict(choice.params))
 
 
+class ResilientComponent:
+    """Isolate a registered module failure; the deterministic substitute is IO-free."""
+    def __init__(self, primary, fallback, identity):
+        self.primary, self.fallback, self.identity = primary, fallback, identity
+        self.broken = False
+        self.failure = None
+    def __getattr__(self, name):
+        instance = self.fallback if self.broken else self.primary
+        value = getattr(instance, name)
+        if not callable(value): return value
+        def guarded(*args, **kwargs):
+            try: return getattr(self.fallback if self.broken else self.primary, name)(*args, **kwargs)
+            except Exception as exc:
+                if self.broken: raise
+                self.broken = True
+                self.failure = {"component": self.identity, "method": name, "error": type(exc).__name__+": "+str(exc)}
+                replacement = getattr(self.fallback, name, None)
+                return replacement(*args, **kwargs) if replacement else None
+        return guarded
+    def pop_failure(self):
+        failure, self.failure = self.failure, None
+        return failure
+
+
+DEFAULT_IDS = {"target": "target.threat_first", "position": "position.kite", "aim": "aim.predictive",
+               "fire": "fire.normal_tears", "evade": "evade.max_clearance", "escape": "escape.keep_routes",
+               "recovery": "recovery.local_repath"}
+
+
+def resilient_component(choice, slot, registry):
+    from .catalog import CATALOG
+    name = DEFAULT_IDS[slot]
+    fallback = EXECUTABLES.factories[name]({k: v[0] for k, v in CATALOG[name].parameters.items()})
+    try: primary = registry.create(choice)
+    except Exception as exc:
+        wrapped = ResilientComponent(fallback, fallback, choice.component)
+        wrapped.broken = True
+        wrapped.failure = {"component": choice.component, "method": "factory", "error": type(exc).__name__+": "+str(exc)}
+        return wrapped
+    return ResilientComponent(primary, fallback, choice.component)
+
+
 class Target:
     def __init__(self, params): self.params = params
     def features(self, enemy, s, build):
@@ -121,6 +163,15 @@ class NormalTears:
     capabilities = CapabilitySet("normal_tears")
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
     def __init__(self, params): self.params = params
+    def pending_damage(self, s, enemy):
+        damage = 0.
+        for tear in s.projectiles["player_tears"] or []:
+            position, velocity = Vec(**tear["pos"]), Vec(**tear["vel"])
+            delta = enemy.pos-position
+            ticks = delta.dot(velocity)/max(1e-9, velocity.dot(velocity))
+            if 0 <= ticks <= 20 and (position+velocity*ticks).distance(enemy.pos+enemy.vel*ticks) <= enemy.collision_radius+tear.get("collision_radius", 5):
+                damage += float(s.stats.get("damage", 3.5))*.6
+        return damage
     def hit_score(self, s, build, aim, target, shot, velocity, geometry):
         if target is None or not target.vulnerable: return 0.
         launch = Vec(x=shot[0], y=shot[1])*build.tear_speed

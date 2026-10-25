@@ -23,7 +23,8 @@ CATALOG = {}
 
 
 def register(name, parameters, description, inputs):
-    CATALOG[name] = ComponentSpec(name, parameters, description, inputs)
+    CATALOG[name] = ComponentSpec(name, parameters, description, inputs,
+                                 weapons=("normal_tears",) if name.startswith(("aim.", "fire.")) else ("any",))
 
 
 for name in ("threat_first", "finish_first", "weighted"):
@@ -43,12 +44,12 @@ register("escape.keep_routes", {"horizon_ticks": (30, 15, 45), "min_safe_area_ra
 register("recovery.local_repath", {"stall_window_ticks": (30, 15, 60), "recovery_ticks": (6, 3, 12)}, "stall-triggered detour", ("position_history", "geometry"))
 
 
-def compile_plan(value, context: ContextRef) -> BattlePlan:
+def compile_plan(value, context: ContextRef, capabilities=("normal_tears",)) -> BattlePlan:
     if isinstance(value, BattlePlan): value = value.model_dump()
     if value.get("schema_version", 1) == 1:
         value = {**value, "schema_version": 2, "required_capabilities": ["normal_tears"]}
     plan = BattlePlan.model_validate(value)
-    if set(plan.required_capabilities) != {"normal_tears"}: raise ValueError("Unsupported build capability")
+    if not set(plan.required_capabilities).issubset(capabilities): raise ValueError("Unsupported build capability")
     a, b = plan.context_ref.model_dump(), context.model_dump()
     a.pop("snapshot_id"); b.pop("snapshot_id")
     if a != b: raise ValueError("context_ref: stale run, room, build, catalog or plan revision")
@@ -64,6 +65,8 @@ def compile_plan(value, context: ContextRef) -> BattlePlan:
                 raise ValueError(f"{path}.component: unregistered component")
             if choice.component not in EXECUTABLES.factories:
                 raise ValueError(f"{path}.component: missing executable implementation")
+            if "any" not in spec.weapons and not set(spec.weapons).intersection(capabilities):
+                raise ValueError(f"{path}.component: incompatible weapon capability")
             if set(choice.params)-set(spec.parameters): raise ValueError(f"{path}.params: unknown parameters")
             for name, bounds in spec.parameters.items():
                 value = choice.params.setdefault(name, bounds[0])

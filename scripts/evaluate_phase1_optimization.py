@@ -3,23 +3,32 @@ import argparse
 import json
 from pathlib import Path
 import statistics
+import hashlib
 from audit_phase1 import audit_run
 
 
 def assess(directory, role, holdout=False):
     summary = json.loads((directory/"summary.json").read_text(encoding="utf-8"))
     reports, issues, audits = summary["reports"], [], []
+    seeds = json.loads((directory/"seeds.json").read_text(encoding="utf-8"))
+    if hashlib.sha256("\n".join(seeds["seeds"]).encode()).hexdigest() != seeds["seeds_sha256"]: issues.append("SEED_HASH_MISMATCH")
+    hashes = set()
     if summary["completed"] != summary["planned"]: issues.append("INCOMPLETE_BATCH")
     if summary["local_only"] != (role == "rule"): issues.append("WRONG_SELECTOR_ROLE")
+    if not holdout and summary["planned"] != 10: issues.append("REGRESSION_SIZE_GATE")
     for row in reports:
         run = directory/f"sample-{row['index']:02d}"
         if (run/"trace.jsonl").exists() and (run/"report.json").exists():
             audit = audit_run(run); audits.append(audit)
+            manifest = json.loads((run/"manifest.json").read_text(encoding="utf-8"))
+            hashes.add(json.dumps(manifest["source_hashes"], sort_keys=True))
             issues.extend(f"{row['index']}:{issue}" for issue in audit["issues"])
         else: issues.append(f"{row['index']}:MISSING_RAW_EVIDENCE")
+        if row.get("seed") != seeds["seeds"][row["index"]-1]: issues.append(f"{row['index']}:SEED_MISMATCH")
         if row["result"] in ("STALL_UNRECOVERED", "COMBAT_TIMEOUT", "PROCESS_TIMEOUT"): issues.append(f"{row['index']}:FORBIDDEN_STALL_OR_TIMEOUT")
         if role == "llm" and row["success"] and not row["llm_configured"]: issues.append(f"{row['index']}:NO_LLM_CONFIGURATION")
     wins = sum(r["success"] and r.get("exit_code") == 0 for r in reports)
+    if len(hashes) != 1: issues.append("MIXED_IMPLEMENTATIONS")
     needed = 48 if holdout else len(reports)
     if wins < needed: issues.append("INSUFFICIENT_CLEARS")
     loss = statistics.mean(r.get("damage_half_hearts", 0) for r in reports) if reports else None

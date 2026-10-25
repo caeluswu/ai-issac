@@ -20,6 +20,7 @@ class ProgressSupervisor:
         self.blocked_since = None
         self.anchor = None
         self.route_best = {}
+        self.route_anchors = {}
         self.history = deque(maxlen=151)
         self.events = []
         self.announced = {}
@@ -42,7 +43,7 @@ class ProgressSupervisor:
         enemies = {e.instance_id: e for e in s.hostiles}
         if self.previous:
             old_ids = {e.instance_id for e in self.previous.hostiles}
-            if any(d["instance_id"] in old_ids and d["frame"] > self.previous.frame
+            if any(d["instance_id"] in old_ids and d["frame"] >= self.previous.frame
                    for d in getattr(s, "recent_deaths", []) or []):
                 self.evidence.append("confirmed_npc_death")
                 self.last_damage = s.frame
@@ -64,10 +65,15 @@ class ProgressSupervisor:
             goal = action.diagnostics.get("route_goal")
             remaining = action.diagnostics.get("route_remaining")
             if goal is not None and remaining is not None:
-                key = tuple(goal)
-                if key not in self.route_best: self.route_best[key] = remaining
-                elif remaining <= self.route_best[key]-8:
+                # Coarse endpoint identity tolerates a moving target; a new
+                # endpoint or a stationary player's cheaper route earns no credit.
+                key = (action.target, round(goal[0]/80), round(goal[1]/80))
+                if key not in self.route_best:
                     self.route_best[key] = remaining
+                    self.route_anchors[key] = s.player.pos
+                elif remaining <= self.route_best[key]-8 and s.player.pos.distance(self.route_anchors[key]) >= 8:
+                    self.route_best[key] = remaining
+                    self.route_anchors[key] = s.player.pos
                     self.evidence.append("route_cost_decreased")
             idle = action.move == (0, 0) and action.shoot == (0, 0)
             self.idle_since = (self.idle_since if self.idle_since is not None else s.frame) if idle else None

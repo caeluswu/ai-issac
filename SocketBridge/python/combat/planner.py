@@ -35,6 +35,12 @@ class DeepSeekClient:
         if urllib.parse.urlparse(self.base_url).scheme != "https": raise ValueError("DeepSeek URL must use HTTPS")
         if not self.key or not self.model: raise ValueError("Configure DEEPSEEK_API_KEY and DEEPSEEK_MODEL in .env.local")
         self.timeout = timeout
+        # TLS/CA initialization may take hundreds of milliseconds on Windows.
+        # Construct once, before the game starts, rather than on a combat tick.
+        self.http = httpx.AsyncClient(timeout=timeout, trust_env=False)
+
+    async def aclose(self):
+        await self.http.aclose()
 
     async def complete(self, messages):
         body = {"model": self.model, "messages": messages, "response_format": {"type": "json_object"}, "max_tokens": 4096}
@@ -43,12 +49,12 @@ class DeepSeekClient:
             deadline = time.monotonic()+self.timeout
             for attempt in range(3):
                 try:
-                    # Context exit closes sockets on timeout/cancellation. No
-                    # abandoned urllib worker survives session cleanup.
-                    async with httpx.AsyncClient(timeout=max(.1, deadline-time.monotonic()), trust_env=False) as client:
-                        response = await client.post(self.base_url+"/chat/completions", json=body, headers=headers)
-                        response.raise_for_status()
-                        data = response.json()
+                    # Cancellation unwinds the request socket; app cleanup also
+                    # closes the shared pool. No urllib worker tail survives.
+                    response = await self.http.post(self.base_url+"/chat/completions", json=body, headers=headers,
+                                                    timeout=max(.1, deadline-time.monotonic()))
+                    response.raise_for_status()
+                    data = response.json()
                     break
                 except httpx.HTTPStatusError as exc:
                     if exc.response.status_code not in (429, 500, 502, 503, 504) or attempt == 2: raise

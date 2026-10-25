@@ -10,6 +10,35 @@ from tests.combat_fixtures import snapshot, context
 
 
 class TestReplaceableComponents(unittest.TestCase):
+    def test_component_fault_uses_declared_substitute_and_records_cause(self):
+        class BrokenFire:
+            def __init__(self, params): pass
+            def propose(self, *args): raise RuntimeError("fixture fault")
+        registry = Registry(); registry.factories.update(EXECUTABLES.factories)
+        registry.factories["fire.normal_tears"] = BrokenFire
+        s = snapshot(); solver = JointActionSolver(registry=registry)
+        action = solver.solve(s, default_plan(context(s)), BuildResolver().update(s))
+        self.assertNotEqual(action.shoot, (0, 0))
+        self.assertEqual(action.diagnostics["component_failures"][0]["method"], "propose")
+        self.assertTrue(solver.modules["fire"].broken)
+
+    def test_stateful_weapon_updates_once_per_frame_not_per_candidate(self):
+        class ChargeFixture:
+            def __init__(self, params): self.updates = 0; self.last = None
+            def begin_frame(self, s, build):
+                if self.last != s.frame: self.updates += 1; self.last = s.frame
+            def propose(self, *args):
+                return [AttackProposal((0, 1) if self.updates >= 3 else (0, 0), .9, 1., "fixture")]
+        registry = Registry(); registry.factories.update(EXECUTABLES.factories)
+        registry.factories["fire.normal_tears"] = ChargeFixture
+        s = snapshot(); solver = JointActionSolver(registry=registry)
+        plan, build = default_plan(context(s)), BuildResolver().update(s)
+        for frame in range(3):
+            s.frame = frame
+            a = solver.solve(s, plan, build)
+            self.assertEqual(solver.modules["fire"].updates, frame+1)
+            self.assertEqual(a.shoot, (0, 0) if frame < 2 else (0, 1))
+
     def test_weapon_replacement_does_not_change_scheduler(self):
         class FixtureCharge:
             capabilities = CapabilitySet("fixture_charge")

@@ -279,6 +279,8 @@ class CombatSession:
         self.plan = None
         self.revision = 0
         self.pending = None
+        self.pending_started_frame = None
+        self.pending_reasons = set()
         self.last_replan = -1000
         self.event_reasons = set()
         self.llm_configured = False
@@ -503,6 +505,8 @@ class CombatSession:
             if self.pending and self.pending.done():
                 try:
                     value = self.pending.result()
+                    if self.pending_reasons <= {"idle", "blocked", "stall", "no_progress", "oscillation"} and self.supervisor.last_progress > self.pending_started_frame:
+                        raise ValueError("REPLAN_EVENT_RESOLVED: local recovery already made progress")
                     self.plan = compile_plan(value, self.context_ref(s, build))
                     self.revision += 1
                     self.solver.profile_name = None
@@ -519,6 +523,7 @@ class CombatSession:
             if reasons and self.planner and not self.pending and self.replan_requests < budget and (severe or s.frame-self.last_replan >= 90):
                 self.last_replan = s.frame; self.event_reasons.clear()
                 self.replan_requests += 1
+                self.pending_started_frame, self.pending_reasons = s.frame, set(reasons)
                 feedback = {"reasons": reasons, "damage_half_hearts": self.judge.damage, "current_plan": self.plan.model_dump(),
                             "progress": self.supervisor.metrics(), "last_action": self.previous_action.model_dump() if self.previous_action else None}
                 self.pending = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 20))
@@ -536,6 +541,10 @@ class CombatSession:
             else:
                 self.clear_started = self.clear_safe_since = None
             self.previous_action = action
+            if action.diagnostics.get("component_failures"):
+                self.fallbacks += len(action.diagnostics["component_failures"])
+                self.event_reasons.add("invalid_profile")
+                self.log("component_fallback", frame=s.frame, failures=action.diagnostics["component_failures"])
             self.timings.append(action.decision_ms)
             self.log.candidates(s.frame, self.solver.last_candidates)
             await self.send_action(s, action.move, action.shoot, action.model_dump())

@@ -6,14 +6,14 @@ import statistics
 import time
 from .models import Vec, ZERO, BuildProfile, ActionFrame, Enemy
 from .geometry import GeometryService, segment_distance
-from .components import EXECUTABLES
+from .components import EXECUTABLES, resilient_component
 from .threats import ThreatField, EnemyAdapters
 
 MOVES = tuple((x, y) for y in (-1, 0, 1) for x in (-1, 0, 1))
 SHOTS = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
 
 
-class BuildResolver:
+class NormalTearsBuild:
     def __init__(self):
         self.profile = BuildProfile()
         self.seen = set()
@@ -43,6 +43,19 @@ class BuildResolver:
         p.calibrated = len(self.speeds) >= 3
         p.tear_speed = statistics.median(self.speeds) if self.speeds else 10*float(s.stats["shot_speed"])
         return p
+
+
+class BuildResolver:
+    """Dispatch observation calibration to a registered weapon build adapter."""
+    def __init__(self, adapters=None):
+        self.adapters = adapters or {1: NormalTearsBuild()}
+        self.weapon_type = None
+    def update(self, s):
+        weapon = s.stats["weapon_type"]
+        if weapon not in self.adapters: raise ValueError("UNSUPPORTED_BUILD: unregistered weapon adapter")
+        if self.weapon_type is not None and weapon != self.weapon_type: raise ValueError("BUILD_CHANGED: weapon adapter changed")
+        self.weapon_type = weapon
+        return self.adapters[weapon].update(s)
 
 
 @dataclass(frozen=True)
@@ -111,8 +124,10 @@ class JointActionSolver:
         candidates = [e for e in s.hostiles if e.vulnerable]
         if not candidates: self.target_id = None; return None
         p = profile.target.params
-        module = self.registry.create(profile.target)
-        def score(e): return module.score(e, s, build)
+        module = self.modules.get("target") or self.registry.create(profile.target)
+        pending = getattr(self.modules.get("fire"), "pending_damage", lambda s, e: 0)
+        def score(e):
+            return module.score(e, s, build)-(.35 if len(candidates) > 1 and pending(s, e) >= e.hp else 0)
         best = max(candidates, key=lambda e: (score(e), e.instance_id))
         old = next((e for e in candidates if e.instance_id == self.target_id), None)
         if old and (s.frame-self.target_since < p["min_hold_ticks"] or score(best) < score(old)+p["switch_margin"]): best = old
@@ -128,9 +143,12 @@ class JointActionSolver:
         name, profile = self.select_profile(s, plan, build)
         key = profile.model_dump_json()
         if key != self.module_key:
-            self.modules = {slot: self.registry.create(getattr(profile, slot)) for slot in type(profile).model_fields}
+            self.modules = {slot: resilient_component(getattr(profile, slot), slot, self.registry) for slot in type(profile).model_fields}
             self.module_key = key
         modules = self.modules
+        for module in modules.values():
+            begin = getattr(module, "begin_frame", None)
+            if begin: begin(s, build)
         target = self.target(s, profile, build)
         geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]))
         if geometry_key != self.geometry_key:
@@ -223,6 +241,7 @@ class JointActionSolver:
         # penetration before considering output; this is not a guarantee of life.
         best = max(candidates, key=lambda c: (c["safe"], not c["wall"], -c["risk"], c["utility"]))
         self.last_candidates = candidates
+        component_failures = [failure for module in modules.values() if (failure := module.pop_failure())]
         self.previous_move = best["move"]
         self.last_risk = min(1., best["risk"]/30)
         return ActionFrame(frame=s.frame, room_visit_id=s.room_visit_id, move=best["move"], shoot=best["shoot"],
@@ -232,5 +251,6 @@ class JointActionSolver:
                            diagnostics={"route_goal": [round(route_goal.x), round(route_goal.y)] if route_goal else None,
                                "route_remaining": sum(a.distance(b) for a, b in zip([s.player.pos]+route, route)),
                                "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"],
-                               "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates)},
+                               "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),
+                               "component_failures": component_failures},
                            decision_ms=(time.perf_counter()-started)*1000)
