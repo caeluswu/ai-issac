@@ -237,3 +237,5 @@ class RoomReport(Strict):
     error: str | None
     progress_metrics: dict[str, Any] = Field(default_factory=dict)
     replan_requests: int = 0
+    decision_p99_ms: float | None = None
+    safe_clear_ticks: int = 0

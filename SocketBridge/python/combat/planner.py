@@ -10,6 +10,7 @@ import time
 import urllib.request
 import urllib.parse
 import urllib.error
+import httpx
 from .models import ContextRef, BattleAssessment, BattlePlan
 from .catalog import compile_plan, default_plan, specs
 from .controller import JointActionSolver
@@ -37,24 +38,27 @@ class DeepSeekClient:
 
     async def complete(self, messages):
         body = {"model": self.model, "messages": messages, "response_format": {"type": "json_object"}, "max_tokens": 4096}
-        def request():
-            req = urllib.request.Request(self.base_url+"/chat/completions", data=json.dumps(body).encode(),
-                headers={"Content-Type": "application/json", "Authorization": "Bearer "+self.key})
+        async def request():
+            headers = {"Content-Type": "application/json", "Authorization": "Bearer "+self.key}
             deadline = time.monotonic()+self.timeout
             for attempt in range(3):
                 try:
-                    with urllib.request.urlopen(req, timeout=max(1, deadline-time.monotonic())) as response:
-                        data = json.load(response)
+                    # Context exit closes sockets on timeout/cancellation. No
+                    # abandoned urllib worker survives session cleanup.
+                    async with httpx.AsyncClient(timeout=max(.1, deadline-time.monotonic()), trust_env=False) as client:
+                        response = await client.post(self.base_url+"/chat/completions", json=body, headers=headers)
+                        response.raise_for_status()
+                        data = response.json()
                     break
-                except urllib.error.HTTPError as exc:
-                    if exc.code not in (429, 500, 502, 503, 504) or attempt == 2: raise
-                except (urllib.error.URLError, TimeoutError):
+                except httpx.HTTPStatusError as exc:
+                    if exc.response.status_code not in (429, 500, 502, 503, 504) or attempt == 2: raise
+                except httpx.TransportError:
                     if attempt == 2 or time.monotonic() >= deadline: raise
-                time.sleep(.5*(attempt+1))
+                await asyncio.sleep(.5*(attempt+1))
             content = data["choices"][0]["message"].get("content")
             if not content: raise ValueError("DeepSeek returned empty JSON content")
             return content, {**data.get("usage", {}), "finish_reason": data["choices"][0].get("finish_reason")}
-        return await asyncio.wait_for(asyncio.to_thread(request), timeout=self.timeout+1)
+        return await asyncio.wait_for(request(), timeout=self.timeout)
 
 
 class TextExtractor(HTMLParser):
@@ -169,7 +173,7 @@ class Planner:
                 return compile_plan(value, ref)
             except (ValueError, TypeError, KeyError) as exc:
                 self.log("llm_validation_error", stage=kind, error=str(exc), repair=repairs)
-                if repairs >= 2: raise ValueError(f"{kind} failed validation after two repairs") from exc
+                if repairs >= (1 if context.get("feedback") else 2): raise ValueError(f"{kind} failed validation within repair budget") from exc
                 repairs += 1
                 messages.append({"role": "user", "content": json.dumps({
                     "instruction": "Return the entire corrected final JSON object, not a patch or continuation. "
@@ -179,6 +183,9 @@ class Planner:
 
     async def plan(self, s, build, revision=0, feedback=None):
         ref, context = self.context(s, build, revision, feedback)
+        if feedback:
+            return await self.stage("plan", BattlePlan.model_json_schema(), default_plan(ref).model_dump(),
+                                    context, s, build, ref)
         example = {"context_ref": ref.model_dump(), "enemy_groups": [], "primary_dangers": [],
                    "terrain_constraints": [], "weapon_opportunities": [], "recommended_tactics": [],
                    "unknowns": ["Unverified enemy mechanics"]}

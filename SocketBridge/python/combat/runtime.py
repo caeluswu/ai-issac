@@ -584,6 +584,8 @@ class CombatSession:
             fallback_count=self.fallbacks, recovery_count=len(self.solver.recoveries),
             decision_p95_ms=sorted(self.timings)[min(len(self.timings)-1, int(.95*len(self.timings)))] if self.timings else None,
             seed=s.seed if s else None, error=error, progress_metrics=self.supervisor.metrics(),
-            replan_requests=self.replan_requests)
+            replan_requests=self.replan_requests,
+            decision_p99_ms=sorted(self.timings)[min(len(self.timings)-1, int(.99*len(self.timings)))] if self.timings else None,
+            safe_clear_ticks=max(0, s.frame-self.clear_started) if self.clear_started is not None and s else 0)
         self.log.finish(report)
         return report

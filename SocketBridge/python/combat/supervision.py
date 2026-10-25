@@ -29,6 +29,7 @@ class ProgressSupervisor:
         self.max_idle = 0
         self.boundary_counts = {}
         self.evidence = []
+        self.danger_since = {}
 
     def observe(self, s, action=None):
         self.events, self.evidence = [], []
@@ -89,10 +90,13 @@ class ProgressSupervisor:
         if age >= 90 and len(self.history) >= 60:
             cells = [(x, y) for _, x, y in self.history]
             if len(set(cells)) <= 6: reasons.append(("oscillation", age))
-        if action and action.diagnostics.get("no_safe_candidate"):
-            reasons.append(("no_safe_candidate", age))
-        if action and action.score.get("escape_slack", 100) < 6:
-            reasons.append(("escape_margin", age))
+        for kind, active in (("no_safe_candidate", action and action.diagnostics.get("no_safe_candidate")),
+                             ("escape_margin", action and action.score.get("escape_slack", 100) < 6)):
+            if active:
+                self.danger_since.setdefault(kind, s.frame)
+                duration = s.frame-self.danger_since[kind]
+                if duration >= 15: reasons.append((kind, duration))
+            else: self.danger_since.pop(kind, None)
         for kind, duration in reasons:
             if s.frame-self.announced.get(kind, -1000) >= 30:
                 event = BoundaryEvent(kind, s.frame, duration, "critical" if kind in

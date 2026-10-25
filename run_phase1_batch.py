@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parent
 
@@ -45,11 +46,18 @@ def main():
         with (destination/f"sample-{index:02d}-console.txt").open("w", encoding="utf-8") as output:
             cmd = base+["--seed", seed, "--output-dir", str(run_dir)]
             if args.local_only: cmd.append("--local-only")
-            result = subprocess.run(cmd, cwd=ROOT, stdout=output, stderr=subprocess.STDOUT)
+            began = time.monotonic()
+            try:
+                result = subprocess.run(cmd, cwd=ROOT, stdout=output, stderr=subprocess.STDOUT, timeout=300)
+                exit_code = result.returncode
+            except subprocess.TimeoutExpired:
+                exit_code = 124
+            process_wall = time.monotonic()-began
         report = json.loads((run_dir/"report.json").read_text(encoding="utf-8")) if (run_dir/"report.json").exists() else {
             "result": "PROCESS_FAILED", "success": False, "error": "No report; inspect child console"}
-        reports.append({"index": index, "planned_seed": seed, "exit_code": result.returncode,
-                        "run_directory": str(run_dir), **report})
+        if exit_code == 124: report = {**report, "result": "PROCESS_TIMEOUT", "success": False, "error": "Child process exceeded 300 seconds"}
+        reports.append({"index": index, "planned_seed": seed, "exit_code": exit_code,
+                        "run_directory": str(run_dir), "process_wall_seconds": process_wall, **report})
         (destination/"summary.json").write_text(json.dumps({"seed_manifest": manifest,
             "local_only": args.local_only, "completed": len(reports), "planned": len(manifest["seeds"]),
             "reports": reports}, ensure_ascii=False, indent=2), encoding="utf-8")

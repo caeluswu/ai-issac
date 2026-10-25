@@ -48,6 +48,7 @@ def audit_run(directory):
     installed = False
     last_action = 0
     pause = None
+    safe_clear = None
     for row in rows(trace):
         counts[row["kind"]] += 1
         if row["sequence"] != sequence+1: issues.append("TRACE_SEQUENCE_GAP")
@@ -55,6 +56,7 @@ def audit_run(directory):
         if row["kind"] == "run_start": measured = True; start = row
         if measured and row["kind"] == "initialization_command": issues.append("INITIALIZATION_DURING_TASK")
         if row["kind"] == "pause_confirmed": pause = row
+        if row["kind"] == "safe_clear_confirmed": safe_clear = row
         if row["kind"] == "plan_installed" and row["source"] == "deepseek": installed = True
         if row["kind"] == "action_sent":
             if row["action_id"] <= last_action: issues.append("NONMONOTONIC_ACTION_ID")
@@ -80,6 +82,9 @@ def audit_run(directory):
     if report["llm_configured"] != installed: issues.append("LLM_REPORT_MISMATCH")
     if report["success"] and (len(clears) < 3 or len(rooms) < 2 or not start or pause is None):
         issues.append("SUCCESS_WITHOUT_REQUIRED_EFFECT_EVIDENCE")
+    if report["success"] and "safe_clear_ticks" in report:
+        if not safe_clear or safe_clear["frame"]-safe_clear["safe_since"] < 15 or len(clears) < 18:
+            issues.append("MISSING_SAFE_CLEAR_SETTLING")
     if start and report["seed"] != start["seed"]: issues.append("SEED_REPORT_MISMATCH")
     if report["success"] and (last["stats"]["player_type"] != 0 or last["room"]["difficulty"] != 0):
         issues.append("WRONG_CHARACTER_OR_DIFFICULTY")
