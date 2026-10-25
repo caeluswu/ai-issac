@@ -36,6 +36,7 @@ class GeometryService:
         self.neighbors = {i: [j for j in (i-1, i+1, i-self.width, i+self.width)
                               if j in self.walkable and self.positions[i].distance(self.positions[j]) <= 41]
                           for i in self.walkable}
+        self.nearest_candidates = {}
 
     def cell(self, p):
         return self.cell_xy(p.x, p.y)
@@ -51,7 +52,7 @@ class GeometryService:
                                   (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707)))
 
     def line_clear(self, a, b, *, shot=False, radius=None):
-        n = max(1, math.ceil(a.distance(b)/8))
+        n = max(1, math.ceil(math.hypot(b.x-a.x, b.y-a.y)/8))
         allowed = self.shootable if shot else self.walkable
         r = 0 if shot else self.radius if radius is None else radius
         offsets = ((0, 0),) if shot else ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
@@ -61,6 +62,7 @@ class GeometryService:
                    for i in range(n+1) for ox, oy in offsets)
 
     def touches_danger(self, point):
+        if not self.dangerous: return False
         r = self.radius
         return any(self.cell_xy(point.x+dx, point.y+dy) in self.dangerous
                    for dx, dy in ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
@@ -95,18 +97,33 @@ class GeometryService:
         if not bad: return False
         # Compare the distance to a safe cell center for every offending sample.
         # Tangential sliding is allowed; movement deeper into a wall is not.
+        steps = max(1, math.ceil(math.hypot(end.x-start.x, end.y-start.y)/8))
         for n, (x, y) in enumerate(offsets):
-            a, b = Vec(x=start.x+x, y=start.y+y), Vec(x=end.x+x, y=end.y+y)
+            ax, ay, bx, by = start.x+x, start.y+y, end.x+x, end.y+y
             if n not in bad:
-                if not self.line_clear(a, b, radius=0): return False
-            elif self.cell(b) not in self.walkable:
-                nearest = self.positions[self.nearest(a)]
-                if b.distance(nearest) > a.distance(nearest)+1e-6: return False
+                if any(self.cell_xy(ax+(bx-ax)*step/steps, ay+(by-ay)*step/steps) not in self.walkable
+                       for step in range(1, steps+1)): return False
+            elif self.cell_xy(bx, by) not in self.walkable:
+                nearest = self.positions[self.nearest(Vec(x=ax, y=ay))]
+                if (bx-nearest.x)**2+(by-nearest.y)**2 > (ax-nearest.x)**2+(ay-nearest.y)**2+1e-6: return False
         return self.cell(end) in self.walkable
 
     def nearest(self, p):
         if not self.walkable: raise ValueError("No walkable cells")
-        return min(self.walkable, key=lambda i: self.positions[i].distance(p))
+        cell = self.cell(p)
+        if cell in self.walkable: return cell
+        candidates = self.nearest_candidates.get(cell)
+        if candidates is None:
+            center = self.positions.get(cell)
+            if center is None:
+                return min(self.walkable, key=lambda i: (self.positions[i].x-p.x)**2+(self.positions[i].y-p.y)**2)
+            distances = {i: math.hypot(self.positions[i].x-center.x, self.positions[i].y-center.y) for i in self.walkable}
+            # Within a 40px cell, |p-center| <= 20*sqrt(2). By the
+            # triangle inequality, farther centers cannot become nearest.
+            bound = min(distances.values())+40*math.sqrt(2)+1e-6
+            candidates = tuple(i for i, distance in distances.items() if distance <= bound)
+            self.nearest_candidates[cell] = candidates
+        return min(candidates, key=lambda i: (self.positions[i].x-p.x)**2+(self.positions[i].y-p.y)**2)
 
     def path(self, start, goal):
         a, b = self.nearest(start), self.nearest(goal)

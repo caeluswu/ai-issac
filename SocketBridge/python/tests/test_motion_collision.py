@@ -10,6 +10,16 @@ from tests.combat_fixtures import snapshot, context
 
 
 class TestCollisionMotion(unittest.TestCase):
+    def test_large_room_overlap_queries_preserve_exact_nearest_distance(self):
+        import random
+        captured = json.loads((Path(__file__).parent/"fixtures/large_wall.json").read_text(encoding="utf8"))
+        g = GeometryService(WorldSnapshot.model_validate(captured[0]))
+        randomizer = random.Random(19)
+        for _ in range(250):
+            p = Vec(x=randomizer.uniform(40, 1000), y=randomizer.uniform(80, 500))
+            expected = min(v.distance(p) for i, v in g.positions.items() if i in g.walkable)
+            self.assertAlmostEqual(g.positions[g.nearest(p)].distance(p), expected, places=6)
+
     def test_solid_wall_stops_one_axis_and_allows_sliding(self):
         g = GeometryService(snapshot())
         p, v, blocked, unsafe = g.sweep(Vec(x=33, y=160), Vec(x=-4, y=3))
