@@ -20,6 +20,8 @@ def assess(directory, role, holdout=False):
         run = directory/f"sample-{row['index']:02d}"
         if (run/"trace.jsonl").exists() and (run/"report.json").exists():
             audit = audit_run(run); audits.append(audit)
+            if any(row.get(key) != value for key, value in audit["report"].items()):
+                issues.append(f"{row['index']}:SUMMARY_REPORT_MISMATCH")
             manifest = json.loads((run/"manifest.json").read_text(encoding="utf-8"))
             hashes.add(json.dumps(manifest["source_hashes"], sort_keys=True))
             issues.extend(f"{row['index']}:{issue}" for issue in audit["issues"])

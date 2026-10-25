@@ -113,6 +113,9 @@ class WeightedTarget(Target):
 
 class KeepRange:
     def __init__(self, params): self.params = params
+    def route(self, geometry, s, target, build, weapon, excluded=(), terrain=False):
+        provider = getattr(weapon, "firing_route", None)
+        return provider(geometry, s.player.pos, target, build, excluded, terrain) if provider else []
     def score(self, delta, desired, s, build):
         low, high = (self.params[x]*build.effective_range for x in ("min_range_ratio", "max_range_ratio"))
         return -max(low-delta.length(), 0, delta.length()-high)/50-min(abs(delta.x), abs(delta.y))/90
@@ -163,6 +166,8 @@ class NormalTears:
     capabilities = CapabilitySet("normal_tears")
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
     def __init__(self, params): self.params = params
+    def firing_route(self, geometry, start, target, build, excluded=(), terrain=False):
+        return geometry.firing_route(start, target, build.effective_range, terrain=terrain, excluded=excluded)
     def pending_damage(self, s, enemy):
         damage = 0.
         for tear in s.projectiles["player_tears"] or []:

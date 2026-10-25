@@ -1,15 +1,41 @@
 import json
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 from combat.catalog import default_plan, compile_plan
 from combat.components import EXECUTABLES, Registry, AttackProposal, CapabilitySet
 from combat.controller import JointActionSolver, BuildResolver
-from combat.models import WorldSnapshot, Vec
+from combat.models import WorldSnapshot, Vec, BuildProfile
+from combat.geometry import GeometryService
+from combat.catalog import CATALOG, ComponentSpec
+from combat.components import DirectAim
 from combat.threats import EnemyAdapters, GenericEnemy, ThreatField, ThreatForecast
 from tests.combat_fixtures import snapshot, context
 
 
 class TestReplaceableComponents(unittest.TestCase):
+    def test_new_weapon_family_uses_adapter_and_catalog_without_scheduler_edits(self):
+        class BuildFixture:
+            def update(self, s): return BuildProfile(family="fixture_charge")
+        class WeaponFixture:
+            capabilities = CapabilitySet("fixture_charge", break_plain_poop=False)
+            def __init__(self, params): pass
+            def propose(self, *args): return [AttackProposal((0, 1), 1., 1., "fixture_release")]
+            def firing_route(self, geometry, start, target, build, excluded=(), terrain=False):
+                return geometry.path(start, Vec(x=200, y=200))
+        s = snapshot(); s.stats["weapon_type"] = 99
+        build = BuildResolver(adapters={99: BuildFixture()}).update(s)
+        plan = default_plan(context(s)).model_dump(); plan["required_capabilities"] = ["fixture_charge"]
+        plan["profiles"]["safe"]["fire"] = {"component": "fire.fixture_charge", "params": {}}
+        plan["profiles"]["safe"]["aim"] = {"component": "aim.fixture", "params": {"max_lead_ticks": 12, "movement_inheritance": False}}
+        specs = {"fire.fixture_charge": ComponentSpec("fire.fixture_charge", {}, "fixture", (), weapons=("fixture_charge",)),
+                 "aim.fixture": ComponentSpec("aim.fixture", CATALOG["aim.direct"].parameters, "fixture", (), weapons=("fixture_charge",))}
+        with patch.dict(CATALOG, specs), patch.dict(EXECUTABLES.factories, {"fire.fixture_charge": WeaponFixture, "aim.fixture": DirectAim}):
+            compiled = compile_plan(plan, context(s), capabilities=("fixture_charge",))
+            a = JointActionSolver().solve(s, compiled, build)
+        self.assertEqual(a.shoot, (0, 1))
+        self.assertEqual(a.diagnostics["route_goal"], [200, 200])
+
     def test_component_fault_uses_declared_substitute_and_records_cause(self):
         class BrokenFire:
             def __init__(self, params): pass
@@ -73,6 +99,12 @@ class TestReplaceableComponents(unittest.TestCase):
 
 
 class TestThreats(unittest.TestCase):
+    def test_escape_reserve_follows_withdrawal_instead_of_holding_still(self):
+        s = snapshot(enemies=False)
+        s.projectiles["enemy_projectiles"] = [{"pos": {"x": 200, "y": 160}, "vel": {"x": 4.2, "y": 0}, "collision_radius": 5}]
+        fraction, slack, directions = ThreatField(s).escape(GeometryService(s), s.player.pos, 4.2, 10)
+        self.assertGreaterEqual(directions, 1)
+        self.assertGreaterEqual(slack, 6)
     def test_fast_distant_projectile_is_not_pruned_by_nearness(self):
         s = snapshot(); s.enemies = []
         s.projectiles["enemy_projectiles"] = [{"pos": {"x": 1000, "y": 160}, "vel": {"x": -80, "y": 0}, "collision_radius": 4}]

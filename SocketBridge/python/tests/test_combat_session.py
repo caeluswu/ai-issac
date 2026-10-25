@@ -106,6 +106,27 @@ class FixturePlanner:
 
 
 class TestSession(unittest.IsolatedAsyncioTestCase):
+    async def test_stale_solve_is_discarded_and_recomputed_from_fresh_state(self):
+        from combat.controller import JointActionSolver
+        class DelayedOnce(JointActionSolver):
+            def __init__(self): super().__init__(); self.once = True
+            def solve(self, *args):
+                if self.once:
+                    import time
+                    time.sleep(.13); self.once = False
+                return super().solve(*args)
+        with tempfile.TemporaryDirectory() as directory:
+            game = SimulatedRoom(); bridge = SocketBridge(port=0); log = RunLog(Path(directory)/"run")
+            session = CombatSession(bridge, FixturePlanner(), game, log, ready_timeout=3)
+            session.solver = DelayedOnce()
+            async def boot(_): await game.connect(bridge._server._server.sockets[0].getsockname()[1])
+            try:
+                report = await asyncio.wait_for(session.run(bootstrap=boot), 15)
+                self.assertTrue(report.success, report.error)
+                self.assertEqual(report.discarded_decisions, 1)
+                self.assertEqual(game.s.mode, "MANUAL")
+            finally: await game.close()
+
     async def test_resume_retries_only_while_owned_pause_is_confirmed(self):
         with tempfile.TemporaryDirectory() as directory:
             game = SimulatedRoom(); log = RunLog(Path(directory)/"run")

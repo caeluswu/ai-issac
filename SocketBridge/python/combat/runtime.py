@@ -276,6 +276,7 @@ class CombatSession:
         self.replan_requests = 0
         self.clear_started = None
         self.clear_safe_since = None
+        self.deadline_misses = []
         self.plan = None
         self.revision = 0
         self.pending = None
@@ -365,9 +366,15 @@ class CombatSession:
         if s.paused: raise RuntimeError("UNOWNED_PAUSE")
         began = time.monotonic()
         self.pause_owned = True
-        await self.pause.toggle()
+        await self.set_mode("FORCE_AI")
         deadline = time.monotonic()+3
+        next_press = 0.
+        pressed_frame = s.frame
         while time.monotonic() < deadline:
+            if time.monotonic() >= next_press:
+                await self.pause.toggle()
+                pressed_frame = self.observation.latest.frame
+                next_press = time.monotonic()+.7
             h = self.heartbeat
             if h and self.heartbeat_at > began and h["paused"] and h["room_visit_id"] == s.room_visit_id:
                 # Require the game update count to remain frozen across heartbeats.
@@ -377,8 +384,18 @@ class CombatSession:
                     await self.rpc("GET_FULL_STATE")
                     frozen = self.observation.latest
                     if not frozen.paused or frozen.room_visit_id != s.room_visit_id: raise RuntimeError("PAUSE_CONTEXT_CHANGED")
+                    await self.release()
                     self.log("pause_confirmed", entry_frame=s.frame, paused_frame=f, delay_ticks=f-s.frame)
                     return frozen, began
+            # During a rejected Escape (entry animation), defend locally while
+            # waiting for a confirmed native pause. No attack before LLM setup.
+            current = self.observation.latest
+            if current and current.hostiles and current.frame > pressed_frame and current.room_visit_id == s.room_visit_id and not current.paused and self.observation.fresh() and self.latest_acted != current.snapshot_id:
+                build = self.build_resolver.update(current)
+                guard = await asyncio.to_thread(self.solver.solve, current, default_plan(self.context_ref(current, build)), build)
+                try: await self.send_action(current, guard.move, (0, 0), {"state": "ENTRY_GUARD", "decision_ms": guard.decision_ms})
+                except TimeoutError:
+                    self.log("entry_guard_discarded", frame=current.frame)
             await asyncio.sleep(.02)
         raise TimeoutError("PAUSE_NOT_CONFIRMED")
 
@@ -528,7 +545,10 @@ class CombatSession:
                             "progress": self.supervisor.metrics(), "last_action": self.previous_action.model_dump() if self.previous_action else None}
                 self.pending = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 20))
                 self.log("replan_started", frame=s.frame, reasons=reasons)
+            solve_started = time.monotonic()
             action = await asyncio.to_thread(self.solver.solve, s, self.plan, build.model_copy(deep=True))
+            decision_wall_ms = (time.monotonic()-solve_started)*1000
+            action.diagnostics["decision_wall_ms"] = decision_wall_ms
             if self.judge_result == "CLEARED":
                 if self.clear_started is None: self.clear_started = s.frame
                 if not action.diagnostics["no_safe_candidate"] and action.score["escape_slack"] >= 6:
@@ -540,14 +560,23 @@ class CombatSession:
                 if s.frame-self.clear_started >= 90: return "CLEAR_UNSAFE"
             else:
                 self.clear_started = self.clear_safe_since = None
-            self.previous_action = action
             if action.diagnostics.get("component_failures"):
                 self.fallbacks += len(action.diagnostics["component_failures"])
                 self.event_reasons.add("invalid_profile")
                 self.log("component_fallback", frame=s.frame, failures=action.diagnostics["component_failures"])
-            self.timings.append(action.decision_ms)
+            self.timings.append(decision_wall_ms)
             self.log.candidates(s.frame, self.solver.last_candidates)
-            await self.send_action(s, action.move, action.shoot, action.model_dump())
+            try:
+                await self.send_action(s, action.move, action.shoot, action.model_dump())
+            except TimeoutError as exc:
+                if "STALE_ACTION" not in str(exc): raise
+                self.deadline_misses.append(s.frame)
+                self.log("stale_decision_discarded", frame=s.frame)
+                if sum(s.frame-f <= 30 for f in self.deadline_misses) >= 3:
+                    raise RuntimeError("CONTROL_DEADLINE_MISSES") from exc
+                s = await self.next_snapshot(after=s.snapshot_id)
+                continue
+            self.previous_action = action
             s = await self.next_snapshot(after=s.snapshot_id)
 
     async def run(self, bootstrap=None, startup_only=False, on_ready=None):
@@ -619,6 +648,7 @@ class CombatSession:
             seed=s.seed if s else None, error=error, progress_metrics=self.supervisor.metrics(),
             replan_requests=self.replan_requests,
             decision_p99_ms=sorted(self.timings)[min(len(self.timings)-1, int(.99*len(self.timings)))] if self.timings else None,
-            safe_clear_ticks=max(0, s.frame-self.clear_started) if self.clear_started is not None and s else 0)
+            safe_clear_ticks=max(0, s.frame-self.clear_started) if self.clear_started is not None and s else 0,
+            discarded_decisions=len(self.deadline_misses))
         self.log.finish(report)
         return report

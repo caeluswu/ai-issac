@@ -25,8 +25,17 @@ class ThreatForecast:
     segment_end: tuple | None = None
     source: str = "observed"
 
-    def gap(self, a, b, tick, player_radius):
-        if tick < self.start or tick > self.end: return 1000.
+    def gap(self, a, b, tick, player_radius, begin=None):
+        begin = max(0, tick-1) if begin is None else begin
+        if tick < self.start or begin > self.end: return 1000.
+        if begin < self.start or tick > self.end:
+            duration = max(1e-9, tick-begin)
+            low, high = max(begin, self.start), min(tick, self.end)
+            dx, dy = b[0]-a[0], b[1]-a[1]
+            origin = a
+            a = (origin[0]+dx*(low-begin)/duration, origin[1]+dy*(low-begin)/duration)
+            b = (origin[0]+dx*(high-begin)/duration, origin[1]+dy*(high-begin)/duration)
+            begin, tick = low, high
         if self.segment_end:
             ex, ey = self.segment_end
             # Segment/segment intersection prevents fast crossing between two
@@ -40,7 +49,7 @@ class ThreatForecast:
                 if 0 <= u <= 1 and 0 <= v <= 1: return -self.radius-player_radius-self.uncertainty
             return min(distance_segment(*a, self.x, self.y, *self.segment_end),
                        distance_segment(*b, self.x, self.y, *self.segment_end))-self.radius-player_radius-self.uncertainty
-        ax, ay = a[0]-self.x-self.vx*max(0, tick-1), a[1]-self.y-self.vy*max(0, tick-1)
+        ax, ay = a[0]-self.x-self.vx*begin, a[1]-self.y-self.vy*begin
         bx, by = b[0]-self.x-self.vx*tick, b[1]-self.y-self.vy*tick
         return distance_segment(0, 0, ax, ay, bx, by)-self.radius-player_radius-self.uncertainty
 
@@ -130,49 +139,63 @@ class ThreatField:
                 for x in range(math.floor((min(xs)-r)/64), math.floor((max(xs)+r)/64)+1):
                     for y in range(math.floor((min(ys)-r)/64), math.floor((max(ys)+r)/64)+1): self.buckets[step, x, y].add(i)
 
-    def query(self, a, b, radius, tick):
+    def query(self, a, b, radius, tick, begin=None):
         indices = set()
         for x in range(math.floor((min(a[0], b[0])-radius)/64), math.floor((max(a[0], b[0])+radius)/64)+1):
             for y in range(math.floor((min(a[1], b[1])-radius)/64), math.floor((max(a[1], b[1])+radius)/64)+1):
                 indices.update(self.buckets.get((-1, x, y), ()))
-                indices.update(self.buckets.get((min(7, int(tick//6)), x, y), ()))
+                for step in range(min(7, int((tick if begin is None else begin)//6)), min(7, int(tick//6))+1):
+                    indices.update(self.buckets.get((step, x, y), ()))
         return (self.threats[i] for i in indices)
 
     def gap(self, a, b, tick, radius):
         return min((t.gap(a, b, tick, radius) for t in self.query(a, b, radius, tick)), default=1000.)
 
-    def collides(self, a, b, tick, radius):
-        return any(t.gap(a, b, tick, radius) <= 0 for t in self.query(a, b, radius, tick))
+    def collides(self, a, b, tick, radius, begin=None):
+        return any(t.gap(a, b, tick, radius, begin) <= 0 for t in self.query(a, b, radius, tick, begin))
+
+    def edge_safe(self, a, b, begin, end, radius):
+        steps = max(1, math.ceil((end-begin)/3))
+        for step in range(steps):
+            low, high = step/steps, (step+1)/steps
+            first = (a.x+(b.x-a.x)*low, a.y+(b.y-a.y)*low)
+            last = (a.x+(b.x-a.x)*high, a.y+(b.y-a.y)*high)
+            if self.collides(first, last, begin+(end-begin)*high, radius, begin+(end-begin)*low): return False
+        return not self.collides((b.x, b.y), (b.x, b.y), end+6, radius, end)
 
     def escape(self, geometry, position, speed, radius, start_tick=12):
         origin = geometry.cell(position)
         if origin not in geometry.walkable: return 0., -45., 0
+        if not self.threats: return 1., 45., 2
         # Time-expanded reachability: each traversed edge is checked at its
         # actual arrival time, including the six-update withdrawal reserve.
         queue, seen, directions = deque([(origin, start_tick, None)]), {origin}, set()
         first = geometry.positions[origin]
+        best_slack = -45.
         while queue and len(seen) <= 48:
             cell, tick, direction = queue.popleft()
             for neighbor in geometry.neighbors.get(cell, []):
                 if neighbor in seen: continue
-                arrival = tick+40/max(1., speed)
+                a, b = position if cell == origin else geometry.positions[cell], geometry.positions[neighbor]
+                arrival = tick+a.distance(b)/max(1., speed)
                 if arrival+6 > 45: continue
-                a, b = geometry.positions[cell], geometry.positions[neighbor]
-                valid = all(not self.collides((a.x, a.y), (b.x, b.y), t, radius)
-                            for t in (tick, arrival, arrival+6))
+                valid = self.edge_safe(a, b, tick, arrival, radius)
                 if not valid: continue
                 seen.add(neighbor)
                 branch = direction if direction is not None else neighbor
-                if b.distance(first) >= 60: directions.add(branch)
+                if b.distance(first) >= 60:
+                    point = (b.x, b.y)
+                    ttc = next((t for t in range(math.ceil(arrival), 46, 3) if self.collides(point, point, t, radius)), 46)
+                    slack = ttc-arrival
+                    if slack >= 6:
+                        directions.add(branch)
+                        best_slack = max(best_slack, slack)
                 queue.append((neighbor, arrival, branch))
         count = len(directions)
         fraction = min(1., count/2)
-        # Escape slack is the hold margin at the candidate endpoint; a viable
-        # path is also required, so static free-area ratio cannot mask enclosure.
-        point = (position.x, position.y)
-        ttc = next((t for t in range(start_tick, 46, 3) if self.collides(point, point, t, radius)), 51)
-        slack = ttc-start_tick-60/max(1., speed) if count else -45.
-        return fraction, slack, count
+        # Reserve is measured along an actual escape path, not by pretending
+        # the player holds still at the current rollout endpoint forever.
+        return fraction, best_slack, count
 
     def attack_safe(self, target, build, positions, hit):
         if target is None or hit <= 0: return True

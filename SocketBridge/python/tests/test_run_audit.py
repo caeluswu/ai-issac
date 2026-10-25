@@ -44,3 +44,11 @@ class TestAudit(unittest.TestCase):
             p = Path(name)
             self.fixture(p, [("start", True, 6), ("fight", False, 5)]+[("fight", True, 5)]*3)
             self.assertIn("DAMAGE_REPORT_MISMATCH", audit.audit_run(p)["issues"])
+
+    def test_optimized_report_cannot_claim_settling_without_raw_evidence(self):
+        with tempfile.TemporaryDirectory() as name:
+            p = Path(name)
+            self.fixture(p, [("start", True, 6), ("fight", False, 6)]+[("fight", True, 6)]*3)
+            report = json.loads((p/"report.json").read_text()); report["safe_clear_ticks"] = 15
+            (p/"report.json").write_text(json.dumps(report))
+            self.assertIn("MISSING_SAFE_CLEAR_SETTLING", audit.audit_run(p)["issues"])

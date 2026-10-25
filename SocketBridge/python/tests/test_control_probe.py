@@ -129,7 +129,10 @@ class TestControlProbe(unittest.IsolatedAsyncioTestCase):
         self.game = FakeGame()
         await self.game.connect(port)
         self.probe = ControlProbe(self.bridge, Path(self.temp.name), cycles=1,
-                                  phase_scale=0.65)
+                                  # Windows scheduling can deliver fewer than
+                                  # ten fake updates in the shortened stop phase.
+                                  # Keep the real ten-frame criterion unchanged.
+                                  phase_scale=1.0)
         await self.probe.wait_ready(timeout=2.0)
 
     async def asyncTearDown(self):

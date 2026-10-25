@@ -158,15 +158,16 @@ class JointActionSolver:
             if self.last_route_goal: self.failed_goals.append(self.last_route_goal)
             self.last_recovery_route = s.frame
             self.route_failures += 1
-        route = g.firing_route(s.player.pos, target.pos, build.effective_range, excluded=self.failed_goals) if target else []
-        if target and not route:
+        route = modules["position"].route(g, s, target.pos, build, modules["fire"], self.failed_goals) if target else []
+        weapon_capabilities = getattr(modules["fire"], "capabilities", None)
+        if target and not route and weapon_capabilities and weapon_capabilities.break_plain_poop:
             # Normal tears can open an otherwise sealed lane through ordinary
             # poop. TNT, explosive/red poop and unknown variants are excluded.
             blockers = []
             for index, grid in (s.layout["grid"] or {}).items():
                 if grid["type"] == 14 and grid["variant"] == 0 and grid["collision"] != 0:
                     position = Vec(x=grid["x"], y=grid["y"])
-                    path = g.firing_route(s.player.pos, position, build.effective_range, terrain=True)
+                    path = modules["position"].route(g, s, position, build, modules["fire"], terrain=True)
                     if path: blockers.append((len(path)*40+position.distance(s.player.pos), index, position, path))
             if blockers:
                 _, index, position, route = min(blockers, key=lambda x: (x[0], x[1]))
