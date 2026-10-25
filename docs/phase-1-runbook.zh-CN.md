@@ -141,6 +141,8 @@ Wiki 索引位于 `configs/knowledge/index.json`，缓存位于同目录的 `cac
 
 清房基础判据成立后，再进行至少 15 更新帧的安全收尾；90 帧仍不能满足安全条件判 `CLEAR_UNSAFE`。收尾伤害计入房间损失，清理期间观察到死亡也不能报告成功。普通 Boom Fly 的模型爆炸半径为 100 像素；Ticking Spider 使用 70 像素，再额外计入玩家体积、撤离余量和残余危险误差。攻击这些目标时持续保留爆炸距离，不能等最后一发泪弹在途后才撤退。
 
+Ticking Spider 即使空中碰撞类为零，也保留落地预测。`type=16, variant=2` 登记独立的接近自爆适配器：原始记录包含满血个体在未开火时自爆，以及同帧爆炸伤害与死亡事件。它在路径选择前就提供可能的自爆范围，并参与开火前与死亡后检查；不把保护推迟到击杀之后。该变体暂用 100 像素工程包络，未宣称精确半径；普通 Mulligan 不继承这一爆炸机制。观测证据见 `artifacts/phase-1-optimization-20261026/mulliboom-observations.json`。
+
 Ticking Spider 参数来自固定构建的已有轨迹：无遮挡、无近期受伤的条件下，约 54/60 像素记录到爆炸伤害，约 72 像素保持无伤。回调与快照存在时序误差，因此 70 只是附加余量前的工程模型值，不是游戏精确半径。证据位于 `artifacts/phase-1-optimization-20261026/ticking-spider-calibration.json`，可用 `scripts/analyze_death_radius.py` 从原始轨迹复算。其他变体和冠军机制没有逐一校准。
 
 追逐、突进和 Hopper 落地采用多个运动假设及额外误差；这些是未校准的保守预测，不把未知内部状态编号解释成已知攻击阶段。适配器只覆盖所登记的普通变体，不宣称覆盖全部怪物或冠军机制。桥接保存带实例 ID 的近期死亡证据，单纯实体消失不会算作击杀。地面效果观测区分敌方与玩家来源；未知或减速地面采用保守危险模型。静态尖刺与机关区域保持避让，尚不解释所有机关状态数值。类型编号依据固定安装包 `resources/scripts/enums.lua`；API 依据 [EntityEffect](https://wofsauge.github.io/IsaacDocs/rep/EntityEffect.html)、[EntityNPC](https://wofsauge.github.io/IsaacDocs/rep/EntityNPC.html)，机制资料索引见 [Boom Fly](https://bindingofisaacrebirth.wiki.gg/wiki/Boom_Fly)。

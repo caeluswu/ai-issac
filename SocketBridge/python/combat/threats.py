@@ -95,20 +95,20 @@ class Pursuer(GenericEnemy):
         return predictions
 
 
+class ContactExplosive(ExplosiveDeath):
+    def forecast(self, enemy, snapshot):
+        # Captured full-health Mullibooms self-destructed without our firing.
+        # Post-kill checks alone cannot protect a route from proximity blasts.
+        motion = Pursuer().forecast(enemy, snapshot)
+        return motion+[ThreatForecast(t.identity+":contact_blast", t.x, t.y, t.vx, t.vy, 100,
+            uncertainty=max(8, t.uncertainty), source="possible_contact_triggered_explosion") for t in motion]
+
+
 class BurstMover(Pursuer):
     def forecast(self, enemy, snapshot):
         return [ThreatForecast(t.identity, t.x, t.y, t.vx, t.vy, t.radius, t.start, t.end,
                                max(t.uncertainty, 18+enemy.vel.length()*3), source="burst_turn_bound_uncalibrated")
                 for t in super().forecast(enemy, snapshot)]
-
-
-class ExplosiveBurst(BurstMover):
-    # Type 250: local enums identify Ticking Spider; captured death + damage
-    # flags verify the explosion. The radius remains a conservative estimate.
-    # Unhurt line-of-sight death at ~72px, hurt at ~54-60px, ordinary variant.
-    # 70px plus player radius and withdrawal reserve remains above that observed
-    # safe distance. This is an engineering bound, not the engine's exact radius.
-    death_effect_radius = 70
 
 
 class LandingMover(BurstMover):
@@ -124,10 +124,20 @@ class LandingMover(BurstMover):
         return predictions
 
 
+class ExplosiveBurst(LandingMover):
+    # Ticking Spider: observed airborne class zero must retain landing threats.
+    # Unhurt line-of-sight death at ~72px, hurt at ~54-60px, ordinary variant.
+    # 70px plus player radius and withdrawal reserve remains an engineering
+    # bound, not the engine's exact radius.
+    death_effect_radius = 70
+
+
 class EnemyAdapters:
     def __init__(self):
         self.default = GenericEnemy()
-        self.adapters = {(25, 0): ExplosiveDeath(), (10, 0): Pursuer(), (18, 0): Pursuer(),
+        # Type 16 variant 2 has captured same-update explosion damage and death.
+        # Use the conservative 100px envelope until its radius is calibrated.
+        self.adapters = {(25, 0): ExplosiveDeath(), (16, 2): ContactExplosive(), (10, 0): Pursuer(), (18, 0): Pursuer(),
                          (85, 0): BurstMover(), (94, 0): BurstMover(), (250, 0): ExplosiveBurst(),
                          (305, 0): BurstMover(), (29, 0): LandingMover()}
     def resolve(self, enemy): return self.adapters.get((enemy.type, enemy.variant), self.default)
