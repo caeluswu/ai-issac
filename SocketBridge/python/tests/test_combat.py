@@ -160,9 +160,12 @@ class TestGeometryAndControl(unittest.TestCase):
         self.assertEqual(a.move, b.move); self.assertEqual(a.score, b.score)
 
     def test_incoming_projectile_changes_action(self):
+        ordinary = JointActionSolver().solve(self.s, self.p, self.b)
         self.s.projectiles["enemy_projectiles"] = [{"pos": {"x": 330, "y": 160}, "vel": {"x": -8, "y": 0}, "collision_radius": 6}]
         action = JointActionSolver().solve(self.s, self.p, self.b)
-        self.assertNotEqual(action.move[1], 0)
+        self.assertNotEqual(action.move, ordinary.move)
+        self.assertGreater(action.score["clearance"], 0)
+        self.assertGreaterEqual(action.score["escape_slack"], 6)
 
     def test_build_change_rejected(self):
         resolver = BuildResolver(); resolver.update(self.s)

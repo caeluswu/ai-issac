@@ -190,6 +190,7 @@ class BuildProfile(Strict):
     family: str = "normal_tears"
     revision: int = 1
     move_speed: float = 4.2
+    player_displacement_scale: float = Field(default=1, gt=0, le=4)
     tear_speed: float = 10.0
     effective_range: float = 220
     fire_interval: float = 11

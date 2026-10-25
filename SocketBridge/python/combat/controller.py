@@ -8,6 +8,7 @@ from .models import Vec, ZERO, BuildProfile, ActionFrame, Enemy
 from .geometry import GeometryService, segment_distance
 from .components import EXECUTABLES, resilient_component, AttackProposal
 from .threats import ThreatField, EnemyAdapters, SafetyAssessment
+from .motion import PlayerMotion
 
 MOVES = tuple((x, y) for y in (-1, 0, 1) for x in (-1, 0, 1))
 SHOTS = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
@@ -28,7 +29,8 @@ class NormalTearsBuild:
         if self.initial_inventory is None: self.initial_inventory = fingerprint
         if fingerprint != self.initial_inventory: raise ValueError("BUILD_CHANGED: stop before using incompatible plan")
         p = self.profile
-        p.move_speed = max(1, float(s.stats["speed"])*4.2)
+        p.player_displacement_scale = 2.
+        p.move_speed = max(1, float(s.stats["speed"])*4.4)*p.player_displacement_scale
         p.effective_range = max(40, float(s.stats["tear_range"])*.75)
         p.fire_interval = max(1, float(s.stats.get("max_fire_delay", 10))+1)
         p.inheritance_available = bool(s.movement_inheritance)
@@ -219,7 +221,7 @@ class JointActionSolver:
             if candidates and (time.perf_counter()-started)*1000 > 26:
                 self.budget_exhausted = True
                 break
-            desired = Vec(x=move[0], y=move[1]).unit()*build.move_speed
+            desired = PlayerMotion.desired(move, build)
             position, velocity = s.player.pos, s.player.vel
             trajectory = [position]
             firing_velocity = velocity
@@ -227,8 +229,7 @@ class JointActionSolver:
             clearance, wall = 1000., False
             early_clearance, first_contact, blocked_steps = 1000., 13, 0
             for tick in range(1, 13):
-                velocity = velocity*.75+desired*.25
-                new_position, velocity, blocked, unsafe = g.sweep(position, velocity)
+                new_position, velocity, blocked, unsafe = PlayerMotion.step(position, velocity, desired, g, build)
                 blocked_steps += blocked
                 if unsafe: wall = True; break
                 if tick == 1: firing_velocity = velocity
@@ -246,13 +247,13 @@ class JointActionSolver:
             if target:
                 delta = target.pos-position
                 distance = delta.length()
-                stance = modules["position"].score(delta, desired, s, build)
+                stance = modules["position"].score(delta, desired*build.player_displacement_scale, s, build)
                 if waypoint:
                     # Receding-horizon actions may brake or turn at the next
                     # update. Constant-input endpoint scoring penalizes crossing
                     # a nearby waypoint and makes zero input a local optimum.
                     stance += (s.player.pos.distance(waypoint)-closest_waypoint)*(.35 if recovering else .15)
-            evade = modules["evade"].score(clearance, desired)
+            evade = modules["evade"].score(clearance, desired*build.player_displacement_scale)
             attacks = ([AttackProposal((0, 0), 0, 0, "entry_move_only")] if movement_only else
                        modules["fire"].propose(s, build, profile, target, firing_velocity, g, modules["aim"]))
             for attack in attacks:
