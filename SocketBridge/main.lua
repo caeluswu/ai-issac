@@ -51,6 +51,7 @@ local State = {
     roomEntered = false,
     roomVisit = 0,
     runId = "boot",
+    recentDeaths = {},
 
     -- Subscription
     subscribedSensors = {},  -- {["ENEMIES"] = true, ...}
@@ -686,6 +687,8 @@ SensorRegistry:register("ENEMIES", {
             projectile_cooldown = npc and npc.ProjectileCooldown or 0,
             projectile_delay = npc and npc.ProjectileDelay or 0,
             collision_radius = entity.Size,
+            contact_damage = entity.CollisionDamage,
+            champion_color = npc and npc:GetChampionColorIdx() or -1,
             distance = player and player.Position:Distance(entity.Position) or 0,
             target_pos = targetPos,
             v1 = npc and Helpers.vectorToTable(npc.V1) or { x = 0, y = 0 },
@@ -844,12 +847,18 @@ SensorRegistry:register("FIRE_HAZARDS", {
             [10]="MOVABLE",[11]="COAL",[12]="MOVABLE_BLUE",[13]="MOVABLE_PURPLE",
         }
         if entity.Type == EntityType.ENTITY_EFFECT then
-            if DANGEROUS_FIRE[entity.Variant] then
+            local CREEP = {[22]=true,[23]=true,[24]=true,[25]=true,[26]=true,[56]=true}
+            local hostileCreep = CREEP[entity.Variant] and entity.SpawnerType ~= EntityType.ENTITY_PLAYER
+                and entity.SpawnerType ~= EntityType.ENTITY_FAMILIAR
+            if DANGEROUS_FIRE[entity.Variant] or hostileCreep then
+                local effect = entity:ToEffect()
                 return {
                     id = entity.Index, type = "EFFECT", variant = entity.Variant,
                     pos = Helpers.vectorToTable(entity.Position),
                     collision_radius = entity.Size > 0 and entity.Size or 20,
                     distance = dist,
+                    mechanism = hostileCreep and "creep_or_slowing_surface" or "fire",
+                    remaining_ticks = effect and effect.Timeout > 0 and effect.Timeout or 45,
                 }
             end
         elseif entity.Type == 33 then  -- ENTITY_FIREPLACE
@@ -1506,6 +1515,11 @@ function CustomCollectors.COMBAT_FRAME()
         local ok, value = pcall(function() return player:GetTearMovementInheritance(d) end)
         if ok then inherited[tostring(d.X) .. "," .. tostring(d.Y)] = Helpers.vectorToTable(value) end
     end
+    local deaths = {}
+    for _, death in ipairs(State.recentDeaths) do
+        if State.updateCount - death.frame <= 90 then table.insert(deaths, death) end
+    end
+    State.recentDeaths = deaths
     return {schema_version = 1, run_id = State.runId,
         room_visit_id = State.runId .. ":" .. tostring(State.roomVisit),
         frame = State.updateCount, paused = Game():IsPaused(), mode = State.controlMode,
@@ -1513,6 +1527,7 @@ function CustomCollectors.COMBAT_FRAME()
         player = CustomCollectors.PLAYER_POSITION()[1], stats = CustomCollectors.PLAYER_STATS()[1],
         health = CustomCollectors.PLAYER_HEALTH()[1], inventory = CustomCollectors.PLAYER_INVENTORY()[1],
         enemies = enemies, projectiles = CustomCollectors.PROJECTILES(), bombs = bombs, hazards = hazards,
+        recent_deaths = deaths,
         movement_inheritance = inherited,
         applied_action_id = InputExecutor.appliedActionId,
         applied_frame = InputExecutor.appliedFrame,
@@ -1616,6 +1631,7 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, function()
             State.controlMode = "MANUAL"
             State.currentRoom = currentRoom
             State.roomVisit = State.roomVisit + 1
+            State.recentDeaths = {}
             State.roomEntered = true
 
             if Config.DEBUG then
@@ -1790,6 +1806,9 @@ end)
 
 -- MC_POST_NPC_DEATH — NPC killed
 mod:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, function(_, npc)
+    table.insert(State.recentDeaths, {instance_id = tostring(npc.InitSeed) .. ":" .. tostring(npc.Index),
+        frame = State.updateCount, type = npc.Type, variant = npc.Variant,
+        pos = Helpers.vectorToTable(npc.Position)})
     SensorTriggers:fire("MC_POST_NPC_DEATH", npc,
         function(name) SensorRegistry:collect(name, true) end)
     EventSystem.emit("NPC_DEATH", {

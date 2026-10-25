@@ -274,6 +274,8 @@ class CombatSession:
         self.supervisor = ProgressSupervisor()
         self.previous_action = None
         self.replan_requests = 0
+        self.clear_started = None
+        self.clear_safe_since = None
         self.plan = None
         self.revision = 0
         self.pending = None
@@ -464,7 +466,7 @@ class CombatSession:
             if self.rejected:
                 self.log("rejected_action", receipt=self.rejected); self.rejected = None
                 await self.release()
-            if self.judge_result: return self.judge_result
+            if self.judge_result and self.judge_result != "CLEARED": return self.judge_result
             build = self.build_resolver.update(s)
             failure = self.supervisor.observe(s, self.previous_action)
             for event in self.supervisor.events:
@@ -497,6 +499,17 @@ class CombatSession:
                 self.pending = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 20))
                 self.log("replan_started", frame=s.frame, reasons=reasons)
             action = await asyncio.to_thread(self.solver.solve, s, self.plan, build.model_copy(deep=True))
+            if self.judge_result == "CLEARED":
+                if self.clear_started is None: self.clear_started = s.frame
+                if not action.diagnostics["no_safe_candidate"] and action.score["escape_slack"] >= 6:
+                    if self.clear_safe_since is None: self.clear_safe_since = s.frame
+                    if s.frame-self.clear_safe_since >= 15:
+                        self.log("safe_clear_confirmed", frame=s.frame, started=self.clear_started, safe_since=self.clear_safe_since)
+                        return "CLEARED"
+                else: self.clear_safe_since = None
+                if s.frame-self.clear_started >= 90: return "CLEAR_UNSAFE"
+            else:
+                self.clear_started = self.clear_safe_since = None
             self.previous_action = action
             self.timings.append(action.decision_ms)
             self.log.candidates(s.frame, self.solver.last_candidates)

@@ -109,7 +109,7 @@ class ContextRef(Strict):
     room_visit_id: str
     snapshot_id: str
     build_revision: int = 1
-    catalog_revision: Literal[1] = 1
+    catalog_revision: int = Field(default=2, ge=1, le=2)
     plan_revision: int = 0
 
 
@@ -152,13 +152,14 @@ class Rationale(Strict):
 
 
 class BattlePlan(Strict):
-    schema_version: Literal[1] = 1
+    schema_version: Literal[1, 2] = 2
     context_ref: ContextRef
     default_profile: str
     profiles: dict[str, TacticProfile] = Field(min_length=1, max_length=3)
     switch_rules: list[SwitchRule] = Field(default_factory=list, max_length=8)
     replan_on: list[Literal["confirmed_damage", "no_progress", "new_enemy_mechanism", "repeated_recovery", "invalid_profile"]]
     rationale: Rationale
+    required_capabilities: list[str] = Field(default_factory=lambda: ["normal_tears"], max_length=8)
 
 
 class EnemyGroup(Strict):

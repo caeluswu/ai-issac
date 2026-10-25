@@ -36,6 +36,12 @@ class ProgressSupervisor:
         if self.last_progress is None: self.last_progress = self.last_damage = s.frame
         enemies = {e.instance_id: e for e in s.hostiles}
         if self.previous:
+            old_ids = {e.instance_id for e in self.previous.hostiles}
+            if any(d["instance_id"] in old_ids and d["frame"] > self.previous.frame
+                   for d in getattr(s, "recent_deaths", []) or []):
+                self.evidence.append("confirmed_npc_death")
+                self.last_damage = s.frame
+        if self.previous:
             for enemy in self.previous.hostiles:
                 current = enemies.get(enemy.instance_id)
                 # Disappearance is not proof of death (burrow/transform/partition).

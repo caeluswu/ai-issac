@@ -79,24 +79,28 @@ class GeometryService:
                     safe.discard(i); break
         return safe
 
-    def firing_route(self, start, target, effective_range, terrain=False):
+    def firing_route(self, start, target, effective_range, terrain=False, excluded=()):
         """Reach a cardinal firing lane, including around obstructing rocks."""
         origin = self.nearest(start)
         queue, parents, depth = deque([origin]), {}, {origin: 0}
         best = None
         while queue:
             i = queue.popleft(); p = self.positions[i]
-            delta = target-p; distance = delta.length()
-            if (25 if terrain else 55) <= distance <= effective_range*.85 and min(abs(delta.x), abs(delta.y)) <= 14:
-                end = target-delta.unit()*22 if terrain else target
-                if self.clear(p) and self.line_clear(p, end, shot=True):
-                    score = depth[i]*40+abs(distance-effective_range*.5)*.15
-                    if best is None or score < best[0]: best = (score, i)
+            # Project into exact cardinal alignment inside each walkable cell.
+            # A grid center within 14px is not necessarily a hittable stance.
+            for candidate in (Vec(x=p.x, y=target.y), Vec(x=target.x, y=p.y)):
+                if candidate.distance(p) > 19 or (round(candidate.x), round(candidate.y)) in excluded: continue
+                delta = target-candidate; distance = delta.length()
+                if (25 if terrain else 60) <= distance <= effective_range*.85:
+                    end = target-delta.unit()*22 if terrain else target
+                    if self.clear(candidate) and self.line_clear(p, candidate) and self.line_clear(candidate, end, shot=True):
+                        score = depth[i]*40+p.distance(candidate)+abs(distance-effective_range*.55)*.15
+                        if best is None or score < best[0]: best = (score, i, candidate)
             for j in self.neighbors.get(i, []):
                 if j not in depth:
                     depth[j], parents[j] = depth[i]+1, i; queue.append(j)
         if best is None: return []
-        path, i = [], best[1]
+        path, i = [best[2]], best[1]
         while True:
             path.append(self.positions[i])
             if i not in parents: break

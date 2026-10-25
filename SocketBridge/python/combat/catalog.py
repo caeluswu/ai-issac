@@ -1,6 +1,7 @@
 """Executable registry: closed names, per-slot schemas and bounded parameters."""
 from dataclasses import dataclass
 from .models import BattlePlan, ContextRef
+from .components import EXECUTABLES
 
 
 @dataclass(frozen=True)
@@ -40,7 +41,11 @@ register("recovery.local_repath", {"stall_window_ticks": (30, 15, 60), "recovery
 
 
 def compile_plan(value, context: ContextRef) -> BattlePlan:
+    if isinstance(value, BattlePlan): value = value.model_dump()
+    if value.get("schema_version", 1) == 1:
+        value = {**value, "schema_version": 2, "required_capabilities": ["normal_tears"]}
     plan = BattlePlan.model_validate(value)
+    if set(plan.required_capabilities) != {"normal_tears"}: raise ValueError("Unsupported build capability")
     a, b = plan.context_ref.model_dump(), context.model_dump()
     a.pop("snapshot_id"); b.pop("snapshot_id")
     if a != b: raise ValueError("context_ref: stale run, room, build, catalog or plan revision")
@@ -54,6 +59,8 @@ def compile_plan(value, context: ContextRef) -> BattlePlan:
             path = f"profiles.{profile_name}.{slot}"
             if not spec or not choice.component.startswith(slot+"."):
                 raise ValueError(f"{path}.component: unregistered component")
+            if choice.component not in EXECUTABLES.factories:
+                raise ValueError(f"{path}.component: missing executable implementation")
             if set(choice.params)-set(spec.parameters): raise ValueError(f"{path}.params: unknown parameters")
             for name, bounds in spec.parameters.items():
                 value = choice.params.setdefault(name, bounds[0])
@@ -73,7 +80,7 @@ def compile_plan(value, context: ContextRef) -> BattlePlan:
 
 def default_plan(context: ContextRef):
     choices = ("target.threat_first", "position.kite", "aim.predictive", "fire.normal_tears", "evade.max_clearance", "escape.keep_routes", "recovery.local_repath")
-    return compile_plan({"schema_version": 1, "context_ref": context.model_dump(), "default_profile": "safe",
+    return compile_plan({"schema_version": 2, "context_ref": context.model_dump(), "default_profile": "safe",
         "profiles": {"safe": {x.split('.')[0]: {"component": x, "params": {}} for x in choices}},
         "switch_rules": [], "replan_on": ["confirmed_damage", "no_progress", "new_enemy_mechanism", "repeated_recovery", "invalid_profile"],
         "rationale": {"summary": "Local deterministic fallback; not an LLM decision", "evidence_refs": []}}, context)
