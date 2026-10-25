@@ -205,6 +205,7 @@ class ActionFrame(Strict):
     state: str
     score: dict[str, float]
     decision_ms: float
+    diagnostics: dict[str, Any] = Field(default_factory=dict)
 
 
 class ActionReceipt(Strict):
@@ -233,3 +234,5 @@ class RoomReport(Strict):
     decision_p95_ms: float | None
     seed: str | None
     error: str | None
+    progress_metrics: dict[str, Any] = Field(default_factory=dict)
+    replan_requests: int = 0

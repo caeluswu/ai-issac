@@ -17,6 +17,7 @@ from .catalog import compile_plan, default_plan
 from .controller import BuildResolver, JointActionSolver
 from .geometry import door_route
 from .observation import SnapshotAssembler, CombatJudge
+from .supervision import ProgressSupervisor
 
 
 class RunLog:
@@ -270,6 +271,9 @@ class CombatSession:
         self.rejected = None
         self.build_resolver = BuildResolver()
         self.solver = JointActionSolver()
+        self.supervisor = ProgressSupervisor()
+        self.previous_action = None
+        self.replan_requests = 0
         self.plan = None
         self.revision = 0
         self.pending = None
@@ -462,6 +466,13 @@ class CombatSession:
                 await self.release()
             if self.judge_result: return self.judge_result
             build = self.build_resolver.update(s)
+            failure = self.supervisor.observe(s, self.previous_action)
+            for event in self.supervisor.events:
+                self.log("boundary", boundary=event.__dict__, evidence=self.supervisor.evidence)
+                if event.age_ticks >= 60 or event.kind in ("no_safe_candidate", "escape_margin"):
+                    self.event_reasons.add(event.kind)
+            if failure: return failure
+            self.solver.recovery_level = self.supervisor.recovery_level
             if self.pending and self.pending.done():
                 try:
                     value = self.pending.result()
@@ -474,13 +485,19 @@ class CombatSession:
                 self.pending = None
             recent = [f for f in self.solver.recoveries if s.frame-f <= 150]
             if len(recent) >= 2: self.event_reasons.add("repeated_recovery")
-            reasons = sorted(self.event_reasons.intersection(self.plan.replan_on))
-            if reasons and self.planner and not self.pending and s.frame-self.last_replan >= 90:
+            # Mandatory supervision is not policy-controlled by replan_on.
+            reasons = sorted(self.event_reasons)
+            severe = bool(set(reasons) & {"idle", "blocked", "stall", "no_safe_candidate", "escape_margin"})
+            budget = 6 if severe else 4
+            if reasons and self.planner and not self.pending and self.replan_requests < budget and (severe or s.frame-self.last_replan >= 90):
                 self.last_replan = s.frame; self.event_reasons.clear()
-                feedback = {"reasons": reasons, "damage_half_hearts": self.judge.damage, "current_plan": self.plan.model_dump()}
-                self.pending = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 150))
+                self.replan_requests += 1
+                feedback = {"reasons": reasons, "damage_half_hearts": self.judge.damage, "current_plan": self.plan.model_dump(),
+                            "progress": self.supervisor.metrics(), "last_action": self.previous_action.model_dump() if self.previous_action else None}
+                self.pending = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 20))
                 self.log("replan_started", frame=s.frame, reasons=reasons)
             action = await asyncio.to_thread(self.solver.solve, s, self.plan, build.model_copy(deep=True))
+            self.previous_action = action
             self.timings.append(action.decision_ms)
             self.log.candidates(s.frame, self.solver.last_candidates)
             await self.send_action(s, action.move, action.shoot, action.model_dump())
@@ -553,6 +570,7 @@ class CombatSession:
             sent_actions=self.actions, accepted_actions=len(self.accepted), observed_applied_actions=len(self.applied),
             fallback_count=self.fallbacks, recovery_count=len(self.solver.recoveries),
             decision_p95_ms=sorted(self.timings)[min(len(self.timings)-1, int(.95*len(self.timings)))] if self.timings else None,
-            seed=s.seed if s else None, error=error)
+            seed=s.seed if s else None, error=error, progress_metrics=self.supervisor.metrics(),
+            replan_requests=self.replan_requests)
         self.log.finish(report)
         return report

@@ -1,0 +1,108 @@
+"""Mandatory progress contracts. Policy changes cannot reset their clocks."""
+from collections import deque
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class BoundaryEvent:
+    kind: str
+    frame: int
+    age_ticks: int
+    severity: str
+
+
+class ProgressSupervisor:
+    def __init__(self):
+        self.previous = None
+        self.last_progress = None
+        self.last_damage = None
+        self.idle_since = None
+        self.blocked_since = None
+        self.anchor = None
+        self.route_best = {}
+        self.history = deque(maxlen=151)
+        self.events = []
+        self.announced = {}
+        self.recovery_level = 0
+        self.recovery_count = 0
+        self.max_no_progress = 0
+        self.max_idle = 0
+        self.boundary_counts = {}
+        self.evidence = []
+
+    def observe(self, s, action=None):
+        self.events, self.evidence = [], []
+        if s.paused or (self.previous and s.frame <= self.previous.frame): return None
+        if self.last_progress is None: self.last_progress = self.last_damage = s.frame
+        enemies = {e.instance_id: e for e in s.hostiles}
+        if self.previous:
+            for enemy in self.previous.hostiles:
+                current = enemies.get(enemy.instance_id)
+                # Disappearance is not proof of death (burrow/transform/partition).
+                if current and current.hp < enemy.hp:
+                    self.evidence.append("enemy_hp_decreased:"+enemy.instance_id)
+                    self.last_damage = s.frame
+            if self.previous.layout.get("grid") != s.layout.get("grid"):
+                old = self.previous.layout.get("grid") or {}
+                new = s.layout.get("grid") or {}
+                if any(g.get("type") == 14 and g.get("variant") == 0 and
+                       g.get("collision", 0) != 0 and new.get(i, {}).get("collision", 0) == 0
+                       for i, g in old.items()):
+                    self.evidence.append("breakable_obstacle_opened")
+        if action:
+            goal = action.diagnostics.get("route_goal")
+            remaining = action.diagnostics.get("route_remaining")
+            if goal is not None and remaining is not None:
+                key = tuple(goal)
+                if key not in self.route_best: self.route_best[key] = remaining
+                elif remaining <= self.route_best[key]-8:
+                    self.route_best[key] = remaining
+                    self.evidence.append("route_cost_decreased")
+            idle = action.move == (0, 0) and action.shoot == (0, 0)
+            self.idle_since = (self.idle_since if self.idle_since is not None else s.frame) if idle else None
+            if action.move != (0, 0):
+                if self.blocked_since is None:
+                    self.blocked_since, self.anchor = s.frame, s.player.pos
+                elif s.player.pos.distance(self.anchor) >= 8:
+                    self.blocked_since, self.anchor = s.frame, s.player.pos
+            else: self.blocked_since = None
+        if self.evidence:
+            self.last_progress = s.frame
+            self.recovery_level = 0
+        age = s.frame-self.last_progress
+        idle_age = s.frame-self.idle_since if self.idle_since is not None else 0
+        blocked_age = s.frame-self.blocked_since if self.blocked_since is not None else 0
+        self.max_no_progress = max(self.max_no_progress, age)
+        self.max_idle = max(self.max_idle, idle_age)
+        self.history.append((s.frame, round(s.player.pos.x/16), round(s.player.pos.y/16)))
+        reasons = []
+        if idle_age >= 30: reasons.append(("idle", idle_age))
+        if blocked_age >= 30: reasons.append(("blocked", blocked_age))
+        if age >= 60: reasons.append(("stall", age))
+        if s.frame-self.last_damage >= 90 and age >= 90: reasons.append(("no_progress", age))
+        if age >= 90 and len(self.history) >= 60:
+            cells = [(x, y) for _, x, y in self.history]
+            if len(set(cells)) <= 6: reasons.append(("oscillation", age))
+        if action and action.diagnostics.get("no_safe_candidate"):
+            reasons.append(("no_safe_candidate", age))
+        if action and action.score.get("escape_slack", 100) < 6:
+            reasons.append(("escape_margin", age))
+        for kind, duration in reasons:
+            if s.frame-self.announced.get(kind, -1000) >= 30:
+                event = BoundaryEvent(kind, s.frame, duration, "critical" if kind in
+                                      ("idle", "blocked", "no_safe_candidate", "escape_margin") else "warning")
+                self.events.append(event)
+                self.announced[kind] = s.frame
+                self.boundary_counts[kind] = self.boundary_counts.get(kind, 0)+1
+        new_level = 2 if age >= 120 else 1 if max(age, idle_age, blocked_age) >= 30 else 0
+        if new_level > self.recovery_level:
+            self.recovery_count += 1
+        self.recovery_level = max(self.recovery_level, new_level)
+        self.previous = s
+        # Cleared rooms are handled by the independent clear-and-safety judge.
+        if not s.room["is_clear"] and age >= 240: return "STALL_UNRECOVERED"
+        return None
+
+    def metrics(self):
+        return {"max_no_progress_ticks": self.max_no_progress, "max_idle_ticks": self.max_idle,
+                "boundary_counts": self.boundary_counts, "recovery_entries": self.recovery_count}

@@ -47,7 +47,7 @@ class CombatJudge:
             self.damage += lost; self.bones_lost += bones
             if lost or bones: self.events.append("confirmed_damage")
         current = {e.instance_id: e.hp for e in s.hostiles}
-        if any(i not in current or current[i] < hp for i, hp in self.enemy_hp.items()): self.last_progress = s.frame
+        if any(i in current and current[i] < hp for i, hp in self.enemy_hp.items()): self.last_progress = s.frame
         if set(current)-set(self.enemy_hp) and self.previous: self.events.append("new_enemy_mechanism")
         self.enemy_hp = current
         self.previous = s
