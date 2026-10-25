@@ -1,0 +1,336 @@
+[
+  {
+    "sequence": 381,
+    "wall_monotonic": 22768.89,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "83641751:22742881",
+        "room_visit_id": "83641751:22742881:2",
+        "snapshot_id": "83641751:22742881:2:41",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "balanced",
+      "profiles": {
+        "balanced": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Three dormant type-305 enemies are present, all hp 11 with unknown mechanics, plus three normal fireplaces. Nearest target is 280 px away while effective tear range is 195, so the plan closes to kite range using threat-first targeting, predictive aim with movement inheritance, and max-clearance evasion. A single balanced profile is used because no verified switch condition exists yet.",
+        "evidence_refs": [
+          "snapshot:83641751:22742881:2:41/enemies/type=305",
+          "snapshot:83641751:22742881:2:41/build/effective_range=195",
+          "snapshot:83641751:22742881:2:41/derived/target_distance",
+          "snapshot:83641751:22742881:2:41/hazards"
+        ]
+      }
+    }
+  },
+  {
+    "sequence": 4570,
+    "wall_monotonic": 22811.375,
+    "kind": "plan_installed",
+    "source": "deepseek_replan",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "83641751:22742881",
+        "room_visit_id": "83641751:22742881:2",
+        "snapshot_id": "83641751:22742881:2:248",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "engage",
+      "profiles": {
+        "engage": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.1,
+              "min_hold_ticks": 8
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.35,
+              "max_range_ratio": 0.75
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 8,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.15
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 20,
+              "min_safe_area_ratio": 0.15
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 20,
+              "recovery_ticks": 6
+            }
+          }
+        },
+        "cautious": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.85
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.25
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 6
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.3
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [
+        {
+          "when": [
+            {
+              "field": "health_ratio",
+              "op": "lt",
+              "value": 0.6,
+              "enemy_type": null
+            }
+          ],
+          "use_profile": "cautious"
+        }
+      ],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Prior plan returned no_progress while both type-305 enemies stayed outside effective tear range (~195) at distances of ~323 and ~449 px. This revision keeps a single primary profile focused on closing the gap: finish_first targeting of the nearer enemy (3369478536:3), keep_range with a lower 0.35 minimum ratio and 0.75 maximum to commit into firing lanes between rock clusters, and shorter predictive lead (8 ticks) with movement inheritance for their slow drift. Evasion uses max_clearance with a small 4 px margin so dodging does not pull back out of range; escape keeps a modest 20-tick route check because doors can be shut by these enemies. The cautious profile is only for the concrete condition of health dropping below 60%, where threat_first targeting, wider kite band, minimal_shift evasion and cheaper fire gating reduce exposure near fireplaces and unknown type-305 behavior. Type-305 attack pattern remains unverified by the catalog, so no behavior-specific tactic is asserted.",
+        "evidence_refs": [
+          "snapshot:83641751:22742881:2:248/enemies/type=305/state=4",
+          "snapshot:83641751:22742881:2:248/enemies/type=305/hp=11",
+          "snapshot:83641751:22742881:2:248/enemies/type=305/can_shut_doors=true",
+          "snapshot:83641751:22742881:2:248/build/effective_range=195",
+          "snapshot:83641751:22742881:2:248/player/pos",
+          "snapshot:83641751:22742881:2:248/hazards/FIREPLACE",
+          "lookup_enemy_mechanics(305):status=unknown",
+          "feedback/reasons=no_progress"
+        ]
+      }
+    }
+  },
+  {
+    "sequence": 7919,
+    "wall_monotonic": 22844.953,
+    "kind": "plan_installed",
+    "source": "deepseek_replan",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "83641751:22742881",
+        "room_visit_id": "83641751:22742881:2",
+        "snapshot_id": "83641751:22742881:2:1303",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 1
+      },
+      "default_profile": "engage",
+      "profiles": {
+        "engage": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.1,
+              "min_hold_ticks": 8
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.75
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 8,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.15
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.2
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 15,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Single aggressive profile to fix prior no_progress: the lone type-305 enemy is ~603 px away, well beyond the 195 px effective tear range, so keep_range with a 0.45-0.75 band should close distance before firing. finish_first is sufficient with one enemy. Predictive aim uses only 8 lead ticks because observed drift is slow (~0.8 px/frame). minimal_shift evasion avoids dodging out of firing range, while escape.keep_routes preserves routes if the type-305 door-shutting behavior activates. recovery.local_repath uses a shorter 15-tick stall window to detour around rock clusters instead of stalling. Fireplaces at (720,480), (960,240), and (1040,400) are treated as contact hazards to route around, not as targets. Type-305 attack mechanics remain unknown, so no unverified behavior-specific tactic is asserted.",
+        "evidence_refs": [
+          "snapshot:83641751:22742881:2:1303/enemies/0/type=305",
+          "snapshot:83641751:22742881:2:1303/enemies/0/pos=1079.557,160.015",
+          "snapshot:83641751:22742881:2:1303/enemies/0/state=4",
+          "snapshot:83641751:22742881:2:1303/enemies/0/hp=11/11",
+          "snapshot:83641751:22742881:2:1303/enemies/0/can_shut_doors=true",
+          "snapshot:83641751:22742881:2:1303/player/pos=749.819,664.629",
+          "derived/target_distance/3369478536:3=602.795",
+          "snapshot:83641751:22742881:2:1303/build/effective_range=195",
+          "snapshot:83641751:22742881:2:1303/build/damage=3.5",
+          "snapshot:83641751:22742881:2:1303/build/fire_interval=11",
+          "snapshot:83641751:22742881:2:1303/hazards/FIREPLACE/pos=720,480",
+          "snapshot:83641751:22742881:2:1303/hazards/FIREPLACE/pos=960,240",
+          "snapshot:83641751:22742881:2:1303/hazards/FIREPLACE/pos=1040,400",
+          "lookup_enemy_mechanics(305):status=unknown",
+          "feedback/reasons=no_progress"
+        ]
+      }
+    }
+  }
+]

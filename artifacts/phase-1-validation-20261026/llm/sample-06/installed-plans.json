@@ -1,0 +1,88 @@
+[
+  {
+    "sequence": 492,
+    "wall_monotonic": 22499.406,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "911258073:22462887",
+        "room_visit_id": "911258073:22462887:2",
+        "snapshot_id": "911258073:22462887:2:41",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "kite_focus",
+      "profiles": {
+        "kite_focus": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.55,
+              "max_range_ratio": 0.85
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 8,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.25
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Four identical type-12 enemies are clustered north at 80-160 px with unknown attack mechanics, and the nearest one is inside a comfortable range. Use finish-first focus fire to reduce the cluster count, keep range at roughly 0.55-0.85 of the 195 px effective range to avoid close crossfire, use predictive aim for any movement, and keep escape routes while slowly kiting. No items, bombs, cards, or pills are used.",
+        "evidence_refs": [
+          "snapshot:enemies",
+          "derived:target_distance",
+          "assessment:terrain_constraints",
+          "lookup_enemy_mechanics:12:unknown"
+        ]
+      }
+    }
+  }
+]

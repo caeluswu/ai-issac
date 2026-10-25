@@ -11,7 +11,7 @@ from tests.combat_fixtures import snapshot, context
 
 
 class SimulatedRoom:
-    def __init__(self):
+    def __init__(self, hit_threshold=8):
         self.s = snapshot(enemies=False)
         self.s.mode = "MANUAL"
         self.move = (0, 0)
@@ -20,6 +20,7 @@ class SimulatedRoom:
         self.hit_ticks = 0
         self.last_action_frame = -100
         self.clear = False
+        self.hit_threshold = hit_threshold
         self.inputs = []
 
     def focused(self): return True
@@ -84,7 +85,7 @@ class SimulatedRoom:
                 self.s.room["is_starting_room"] = False; self.s.mode = "MANUAL"
                 self.move = self.shoot = (0, 0)
             if self.s.room_visit_id == "test:2" and self.shoot != (0, 0): self.hit_ticks += 1
-            if self.hit_ticks >= 8:
+            if self.hit_ticks >= self.hit_threshold:
                 self.s.room.update(is_clear=True, enemy_count=0); self.s.enemies = []
             await self.data()
 
@@ -105,6 +106,31 @@ class FixturePlanner:
 
 
 class TestSession(unittest.IsolatedAsyncioTestCase):
+    async def test_replanning_installs_at_action_boundary_while_control_continues(self):
+        class SlowReplanner(FixturePlanner):
+            def __init__(self): self.calls = 0; self.failure = False
+            async def plan(self, *args, **kwargs):
+                self.calls += 1
+                if self.calls > 1: await asyncio.sleep(.2)
+                return await super().plan(*args, **kwargs)
+        with tempfile.TemporaryDirectory() as directory:
+            bridge = SocketBridge(port=0)
+            game = SimulatedRoom(hit_threshold=120)
+            log = RunLog(Path(directory)/"run")
+            planner = SlowReplanner()
+            session = CombatSession(bridge, planner, game, log, ready_timeout=3)
+            async def boot(_):
+                await game.connect(bridge._server._server.sockets[0].getsockname()[1])
+            try:
+                report = await asyncio.wait_for(session.run(bootstrap=boot), 15)
+                self.assertTrue(report.success, report.error)
+                records = [json.loads(line) for line in (log.directory/"trace.jsonl").read_text(encoding="utf-8").splitlines()]
+                start = next(i for i, row in enumerate(records) if row["kind"] == "replan_started")
+                installed = next(i for i, row in enumerate(records) if row["kind"] == "plan_installed" and row["source"] == "deepseek_replan")
+                self.assertTrue(any(row["kind"] == "action_sent" for row in records[start+1:installed]))
+                self.assertGreaterEqual(planner.calls, 2)
+            finally: await game.close()
+
     async def run_session(self, failure=False):
         with tempfile.TemporaryDirectory() as directory:
             bridge = SocketBridge(port=0)

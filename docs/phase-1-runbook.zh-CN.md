@@ -73,7 +73,7 @@ uv pip install --python .venv\Scripts\python.exe -r SocketBridge\python\requirem
 ..\..\.venv\Scripts\python.exe -m apps.first_room --local-only
 ```
 
-本地诊断成功只证明本地控制链路，不代表 LLM 规划验收。生产入口遇到 API 故障会记录降级，并用本地默认组件尝试完成当前房间。退出码为 0 的完整条件是清房成功且入房 LLM 规划成功；本地诊断入口允许无 LLM 的清房成功。
+本地诊断成功只证明本地控制链路，不代表 LLM 规划验收。生产入口遇到 API 故障会记录降级，并用本地默认组件尝试完成当前房间。退出码为 0 的完整条件是清房成功且入房 LLM 规划成功；本地诊断入口允许无 LLM 的清房成功。游戏控制结束后，在途 HTTP 工作线程的回收可能使 Python 进程稍后才退出；`wall_seconds` 记录控制会话，未包含这段进程尾部等待。
 
 ## 实现分层
 
@@ -127,3 +127,5 @@ Wiki 索引位于 `configs/knowledge/index.json`，缓存位于同目录的 `cac
 测试包含原有桥接回归、真实 Lua 函数桩测试、几何与瞄准、计划编译、API 异常及 TCP 首房流程。Windows 异步运行时与模拟客户端需要本机回环网络权限。模拟游戏只验证协议、时序及降级，不能证明实际战斗能力；实机结果以独立验收记录为准。
 
 参考：[DeepSeek JSON Output](https://api-docs.deepseek.com/guides/json_mode/)、[原版玩家 API](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html)、[网格碰撞枚举](https://wofsauge.github.io/IsaacDocs/rep/enums/GridCollisionClass.html)、[原版炸弹 API](https://wofsauge.github.io/IsaacDocs/rep/EntityBomb.html)。
+
+实机结果、同种子对照与证据索引见 [第一阶段实机验收](phase-1-live-validation.zh-CN.md)。

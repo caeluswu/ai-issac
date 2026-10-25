@@ -1,0 +1,90 @@
+[
+  {
+    "sequence": 353,
+    "wall_monotonic": 22182.89,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "2722953505:22153850",
+        "room_visit_id": "2722953505:22153850:2",
+        "snapshot_id": "2722953505:22153850:2:18",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "aligned_fire",
+      "profiles": {
+        "aligned_fire": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.2,
+              "max_range_ratio": 0.95
+            }
+          },
+          "aim": {
+            "component": "aim.direct",
+            "params": {
+              "max_lead_ticks": 3,
+              "movement_inheritance": false
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Enemies are stationary and aligned below the player on x=320. Hold near the current upper-middle position, fire downward with direct aim, and finish the 5 HP type-222 enemies first (2 hits each) before focusing the 13 HP type-250 (4 hits). Effective range 195 exceeds all current target distances, so no approach is needed. Type-222 and type-250 mechanics remain unverified; replan if they move, attack, or no progress is made.",
+        "evidence_refs": [
+          "snapshot.enemies",
+          "snapshot.player.pos",
+          "snapshot.stats.damage",
+          "snapshot.stats.tear_range",
+          "snapshot.derived.target_distance",
+          "assessment.unknowns"
+        ]
+      }
+    }
+  }
+]

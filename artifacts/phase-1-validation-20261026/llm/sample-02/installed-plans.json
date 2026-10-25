@@ -1,0 +1,97 @@
+[
+  {
+    "sequence": 437,
+    "wall_monotonic": 22230.75,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "3706588017:22204574",
+        "room_visit_id": "3706588017:22204574:2",
+        "snapshot_id": "3706588017:22204574:2:60",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "safe",
+      "profiles": {
+        "safe": {
+          "target": {
+            "component": "target.weighted",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10,
+              "threat_weight": 0.5,
+              "finish_weight": 0.3,
+              "approach_cost_weight": 0.2
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Single deterministic close-range normal-tears profile for the current room. Enemy mechanics for types 305 and 29 are unknown, so the plan avoids overcommitting to unverified attack patterns while prioritizing the nearest type-29 enemy at 120 px below the player via weighted targeting. Keep-range positioning uses the calibrated tear range to punish without remaining in possible contact range, predictive aim handles short-term movement if enemies become mobile, and minimal-shift evasion conserves space while no projectiles are present. Route-keeping and local repath cover the rock cluster and closed-door geometry. Replan triggers are set for damage, stalled progress, newly learned enemy mechanics, repeated recovery, or invalid profiles.",
+        "evidence_refs": [
+          "lookup_enemy_mechanics:305:unknown",
+          "lookup_enemy_mechanics:29:unknown",
+          "snapshot.enemies[0]",
+          "snapshot.enemies[1]",
+          "snapshot.enemies[2]",
+          "snapshot.enemies[3]",
+          "snapshot.derived.target_distance",
+          "snapshot.room",
+          "snapshot.layout.grid",
+          "snapshot.build.family"
+        ]
+      }
+    }
+  }
+]

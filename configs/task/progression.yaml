@@ -1,5 +1,5 @@
 # 阶段任务契约；对应 docs/task-contract.zh-CN.md v0.5。
-# draft：存档、场景和数值门槛尚未冻结；配置加载器和 schema 尚未实现。
+# draft：正式 M1/M2/M3 的场景与数值门槛待冻结；首房工程验收见 phase_one_validation。
 schema_version: 1
 contract_version: 5
 status: draft
@@ -193,3 +193,14 @@ change_log:
   - version: 3
     date: 2026-10-24
     change: M1/M2/M3 里程碑划分与 DeepSeek 上层接入范围
+
+# 第一阶段工程链路验收；不代替 M1 稳定胜率门槛。
+phase_one_validation:
+  status: engineering_verified
+  report: docs/phase-1-live-validation.zh-CN.md
+  implementation_commit: 72ab465
+  seed_manifest: artifacts/phase-1-validation-20261026/seeds.json
+  paired_regression_samples: 10
+  held_out_samples: 0
+  llm_clears: 10
+  rule_clears: 9

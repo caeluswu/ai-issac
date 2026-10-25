@@ -1,0 +1,92 @@
+[
+  {
+    "sequence": 435,
+    "wall_monotonic": 22571.218,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "292207193:22534308",
+        "room_visit_id": "292207193:22534308:2",
+        "snapshot_id": "292207193:22534308:2:18",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "fly_clear",
+      "profiles": {
+        "fly_clear": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.7
+            }
+          },
+          "aim": {
+            "component": "aim.direct",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Twelve entity type 13 Flies at 3 HP each; wiki data says regular Flies cannot damage Isaac by touch, so the plan prioritizes efficient clearing rather than hard evasion. Normal tears deal 3.5 damage, enough for one-shot kills, so target.finish_first avoids spreading damage. Flies have negligible drift, making direct aim with movement inheritance sufficient. Keep-range positioning near 0.45-0.7 of effective range maintains firing lanes while allowing the player to close on distant flies at 240-339 px. The interior obstacle at grid 67 is confirmed walkable-blocking collision class 3 and lies between spawn and the lower cluster, so positioning and local repath should avoid firing or pathing straight through it. Minimal-shift evasion and kept escape routes remain as safeguards because the fly harmlessness reading is wiki-derived and unverified in-run. No items, bombs, cards or pills are used.",
+        "evidence_refs": [
+          "wiki:fly",
+          "snapshot:observation:enemies:12",
+          "snapshot:observation:room:enemy_count:12",
+          "snapshot:observation:layout:type16_variant8_at_grid_7_60_74_127",
+          "snapshot:observation:player:pos:320,160",
+          "snapshot:observation:obstacle:grid67",
+          "snapshot:derived:effective_range:195",
+          "snapshot:observation:player:damage:3.5"
+        ]
+      }
+    }
+  }
+]

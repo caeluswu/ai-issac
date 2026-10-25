@@ -1,0 +1,20 @@
+{
+  "result": "STARTUP_READY",
+  "success": false,
+  "llm_configured": false,
+  "completed_door_transition": false,
+  "damage_half_hearts": 0,
+  "lost_bone_hearts": 0,
+  "remaining_half_hearts": 6,
+  "combat_ticks": 0,
+  "wall_seconds": 15.312000000001717,
+  "pause_seconds": 0.7649999999994179,
+  "sent_actions": 0,
+  "accepted_actions": 0,
+  "observed_applied_actions": 0,
+  "fallback_count": 0,
+  "recovery_count": 0,
+  "decision_p95_ms": null,
+  "seed": "GNLN 1GMM",
+  "error": null
+}

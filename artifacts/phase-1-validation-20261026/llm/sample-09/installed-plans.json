@@ -1,0 +1,95 @@
+[
+  {
+    "sequence": 392,
+    "wall_monotonic": 22725.89,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "3697277501:22698825",
+        "room_visit_id": "3697277501:22698825:2",
+        "snapshot_id": "3697277501:22698825:2:41",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "clear_single",
+      "profiles": {
+        "clear_single": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Single hostile entity type 240 at (575,280) with 10/10 hp and collision radius 13. Current player distance is about 282 px while effective range is 195 px, so the profile closes distance and maintains a firing envelope rather than shooting from spawn. Aim is predictive with movement inheritance because the enemy is currently stationary but may move; fire uses normal tears in short bursts. The bottom-right fireplace near (480,400) and top fireplace at (480,160) are kept as obstacles to route around, and escape routes remain open toward the left/lower-middle area. Enemy attack pattern and fireplace contact/tear-blocking behavior are unverified, so replanning is enabled for new mechanism evidence, confirmed damage, no progress, repeated recovery, or invalid profile.",
+        "evidence_refs": [
+          "snapshot.enemies[0].type=240",
+          "snapshot.enemies[0].pos=575,280",
+          "snapshot.enemies[0].hp=10/10",
+          "snapshot.player.pos=320,400",
+          "snapshot.derived.target_distance=281.82",
+          "snapshot.build.effective_range=195",
+          "snapshot.build.fire_interval=11",
+          "snapshot.hazards[0].pos=480,160",
+          "snapshot.hazards[1].pos=480,400",
+          "snapshot.room.grid_width=15",
+          "snapshot.room.grid_height=9"
+        ]
+      }
+    }
+  }
+]

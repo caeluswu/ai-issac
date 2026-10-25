@@ -1,0 +1,155 @@
+[
+  {
+    "sequence": 285,
+    "wall_monotonic": 22280.5,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "666425209:22258317",
+        "room_visit_id": "666425209:22258317:2",
+        "snapshot_id": "666425209:22258317:2:18",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "engage",
+      "profiles": {
+        "engage": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.75
+            }
+          },
+          "aim": {
+            "component": "aim.direct",
+            "params": {
+              "max_lead_ticks": 3,
+              "movement_inheritance": false
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        },
+        "retreat": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.7,
+              "max_range_ratio": 0.95
+            }
+          },
+          "aim": {
+            "component": "aim.direct",
+            "params": {
+              "max_lead_ticks": 3,
+              "movement_inheritance": false
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.4
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 8
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [
+        {
+          "when": [
+            {
+              "field": "health_ratio",
+              "op": "lt",
+              "value": 0.35,
+              "enemy_type": null
+            }
+          ],
+          "use_profile": "retreat"
+        }
+      ],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Four enemies (types 29 x3 and 284 x1, mechanics unverified/unknown) sit stationary on the left half at 226-339 px, beyond consistent effective range (195 px), so close to mid range, use finish_first to remove the nearest (2890762598:2) and reduce count, aim direct since velocities are zero, and fire normal tears from the open middle band without entering the left rock pocket. Minimal-shift evasion suits currently stationary, non-firing enemies (no projectiles, lasers or hazards at frame 18), while keep_routes preserves northern retreat toward the closed top door if that changes. Switch to a wider-range, higher-clearance retreat profile if health drops below 35%.",
+        "evidence_refs": [
+          "snapshot.enemies[type=29] x3 at (80,320),(160,320),(160,400)",
+          "snapshot.enemies[type=284] at (80,400)",
+          "snapshot.enemies[*].vel=(0,0), state=1",
+          "snapshot.projectiles (empty)",
+          "derived.target_distance",
+          "build.effective_range=195.0",
+          "snapshot.grid variants 1000-1003 collision=3 (left/mid rock obstacles)",
+          "snapshot.doors[1].is_open=false",
+          "lookup_enemy_mechanics(29)=unknown",
+          "lookup_enemy_mechanics(284)=unknown"
+        ]
+      }
+    }
+  }
+]

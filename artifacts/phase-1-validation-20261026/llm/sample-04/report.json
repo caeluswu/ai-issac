@@ -1,0 +1,20 @@
+{
+  "result": "CLEARED",
+  "success": true,
+  "llm_configured": true,
+  "completed_door_transition": true,
+  "damage_half_hearts": 2,
+  "lost_bone_hearts": 0,
+  "remaining_half_hearts": 4,
+  "combat_ticks": 341,
+  "wall_seconds": 68.28099999999904,
+  "pause_seconds": 39.40599999999904,
+  "sent_actions": 403,
+  "accepted_actions": 401,
+  "observed_applied_actions": 371,
+  "fallback_count": 0,
+  "recovery_count": 0,
+  "decision_p95_ms": 12.802900000679074,
+  "seed": "ET2N NPQZ",
+  "error": null
+}

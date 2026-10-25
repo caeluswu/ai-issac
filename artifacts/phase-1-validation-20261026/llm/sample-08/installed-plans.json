@@ -1,0 +1,95 @@
+[
+  {
+    "sequence": 750,
+    "wall_monotonic": 22662.203,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 1,
+      "context_ref": {
+        "run_id": "195381597:22593730",
+        "room_visit_id": "195381597:22593730:2",
+        "snapshot_id": "195381597:22593730:2:18",
+        "build_revision": 1,
+        "catalog_revision": 1,
+        "plan_revision": 0
+      },
+      "default_profile": "close_pressure",
+      "profiles": {
+        "close_pressure": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.direct",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Prioritize the nearest 13 HP enemies first, maintain effective range with normal tears, use direct fire with movement inheritance, and keep evasive shifts small inside the obstacle-limited pocket. Preserve escape routes and use local repath if movement stalls. Type 244 enemy behavior remains unverified, so replan if a new mechanism, confirmed damage, or no progress occurs.",
+        "evidence_refs": [
+          "snapshot.enemies",
+          "derived.target_distance",
+          "assessment.terrain_constraints",
+          "assessment.weapon_opportunities",
+          "catalog.target.threat_first",
+          "catalog.position.keep_range",
+          "catalog.aim.direct",
+          "catalog.fire.normal_tears",
+          "catalog.evade.minimal_shift",
+          "catalog.escape.keep_routes",
+          "catalog.recovery.local_repath"
+        ]
+      }
+    }
+  }
+]

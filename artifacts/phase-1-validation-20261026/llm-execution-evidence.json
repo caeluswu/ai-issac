@@ -1,0 +1,365 @@
+{
+  "source_commit": "72ab465f98349b6e065087efc90401b6aff9cfc2",
+  "all_source_hashes_identical": true,
+  "restored_baseline_identical": true,
+  "baseline_hashes": {
+    "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+    "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+  },
+  "samples": [
+    {
+      "sample": 1,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 0,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 5,
+      "enemy_type_variants": [
+        [
+          222,
+          0
+        ],
+        [
+          250,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 776,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 231,
+        "pause_confirmed": 1,
+        "llm_request": 4,
+        "llm_response": 4,
+        "llm_tools": 2,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "report": 1
+      }
+    },
+    {
+      "sample": 2,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 0,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 4,
+      "enemy_type_variants": [
+        [
+          29,
+          0
+        ],
+        [
+          305,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 1181,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 456,
+        "pause_confirmed": 1,
+        "llm_request": 4,
+        "llm_response": 4,
+        "llm_tools": 2,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "report": 1
+      }
+    },
+    {
+      "sample": 3,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 0,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 4,
+      "enemy_type_variants": [
+        [
+          29,
+          0
+        ],
+        [
+          284,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 881,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 319,
+        "pause_confirmed": 1,
+        "llm_request": 4,
+        "llm_response": 4,
+        "llm_tools": 2,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "report": 1
+      }
+    },
+    {
+      "sample": 4,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 1,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 3,
+      "enemy_type_variants": [
+        [
+          11,
+          0
+        ],
+        [
+          284,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 1246,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 2,
+        "action_sent": 403,
+        "pause_confirmed": 1,
+        "llm_request": 6,
+        "llm_response": 5,
+        "llm_tools": 3,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "debug_trigger": 3,
+        "replan_started": 1,
+        "candidate_window": 93,
+        "report": 1
+      }
+    },
+    {
+      "sample": 5,
+      "initial_pause_delay_ticks": [
+        1
+      ],
+      "replan_requests": 1,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 8,
+      "enemy_type_variants": [
+        [
+          10,
+          0
+        ],
+        [
+          85,
+          0
+        ],
+        [
+          94,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 1390,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 437,
+        "pause_confirmed": 1,
+        "llm_request": 7,
+        "llm_response": 6,
+        "llm_tools": 3,
+        "llm_validation_error": 1,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "debug_trigger": 3,
+        "replan_started": 1,
+        "candidate_window": 93,
+        "report": 1
+      }
+    },
+    {
+      "sample": 6,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 1,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 4,
+      "enemy_type_variants": [
+        [
+          12,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 1294,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 458,
+        "pause_confirmed": 1,
+        "llm_request": 7,
+        "llm_response": 6,
+        "llm_tools": 3,
+        "llm_validation_error": 1,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "replan_started": 1,
+        "report": 1
+      }
+    },
+    {
+      "sample": 7,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 0,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 12,
+      "enemy_type_variants": [
+        [
+          13,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 918,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 260,
+        "pause_confirmed": 1,
+        "llm_request": 5,
+        "llm_response": 5,
+        "llm_tools": 3,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "report": 1
+      }
+    },
+    {
+      "sample": 8,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 1,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 7,
+      "enemy_type_variants": [
+        [
+          16,
+          2
+        ],
+        [
+          244,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 2076,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 684,
+        "pause_confirmed": 1,
+        "llm_request": 7,
+        "llm_response": 6,
+        "llm_tools": 3,
+        "llm_validation_error": 1,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "debug_trigger": 1,
+        "replan_started": 1,
+        "candidate_window": 31,
+        "report": 1
+      }
+    },
+    {
+      "sample": 9,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 0,
+      "replans_installed": 0,
+      "actions_while_replan_pending": false,
+      "measured_enemy_instances": 1,
+      "enemy_type_variants": [
+        [
+          240,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 515,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 117,
+        "pause_confirmed": 1,
+        "llm_request": 3,
+        "llm_response": 3,
+        "llm_tools": 1,
+        "plan_installed": 1,
+        "rejected_action": 1,
+        "report": 1
+      }
+    },
+    {
+      "sample": 10,
+      "initial_pause_delay_ticks": [
+        0
+      ],
+      "replan_requests": 3,
+      "replans_installed": 2,
+      "actions_while_replan_pending": true,
+      "measured_enemy_instances": 3,
+      "enemy_type_variants": [
+        [
+          305,
+          0
+        ]
+      ],
+      "events": {
+        "startup": 7,
+        "game_message": 5882,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 2805,
+        "pause_confirmed": 1,
+        "llm_request": 13,
+        "llm_response": 12,
+        "llm_tools": 6,
+        "plan_installed": 3,
+        "rejected_action": 1,
+        "debug_trigger": 28,
+        "replan_started": 3,
+        "candidate_window": 868,
+        "report": 1
+      }
+    }
+  ]
+}
