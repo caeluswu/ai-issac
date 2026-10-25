@@ -15,6 +15,51 @@ from tests.combat_fixtures import snapshot, context
 
 
 class TestReplaceableComponents(unittest.TestCase):
+    def test_enemy_attack_permission_is_replaceable_without_solver_edits(self):
+        class ReflectionFixture(GenericEnemy):
+            def attack_allowed(self, enemy, snapshot): return False
+        s = snapshot(); adapters = EnemyAdapters(); adapters.register(10, 0, ReflectionFixture())
+        a = JointActionSolver(enemy_adapters=adapters).solve(s, default_plan(context(s)), BuildResolver().update(s))
+        self.assertEqual(a.shoot, (0, 0))
+        self.assertEqual(a.diagnostics["fire_reason"], "attack_safety_withdrawal")
+    def test_firing_opportunity_is_independent_of_primary_navigation_target(self):
+        s = snapshot(); s.enemies[0].pos.y = 200
+        other = s.enemies[0].model_copy(deep=True)
+        other.instance_id = "e2"; other.pos = Vec(x=280, y=40)
+        s.enemies.append(other)
+        solver = JointActionSolver(); solver.target_id = "e1"; solver.target_since = s.frame
+        a = solver.solve(s, default_plan(context(s)), BuildResolver().update(s))
+        self.assertEqual(a.diagnostics["movement_target"], "e1")
+        self.assertEqual(a.target, "e2")
+        self.assertEqual(a.shoot, (0, -1))
+        self.assertEqual(a.diagnostics["fire_reason"], "opportunistic_secondary")
+
+    def test_entry_guard_has_no_offensive_objective(self):
+        s = snapshot(); a = JointActionSolver().solve(s, default_plan(context(s)), BuildResolver().update(s), True)
+        self.assertEqual(a.shoot, (0, 0)); self.assertIsNone(a.target)
+        self.assertEqual(a.state, "ENTRY_GUARD")
+
+    def test_contract_profile_preempts_low_health_and_is_explicit(self):
+        s = snapshot(); s.health["red_hearts"] = 2
+        solver = JointActionSolver()
+        a = solver.solve(s, default_plan(context(s)), BuildResolver().update(s))
+        self.assertEqual(a.profile, "contract_emergency")
+        self.assertEqual(solver.modules["fire"].params["min_hit_score"], .1)
+        self.assertNotEqual(a.shoot, (0, 0))
+
+    def test_contract_profile_expires_when_condition_is_resolved(self):
+        s = snapshot(); solver = JointActionSolver(); solver.emergency_until = s.frame+5
+        plan, build = default_plan(context(s)), BuildResolver().update(s)
+        self.assertEqual(solver.solve(s, plan, build).profile, "contract_emergency")
+        s.frame += 6
+        self.assertEqual(solver.solve(s, plan, build).profile, plan.default_profile)
+
+    def test_planner_cannot_spoof_local_contract_profile(self):
+        s = snapshot(); plan = default_plan(context(s)).model_dump()
+        plan["profiles"]["contract_emergency"] = plan["profiles"].pop("safe")
+        plan["default_profile"] = "contract_emergency"
+        with self.assertRaisesRegex(ValueError, "reserved"): compile_plan(plan, context(s))
+
     def test_new_weapon_family_uses_adapter_and_catalog_without_scheduler_edits(self):
         class BuildFixture:
             def update(self, s): return BuildProfile(family="fixture_charge")
@@ -100,6 +145,12 @@ class TestReplaceableComponents(unittest.TestCase):
 
 
 class TestThreats(unittest.TestCase):
+    def test_opportunistic_ray_cannot_bypass_another_enemy_death_hazard(self):
+        s = snapshot(); ticking = s.enemies[0].model_copy(deep=True)
+        ticking.type = 250; ticking.hp = 1; ticking.instance_id = "tick"
+        ticking.pos = Vec(x=280, y=100); s.enemies.append(ticking)
+        field = ThreatField(s); build = BuildResolver().update(s)
+        self.assertFalse(field.attack_safe(s.enemies[0], build, [s.player.pos]*13, 1., (280, 160, 280, 40, 16)))
     def test_dense_backend_matches_all_threats_without_pruning(self):
         rng = random.Random(718)
         s = snapshot(enemies=False)

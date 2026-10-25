@@ -280,6 +280,8 @@ class CombatSession:
         self.clear_safe_since = None
         self.deadline_misses = []
         self.death_observed = False
+        self.last_damage_frame = -1000
+        self.contract_overrides = 0
         self.plan = None
         self.revision = 0
         self.pending = None
@@ -315,6 +317,7 @@ class CombatSession:
             if s.room_visit_id == self.target_room and not s.paused:
                 if s.player.dead or s.hp <= 0: self.death_observed = True
                 self.judge_result = self.judge.observe(s)
+                if "confirmed_damage" in self.judge.events: self.last_damage_frame = s.frame
                 self.event_reasons.update(self.judge.events)
                 if self.judge.events: self.log.trigger(s.frame, self.judge.events)
             self.changed.set()
@@ -397,8 +400,8 @@ class CombatSession:
             current = self.observation.latest
             if current and current.hostiles and current.frame > pressed_frame and current.room_visit_id == s.room_visit_id and not current.paused and self.observation.fresh() and self.latest_acted != current.snapshot_id:
                 build = self.build_resolver.update(current)
-                guard = await asyncio.to_thread(self.solver.solve, current, default_plan(self.context_ref(current, build)), build)
-                try: await self.send_action(current, guard.move, (0, 0), {"state": "ENTRY_GUARD", "decision_ms": guard.decision_ms})
+                guard = await asyncio.to_thread(self.solver.solve, current, default_plan(self.context_ref(current, build)), build, True)
+                try: await self.send_action(current, guard.move, (0, 0), guard.model_dump())
                 except TimeoutError:
                     self.log("entry_guard_discarded", frame=current.frame)
             await asyncio.sleep(.02)
@@ -520,10 +523,16 @@ class CombatSession:
             failure = self.supervisor.observe(s, self.previous_action)
             for event in self.supervisor.events:
                 self.log("boundary", boundary=event.__dict__, evidence=self.supervisor.evidence)
+                if event.kind in ("no_safe_candidate", "escape_margin"):
+                    self.solver.emergency_until = max(self.solver.emergency_until, s.frame+60)
                 if event.age_ticks >= 60 or event.kind in ("no_safe_candidate", "escape_margin"):
                     self.event_reasons.add(event.kind)
             if failure: return failure
             self.solver.recovery_level = self.supervisor.recovery_level
+            if s.frame-self.last_damage_frame <= 60:
+                self.solver.emergency_until = max(self.solver.emergency_until, self.last_damage_frame+60)
+            if self.supervisor.recovery_level >= 2:
+                self.solver.emergency_until = max(self.solver.emergency_until, s.frame+30)
             if self.pending and self.pending.done():
                 try:
                     value = self.pending.result()
@@ -582,6 +591,11 @@ class CombatSession:
                     raise RuntimeError("CONTROL_DEADLINE_MISSES") from exc
                 s = await self.next_snapshot(after=s.snapshot_id)
                 continue
+            if action.profile == "contract_emergency" and (self.previous_action is None or self.previous_action.profile != action.profile):
+                self.contract_overrides += 1
+                self.log("contract_override", frame=s.frame, last_damage_frame=self.last_damage_frame,
+                         recovery_level=self.supervisor.recovery_level, until=self.solver.emergency_until,
+                         profile=self.solver.emergency_profile.model_dump())
             self.previous_action = action
             s = await self.next_snapshot(after=s.snapshot_id)
 
@@ -656,6 +670,6 @@ class CombatSession:
             replan_requests=self.replan_requests,
             decision_p99_ms=sorted(self.timings)[min(len(self.timings)-1, int(.99*len(self.timings)))] if self.timings else None,
             safe_clear_ticks=max(0, s.frame-self.clear_started) if self.clear_started is not None and s else 0,
-            discarded_decisions=len(self.deadline_misses))
+            discarded_decisions=len(self.deadline_misses), contract_override_count=self.contract_overrides)
         self.log.finish(report)
         return report

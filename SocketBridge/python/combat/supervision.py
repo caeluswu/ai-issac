@@ -75,7 +75,7 @@ class ProgressSupervisor:
             if goal is not None and remaining is not None:
                 # Coarse endpoint identity tolerates a moving target; a new
                 # endpoint or a stationary player's cheaper route earns no credit.
-                key = (action.target, round(goal[0]/80), round(goal[1]/80))
+                key = (action.diagnostics.get("movement_target", action.target), round(goal[0]/80), round(goal[1]/80))
                 if key not in self.route_best:
                     self.route_best[key] = remaining
                     self.route_anchors[key] = s.player.pos

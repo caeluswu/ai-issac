@@ -240,3 +240,4 @@ class RoomReport(Strict):
     decision_p99_ms: float | None = None
     safe_clear_ticks: int = 0
     discarded_decisions: int = 0
+    contract_override_count: int = 0

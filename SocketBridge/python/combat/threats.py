@@ -69,6 +69,7 @@ class ThreatForecast:
 class GenericEnemy:
     """Unknown phases remain unknown; current velocity has bounded error."""
     death_effect_radius = 0
+    def attack_allowed(self, enemy, snapshot): return True
     def forecast(self, enemy, snapshot):
         if enemy.collision_class == 0: return []
         return [ThreatForecast(enemy.instance_id, enemy.pos.x, enemy.pos.y, enemy.vel.x, enemy.vel.y,
@@ -104,7 +105,10 @@ class BurstMover(Pursuer):
 class ExplosiveBurst(BurstMover):
     # Type 250: local enums identify Ticking Spider; captured death + damage
     # flags verify the explosion. The radius remains a conservative estimate.
-    death_effect_radius = 100
+    # Unhurt line-of-sight death at ~72px, hurt at ~54-60px, ordinary variant.
+    # 70px plus player radius and withdrawal reserve remains above that observed
+    # safe distance. This is an engineering bound, not the engine's exact radius.
+    death_effect_radius = 70
 
 
 class LandingMover(BurstMover):
@@ -167,7 +171,7 @@ class ThreatField:
             radius = adapter.death_effect_radius
             if radius and s.frame-death["frame"] <= 6:
                 self.threats.append(ThreatForecast("death:"+death["instance_id"], death["pos"]["x"], death["pos"]["y"],
-                    0, 0, radius, end=6-(s.frame-death["frame"]), source="confirmed_death_approximate_radius"))
+                    0, 0, radius, end=6-(s.frame-death["frame"]), uncertainty=8, source="confirmed_death_approximate_radius"))
         self.buckets = defaultdict(set)
         self.dynamic = []
         self.static = []
@@ -302,13 +306,25 @@ class ThreatField:
         # the player holds still at the current rollout endpoint forever.
         return fraction, best_slack, count
 
-    def attack_safe(self, target, build, positions, hit):
+    def attack_safe(self, target, build, positions, hit, footprint=None):
         if target is None or hit <= 0: return True
-        radius = self.adapters.resolve(target).death_radius(target)
+        affected = [target]
+        if footprint:
+            ax, ay, bx, by, width = footprint
+            for enemy in self.snapshot.hostiles:
+                adapter = self.adapters.resolve(enemy)
+                radius = adapter.death_radius(enemy)
+                if (radius or not adapter.attack_allowed(enemy, self.snapshot)) and enemy.instance_id != target.instance_id and distance_segment(enemy.pos.x, enemy.pos.y, ax, ay, bx, by) <= enemy.collision_radius+width+enemy.vel.length()*12:
+                    affected.append(enemy)
         # Keep the blast reserve throughout an attack sequence. Waiting until
         # the final hit is too late when earlier tears are already in flight.
-        if not radius: return True
-        flight = max(1., target.pos.distance(self.snapshot.player.pos)/build.tear_speed)
-        point = positions[min(len(positions)-1, round(flight))]
-        predicted = target.pos+target.vel*min(flight, 12)
-        return point.distance(predicted) > radius+self.snapshot.player.collision_radius+8
+        for enemy in affected:
+            adapter = self.adapters.resolve(enemy)
+            if not adapter.attack_allowed(enemy, self.snapshot): return False
+            radius = adapter.death_radius(enemy)
+            if not radius: continue
+            flight = max(1., enemy.pos.distance(self.snapshot.player.pos)/build.tear_speed)
+            point = positions[min(len(positions)-1, round(flight))]
+            predicted = enemy.pos+enemy.vel*min(flight, 12)
+            if min(point.distance(enemy.pos), point.distance(predicted)) <= radius+self.snapshot.player.collision_radius+8: return False
+        return True

@@ -26,8 +26,17 @@ def main():
     result["source_hashes"] = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                                 for p in (ROOT/"SocketBridge/python/combat").glob("*.py")}
     result["dependencies"] = {name: importlib.metadata.version(name) for name in ("numpy", "pydantic", "httpx")}
-    for n in (0, 50, 200, 500):
+    for enemy_count, n in ((1, 0), (1, 50), (1, 200), (1, 500), (32, 200), (64, 500)):
         s = snapshot()
+        base = s.enemies[0]
+        if enemy_count > 1:
+            from combat.models import Vec
+            s.enemies = [base.model_copy(deep=True) for _ in range(enemy_count)]
+            for index, enemy in enumerate(s.enemies):
+                enemy.instance_id = "benchmark:"+str(index)
+                enemy.pos = Vec(x=80+(index*53)%480, y=80+(index*37)%220)
+                enemy.vel = Vec(x=(index%5-2)*.7, y=(index%3-1)*.7)
+            s.room["enemy_count"] = enemy_count
         s.projectiles["enemy_projectiles"] = [{"pos": {"x": (i*37)%520+40, "y": (i*53)%240+40},
             "vel": {"x": (i%5-2)*2, "y": (i%7-3)*2}, "collision_radius": 5} for i in range(n)]
         build, solver, plan = BuildResolver().update(s), JointActionSolver(), default_plan(context(s))
@@ -38,7 +47,7 @@ def main():
             timings.append(action.decision_ms)
             exhausted += action.diagnostics["budget_exhausted"]
         ordered = sorted(timings)
-        result["cases"].append({"projectiles": n, "median_ms": statistics.median(timings),
+        result["cases"].append({"enemies": enemy_count, "projectiles": n, "median_ms": statistics.median(timings),
             "p95_ms": ordered[min(len(ordered)-1, int(.95*len(ordered)))],
             "p99_ms": ordered[min(len(ordered)-1, int(.99*len(ordered)))], "budget_exhausted": exhausted})
     args.output.parent.mkdir(parents=True, exist_ok=True)

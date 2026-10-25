@@ -6,7 +6,7 @@ import statistics
 import time
 from .models import Vec, ZERO, BuildProfile, ActionFrame, Enemy
 from .geometry import GeometryService, segment_distance
-from .components import EXECUTABLES, resilient_component
+from .components import EXECUTABLES, resilient_component, AttackProposal
 from .threats import ThreatField, EnemyAdapters, SafetyAssessment
 
 MOVES = tuple((x, y) for y in (-1, 0, 1) for x in (-1, 0, 1))
@@ -98,8 +98,27 @@ class JointActionSolver:
         self.last_candidates = []
         self.max_hp = 1
         self.budget_exhausted = False
+        self.emergency_until = -1
+        self.emergency_profile = None
 
     def select_profile(self, s, plan, build):
+        if s.frame < self.emergency_until or s.hp <= 2:
+            if build.family != "normal_tears": raise ValueError("UNSUPPORTED_EMERGENCY_PROFILE")
+            if self.emergency_profile is None:
+                from .catalog import default_plan, compile_plan
+                emergency = default_plan(plan.context_ref)
+                p = emergency.profiles[emergency.default_profile]
+                p.target.component = "target.finish_first"
+                p.target.params.update(min_hold_ticks=0, switch_margin=.05)
+                p.position.params.update(min_range_ratio=.6, max_range_ratio=.9)
+                p.fire.params.update(min_hit_score=.1)
+                p.evade.params.update(extra_margin_px=8)
+                p.escape.params.update(horizon_ticks=45)
+                self.emergency_profile = compile_plan(emergency, plan.context_ref).profiles[emergency.default_profile]
+            if self.profile_name != "contract_emergency":
+                self.profile_name, self.profile_since = "contract_emergency", s.frame
+                self.positions.clear()
+            return self.profile_name, self.emergency_profile
         selected = plan.default_profile
         if self.profile_name in plan.profiles and (s.frame % 3 or s.frame-self.profile_since < 15):
             return self.profile_name, plan.profiles[self.profile_name]
@@ -138,7 +157,7 @@ class JointActionSolver:
         if shot == (0, 0): return 0.
         return self.registry.create(profile.fire).hit_score(s, build, self.registry.create(profile.aim), target, shot, velocity, geometry)
 
-    def solve(self, s, plan, build):
+    def solve(self, s, plan, build, movement_only=False):
         started = time.perf_counter()
         name, profile = self.select_profile(s, plan, build)
         key = profile.model_dump_json()
@@ -149,7 +168,7 @@ class JointActionSolver:
         for module in modules.values():
             begin = getattr(module, "begin_frame", None)
             if begin: begin(s, build)
-        target = self.target(s, profile, build)
+        target = None if movement_only else self.target(s, profile, build)
         geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]))
         if geometry_key != self.geometry_key:
             self.geometry, self.geometry_key = GeometryService(s), geometry_key
@@ -229,12 +248,16 @@ class JointActionSolver:
                     # a nearby waypoint and makes zero input a local optimum.
                     stance += (s.player.pos.distance(waypoint)-closest_waypoint)*(.35 if recovering else .15)
             evade = modules["evade"].score(clearance, desired)
-            for attack in modules["fire"].propose(s, build, profile, target, firing_velocity, g, modules["aim"]):
+            attacks = ([AttackProposal((0, 0), 0, 0, "entry_move_only")] if movement_only else
+                       modules["fire"].propose(s, build, profile, target, firing_velocity, g, modules["aim"]))
+            for attack in attacks:
                 shot, hit = attack.shoot, attack.hit_score
-                postkill_safe = threats.attack_safe(target, build, trajectory, hit)
+                attack_target = next((e for e in s.hostiles if e.instance_id == attack.target_id), target)
+                postkill_safe = threats.attack_safe(attack_target, build, trajectory, hit, attack.footprint)
                 safety = SafetyAssessment(clearance, slack, exit_directions, wall, postkill_safe)
                 damage_risk = max(0, -clearance)
                 utility = hit*6+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)-blocked_steps*.02
+                if movement_only: utility = min(100, clearance)/20+escape+max(0, slack)/45-blocked_steps*.05
                 if not s.hostiles and move != (0, 0): utility -= .08
                 if wall: utility -= 100
                 candidates.append({"move": move, "shoot": shot, "safe": safety.safe,
@@ -242,11 +265,12 @@ class JointActionSolver:
                                    "escape_slack": slack, "escape_directions": exit_directions,
                                    "early_risk": max(0, -early_clearance), "first_contact": first_contact, "blocked_steps": blocked_steps,
                                    "utility": utility, "risk": damage_risk+(100 if not postkill_safe else 0), "fire_reason": attack.reason,
+                                   "attack_target": attack_target.instance_id if attack_target else None,
                                    "wait": attack.wait.__dict__ if attack.wait else None})
                 if not postkill_safe:
                     candidates.append({**candidates[-1], "shoot": (0, 0), "hit": 0.,
                                        "safe": not wall and clearance > 0 and slack >= 6,
-                                       "utility": utility-hit*6, "risk": damage_risk, "fire_reason": "death_effect_withdrawal"})
+                                       "utility": utility-hit*6, "risk": damage_risk, "fire_reason": "attack_safety_withdrawal"})
         # Safety is lexicographic. If every option is unsafe, minimize modelled
         # penetration before considering output; this is not a guarantee of life.
         best = max(candidates, key=lambda c: (c["safe"], not c["wall"], -c["early_risk"], c["escape_directions"] > 0,
@@ -256,10 +280,11 @@ class JointActionSolver:
         self.previous_move = best["move"]
         self.last_risk = min(1., best["risk"]/30)
         return ActionFrame(frame=s.frame, room_visit_id=s.room_visit_id, move=best["move"], shoot=best["shoot"],
-                           profile=name, target=target.instance_id if target else None,
-                           state="RECOVER" if recovering else "EVADE" if best["clearance"] < 20 else "ENGAGE",
+                           profile=name, target=best["attack_target"],
+                           state="ENTRY_GUARD" if movement_only else "RECOVER" if recovering else "EVADE" if best["clearance"] < 20 else "ENGAGE",
                            score={k: best[k] for k in ("clearance", "hit", "escape", "utility", "risk", "escape_slack", "early_risk", "first_contact")},
                            diagnostics={"route_goal": [round(route_goal.x), round(route_goal.y)] if route_goal else None,
+                               "movement_target": target.instance_id if target else None,
                                "route_remaining": sum(a.distance(b) for a, b in zip([s.player.pos]+route, route)),
                                "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"],
                                "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),

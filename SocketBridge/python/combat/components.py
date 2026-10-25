@@ -24,6 +24,8 @@ class AttackProposal:
     expected_damage: float
     reason: str
     wait: "WaitEvidence | None" = None
+    target_id: str | None = None
+    footprint: tuple[float, float, float, float, float] | None = None
 
 
 @dataclass(frozen=True)
@@ -185,12 +187,16 @@ class NormalTears:
             if 0 <= ticks <= 20 and (position+velocity*ticks).distance(enemy.pos+enemy.vel*ticks) <= enemy.collision_radius+tear.get("collision_radius", 5):
                 damage += float(s.stats.get("damage", 3.5))*.6
         return damage
-    def hit_score(self, s, build, aim, target, shot, velocity, geometry):
-        if target is None or not target.vulnerable: return 0.
+    def launch_velocity(self, s, build, aim, shot, velocity):
         launch = Vec(x=shot[0], y=shot[1])*build.tear_speed
         if aim.params["movement_inheritance"]:
             measured = s.movement_inheritance.get(f"{shot[0]},{shot[1]}")
             launch += (Vec(**measured)+(velocity-s.player.vel)*.5) if measured else velocity*.5
+        return launch
+
+    def hit_score(self, s, build, aim, target, shot, velocity, geometry):
+        if target is None or not target.vulnerable: return 0.
+        launch = self.launch_velocity(s, build, aim, shot, velocity)
         enemy_velocity = aim.velocity(target)
         relative = launch-enemy_velocity
         delta = target.pos-s.player.pos
@@ -211,10 +217,25 @@ class NormalTears:
     def propose(self, s, build, profile, target, velocity, geometry, aim=None):
         aim = aim or PredictiveAim(profile.aim.params)
         proposals = []
+        pool = [target] if target else []
+        # Bound opportunity search, not threat perception. Every dangerous entity
+        # remains in the safety field; firing still has at most four proposals.
+        secondary = [e for e in s.hostiles if e.vulnerable and (target is None or e.instance_id != target.instance_id)
+                     and e.pos.distance(s.player.pos) <= build.effective_range+40]
+        pool += sorted(secondary, key=lambda e: (e.pos.distance(s.player.pos), e.instance_id))[:7]
         for direction in self.directions:
-            hit = self.hit_score(s, build, aim, target, direction, velocity, geometry)
-            if hit >= self.params["min_hit_score"] and hit > 0:
-                proposals.append(AttackProposal(direction, hit, hit*float(s.stats.get("damage", 3.5))/build.fire_interval, "attack_window"))
+            choices = []
+            for enemy in pool:
+                hit = self.hit_score(s, build, aim, enemy, direction, velocity, geometry)
+                if hit >= self.params["min_hit_score"] and hit > 0:
+                    primary = target is not None and enemy.instance_id == target.instance_id
+                    choices.append((hit*(1 if primary else .95), enemy, primary))
+            if choices:
+                hit, enemy, primary = max(choices, key=lambda item: (item[0], item[1].instance_id))
+                end = s.player.pos+self.launch_velocity(s, build, aim, direction, velocity).unit()*build.effective_range
+                footprint = (s.player.pos.x, s.player.pos.y, end.x, end.y, 16.)
+                proposals.append(AttackProposal(direction, hit, hit*float(s.stats.get("damage", 3.5))/build.fire_interval,
+                    "attack_window" if primary else "opportunistic_secondary", target_id=enemy.instance_id, footprint=footprint))
         # Ordinary tears have no resource cost: never withhold a valid shot.
         return proposals or [AttackProposal((0, 0), 0, 0, "no_valid_firing_lane")]
 

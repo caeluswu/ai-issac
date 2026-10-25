@@ -37,7 +37,7 @@ for name in ("keep_range", "kite", "strafe"):
     register("position."+name, p, name, ("target", "build", "geometry"))
 for name in ("direct", "predictive"):
     register("aim."+name, {"max_lead_ticks": (12, 3, 24), "movement_inheritance": (True, (True, False))}, name, ("target", "build"))
-register("fire.normal_tears", {"min_hit_score": (.2, 0, .8)}, "cardinal tear fire", ("target", "geometry", "build"))
+register("fire.normal_tears", {"min_hit_score": (.2, 0, .8)}, "cardinal fire; primary plus seven nearest opportunities; all threats retained", ("target", "enemies", "geometry", "build"))
 for name in ("minimal_shift", "max_clearance"):
     register("evade."+name, {"extra_margin_px": (4, 0, 12)}, name, ("enemies", "projectiles", "bombs", "hazards"))
 register("escape.keep_routes", {"horizon_ticks": (30, 15, 45), "min_safe_area_ratio": (.25, .1, .5)}, "future reachable space", ("geometry", "enemies"))
@@ -56,6 +56,8 @@ def compile_plan(value, context: ContextRef, capabilities=("normal_tears",)) -> 
     a.pop("snapshot_id"); b.pop("snapshot_id")
     if a != b: raise ValueError("context_ref: stale run, room, build, catalog or plan revision")
     if plan.default_profile not in plan.profiles: raise ValueError("default_profile: unknown profile")
+    if any(name.startswith("contract_") for name in plan.profiles):
+        raise ValueError("profiles: contract_ names are reserved for local safety intervention")
     for rule in plan.switch_rules:
         if rule.use_profile not in plan.profiles: raise ValueError("switch_rules.use_profile: unknown profile")
     for profile_name, profile in plan.profiles.items():
