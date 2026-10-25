@@ -108,12 +108,15 @@ class FixturePlanner:
 class TestSession(unittest.IsolatedAsyncioTestCase):
     async def test_stale_solve_is_discarded_and_recomputed_from_fresh_state(self):
         from combat.controller import JointActionSolver
+        loop = asyncio.get_running_loop()
         class DelayedOnce(JointActionSolver):
             def __init__(self): super().__init__(); self.once = True
             def solve(self, *args):
-                if self.once:
-                    import time
-                    time.sleep(.13); self.once = False
+                if self.once and not session.pause_owned:
+                    async def advance():
+                        while session.observation.latest.frame < args[0].frame+4: await asyncio.sleep(.005)
+                    asyncio.run_coroutine_threadsafe(advance(), loop).result(timeout=2)
+                    self.once = False
                 return super().solve(*args)
         with tempfile.TemporaryDirectory() as directory:
             game = SimulatedRoom(); bridge = SocketBridge(port=0); log = RunLog(Path(directory)/"run")

@@ -11,6 +11,13 @@ class BoundaryEvent:
     severity: str
 
 
+@dataclass(frozen=True)
+class ProgressEvidence:
+    kind: str
+    frame: int
+    entity: str | None = None
+
+
 class ProgressSupervisor:
     def __init__(self):
         self.previous = None
@@ -35,6 +42,7 @@ class ProgressSupervisor:
         self.wait_consumed = False
         self.wait_credit = 0
         self.last_wait_frame = None
+        self.recent_evidence = deque(maxlen=60)
 
     def observe(self, s, action=None):
         self.events, self.evidence = [], []
@@ -45,14 +53,14 @@ class ProgressSupervisor:
             old_ids = {e.instance_id for e in self.previous.hostiles}
             if any(d["instance_id"] in old_ids and d["frame"] >= self.previous.frame
                    for d in getattr(s, "recent_deaths", []) or []):
-                self.evidence.append("confirmed_npc_death")
+                self.evidence.append(ProgressEvidence("confirmed_npc_death", s.frame).__dict__)
                 self.last_damage = s.frame
         if self.previous:
             for enemy in self.previous.hostiles:
                 current = enemies.get(enemy.instance_id)
                 # Disappearance is not proof of death (burrow/transform/partition).
                 if current and current.hp < enemy.hp:
-                    self.evidence.append("enemy_hp_decreased:"+enemy.instance_id)
+                    self.evidence.append(ProgressEvidence("enemy_hp_decreased", s.frame, enemy.instance_id).__dict__)
                     self.last_damage = s.frame
             if self.previous.layout.get("grid") != s.layout.get("grid"):
                 old = self.previous.layout.get("grid") or {}
@@ -60,7 +68,7 @@ class ProgressSupervisor:
                 if any(g.get("type") == 14 and g.get("variant") == 0 and
                        g.get("collision", 0) != 0 and new.get(i, {}).get("collision", 0) == 0
                        for i, g in old.items()):
-                    self.evidence.append("breakable_obstacle_opened")
+                    self.evidence.append(ProgressEvidence("breakable_obstacle_opened", s.frame).__dict__)
         if action:
             goal = action.diagnostics.get("route_goal")
             remaining = action.diagnostics.get("route_remaining")
@@ -74,7 +82,7 @@ class ProgressSupervisor:
                 elif remaining <= self.route_best[key]-8 and s.player.pos.distance(self.route_anchors[key]) >= 8:
                     self.route_best[key] = remaining
                     self.route_anchors[key] = s.player.pos
-                    self.evidence.append("route_cost_decreased")
+                    self.evidence.append(ProgressEvidence("route_cost_decreased", s.frame, action.target).__dict__)
             idle = action.move == (0, 0) and action.shoot == (0, 0)
             self.idle_since = (self.idle_since if self.idle_since is not None else s.frame) if idle else None
             if action.move != (0, 0):
@@ -84,6 +92,7 @@ class ProgressSupervisor:
                     self.blocked_since, self.anchor = s.frame, s.player.pos
             else: self.blocked_since = None
         if self.evidence:
+            self.recent_evidence.extend(self.evidence)
             self.last_progress = s.frame
             self.recovery_level = 0
             self.wait_consumed = False
@@ -139,3 +148,8 @@ class ProgressSupervisor:
     def metrics(self):
         return {"max_no_progress_ticks": self.max_no_progress, "max_idle_ticks": self.max_idle,
                 "boundary_counts": self.boundary_counts, "recovery_entries": self.recovery_count}
+
+    def feedback(self):
+        return {**self.metrics(), "recent_evidence": list(self.recent_evidence),
+                "trajectory_checkpoints": list(self.history)[::15], "recovery_level": self.recovery_level,
+                "last_progress_frame": self.last_progress}

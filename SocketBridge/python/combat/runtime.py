@@ -542,12 +542,13 @@ class CombatSession:
                 self.replan_requests += 1
                 self.pending_started_frame, self.pending_reasons = s.frame, set(reasons)
                 feedback = {"reasons": reasons, "damage_half_hearts": self.judge.damage, "current_plan": self.plan.model_dump(),
-                            "progress": self.supervisor.metrics(), "last_action": self.previous_action.model_dump() if self.previous_action else None}
+                            "progress": self.supervisor.feedback(), "failed_stances": list(self.solver.failed_goals),
+                            "last_action": self.previous_action.model_dump() if self.previous_action else None}
                 self.pending = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 20))
                 self.log("replan_started", frame=s.frame, reasons=reasons)
-            solve_started = time.monotonic()
+            solve_started = time.perf_counter()
             action = await asyncio.to_thread(self.solver.solve, s, self.plan, build.model_copy(deep=True))
-            decision_wall_ms = (time.monotonic()-solve_started)*1000
+            decision_wall_ms = (time.perf_counter()-solve_started)*1000
             action.diagnostics["decision_wall_ms"] = decision_wall_ms
             if self.judge_result == "CLEARED":
                 if self.clear_started is None: self.clear_started = s.frame

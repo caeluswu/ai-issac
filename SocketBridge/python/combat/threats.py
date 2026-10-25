@@ -5,6 +5,17 @@ import math
 from .models import Vec
 
 
+@dataclass(frozen=True)
+class SafetyAssessment:
+    clearance: float
+    escape_slack: float
+    escape_directions: int
+    wall: bool
+    postkill_safe: bool = True
+    @property
+    def safe(self): return not self.wall and self.clearance > 0 and self.escape_slack >= 6 and self.postkill_safe
+
+
 def distance_segment(px, py, ax, ay, bx, by):
     dx, dy = bx-ax, by-ay
     t = max(0., min(1., ((px-ax)*dx+(py-ay)*dy)/max(1e-9, dx*dx+dy*dy)))
@@ -56,17 +67,18 @@ class ThreatForecast:
 
 class GenericEnemy:
     """Unknown phases remain unknown; current velocity has bounded error."""
+    death_effect_radius = 0
     def forecast(self, enemy, snapshot):
         if enemy.collision_class == 0: return []
         return [ThreatForecast(enemy.instance_id, enemy.pos.x, enemy.pos.y, enemy.vel.x, enemy.vel.y,
                                enemy.collision_radius, uncertainty=4+min(8, enemy.vel.length()*2),
                                source="observed_motion_approximation")]
-    def death_radius(self, enemy): return 0
+    def death_radius(self, enemy): return self.death_effect_radius
 
 
 class ExplosiveDeath(GenericEnemy):
     """Normal Boom Fly only; 100px is a conservative uncalibrated model bound."""
-    def death_radius(self, enemy): return 100
+    death_effect_radius = 100
 
 
 class Pursuer(GenericEnemy):
@@ -88,11 +100,31 @@ class BurstMover(Pursuer):
                 for t in super().forecast(enemy, snapshot)]
 
 
+class ExplosiveBurst(BurstMover):
+    # Type 250: local enums identify Ticking Spider; captured death + damage
+    # flags verify the explosion. The radius remains a conservative estimate.
+    death_effect_radius = 100
+
+
+class LandingMover(BurstMover):
+    def forecast(self, enemy, snapshot):
+        # Ground collision being disabled during a jump is not evidence that
+        # its future landing is harmless. State numbers are deliberately not
+        # decoded without a validated phase table.
+        grounded = enemy.model_copy(update={"collision_class": 4})
+        predictions = super().forecast(grounded, snapshot)
+        landing = enemy.pos+enemy.vel*6
+        predictions.append(ThreatForecast(enemy.instance_id+":landing", landing.x, landing.y, 0, 0,
+            enemy.collision_radius, uncertainty=24, source="uncalibrated_landing_envelope"))
+        return predictions
+
+
 class EnemyAdapters:
     def __init__(self):
         self.default = GenericEnemy()
         self.adapters = {(25, 0): ExplosiveDeath(), (10, 0): Pursuer(), (18, 0): Pursuer(),
-                         (85, 0): BurstMover(), (94, 0): BurstMover()}
+                         (85, 0): BurstMover(), (94, 0): BurstMover(), (250, 0): ExplosiveBurst(),
+                         (305, 0): BurstMover(), (29, 0): LandingMover()}
     def resolve(self, enemy): return self.adapters.get((enemy.type, enemy.variant), self.default)
     def register(self, kind, variant, adapter): self.adapters[kind, variant] = adapter
 
@@ -103,9 +135,14 @@ class ThreatField:
         self.adapters = adapters or EnemyAdapters()
         self.threats = []
         for enemy in s.hostiles: self.threats.extend(self.adapters.resolve(enemy).forecast(enemy, s))
+        for enemy in s.hostiles:
+            radius = self.adapters.resolve(enemy).death_radius(enemy)
+            if radius and enemy.hp <= float(s.stats.get("damage", 3.5)) and s.projectiles["player_tears"]:
+                self.threats.append(ThreatForecast(enemy.instance_id+":imminent_death", enemy.pos.x, enemy.pos.y,
+                    enemy.vel.x, enemy.vel.y, radius, uncertainty=8, source="possible_inflight_lethal_hit"))
         for i, p in enumerate(s.projectiles["enemy_projectiles"] or []):
             self.threats.append(ThreatForecast("bullet:"+str(p.get("instance_id", i)),
-                p["pos"]["x"], p["pos"]["y"], p["vel"]["x"], p["vel"]["y"], p["collision_radius"], uncertainty=3))
+                p["pos"]["x"], p["pos"]["y"], p["vel"]["x"], p["vel"]["y"], p["collision_radius"], uncertainty=5))
         for b in s.bombs:
             self.threats.append(ThreatForecast("bomb:"+str(b.get("id", 0)), b["pos"]["x"], b["pos"]["y"],
                 b.get("vel", {}).get("x", 0), b.get("vel", {}).get("y", 0), b["explosion_radius"],
@@ -125,9 +162,11 @@ class ThreatField:
         # Retained bridge death events survive partition removal. Conditional
         # prediction becomes a bounded residual field; disappearing alone does not.
         for death in getattr(s, "recent_deaths", []) or []:
-            if death.get("type") == 25 and death.get("variant") == 0 and s.frame-death["frame"] <= 6:
+            adapter = self.adapters.adapters.get((death.get("type"), death.get("variant")), self.adapters.default)
+            radius = adapter.death_effect_radius
+            if radius and s.frame-death["frame"] <= 6:
                 self.threats.append(ThreatForecast("death:"+death["instance_id"], death["pos"]["x"], death["pos"]["y"],
-                    0, 0, 100, end=6-(s.frame-death["frame"]), source="confirmed_death_approximate_radius"))
+                    0, 0, radius, end=6-(s.frame-death["frame"]), source="confirmed_death_approximate_radius"))
         self.buckets = defaultdict(set)
         for i, t in enumerate(self.threats):
             bins = range(8) if t.vx or t.vy else (-1,)
@@ -200,11 +239,9 @@ class ThreatField:
     def attack_safe(self, target, build, positions, hit):
         if target is None or hit <= 0: return True
         radius = self.adapters.resolve(target).death_radius(target)
-        pending = 0.
-        for tear in self.snapshot.projectiles["player_tears"] or []:
-            if target.pos.distance(Vec(**tear["pos"])) < 60:
-                pending += float(self.snapshot.stats.get("damage", 3.5))*.6
-        if not radius or target.hp > float(self.snapshot.stats.get("damage", 3.5))+pending: return True
+        # Keep the blast reserve throughout an attack sequence. Waiting until
+        # the final hit is too late when earlier tears are already in flight.
+        if not radius: return True
         flight = max(1., target.pos.distance(self.snapshot.player.pos)/build.tear_speed)
         point = positions[min(len(positions)-1, round(flight))]
         predicted = target.pos+target.vel*min(flight, 12)

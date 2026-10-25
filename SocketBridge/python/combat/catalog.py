@@ -48,6 +48,8 @@ def compile_plan(value, context: ContextRef, capabilities=("normal_tears",)) -> 
     if isinstance(value, BattlePlan): value = value.model_dump()
     if value.get("schema_version", 1) == 1:
         value = {**value, "schema_version": 2, "required_capabilities": ["normal_tears"]}
+        if value["context_ref"].get("catalog_revision", 1) == 1 and context.catalog_revision == 2:
+            value["context_ref"] = {**value["context_ref"], "catalog_revision": 2}
     plan = BattlePlan.model_validate(value)
     if not set(plan.required_capabilities).issubset(capabilities): raise ValueError("Unsupported build capability")
     a, b = plan.context_ref.model_dump(), context.model_dump()

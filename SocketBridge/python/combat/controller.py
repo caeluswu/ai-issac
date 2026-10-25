@@ -7,7 +7,7 @@ import time
 from .models import Vec, ZERO, BuildProfile, ActionFrame, Enemy
 from .geometry import GeometryService, segment_distance
 from .components import EXECUTABLES, resilient_component
-from .threats import ThreatField, EnemyAdapters
+from .threats import ThreatField, EnemyAdapters, SafetyAssessment
 
 MOVES = tuple((x, y) for y in (-1, 0, 1) for x in (-1, 0, 1))
 SHOTS = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
@@ -48,7 +48,7 @@ class NormalTearsBuild:
 class BuildResolver:
     """Dispatch observation calibration to a registered weapon build adapter."""
     def __init__(self, adapters=None):
-        self.adapters = adapters or {1: NormalTearsBuild()}
+        self.adapters = {1: NormalTearsBuild()} if adapters is None else adapters
         self.weapon_type = None
     def update(self, s):
         weapon = s.stats["weapon_type"]
@@ -154,11 +154,11 @@ class JointActionSolver:
         if geometry_key != self.geometry_key:
             self.geometry, self.geometry_key = GeometryService(s), geometry_key
         g = self.geometry
-        if self.recovery_level and s.frame-self.last_recovery_route >= 45:
+        if modules["recovery"].reject_goal(s.frame, self.recovery_level, self.last_recovery_route):
             if self.last_route_goal: self.failed_goals.append(self.last_route_goal)
             self.last_recovery_route = s.frame
             self.route_failures += 1
-        route = modules["position"].route(g, s, target.pos, build, modules["fire"], self.failed_goals) if target else []
+        route = list(modules["position"].route(g, s, target.pos, build, modules["fire"], self.failed_goals).waypoints) if target else []
         weapon_capabilities = getattr(modules["fire"], "capabilities", None)
         if target and not route and weapon_capabilities and weapon_capabilities.break_plain_poop:
             # Normal tears can open an otherwise sealed lane through ordinary
@@ -167,7 +167,7 @@ class JointActionSolver:
             for index, grid in (s.layout["grid"] or {}).items():
                 if grid["type"] == 14 and grid["variant"] == 0 and grid["collision"] != 0:
                     position = Vec(x=grid["x"], y=grid["y"])
-                    path = modules["position"].route(g, s, position, build, modules["fire"], terrain=True)
+                    path = list(modules["position"].route(g, s, position, build, modules["fire"], terrain=True).waypoints)
                     if path: blockers.append((len(path)*40+position.distance(s.player.pos), index, position, path))
             if blockers:
                 _, index, position, route = min(blockers, key=lambda x: (x[0], x[1]))
@@ -226,10 +226,11 @@ class JointActionSolver:
             for attack in modules["fire"].propose(s, build, profile, target, desired, g, modules["aim"]):
                 shot, hit = attack.shoot, attack.hit_score
                 postkill_safe = threats.attack_safe(target, build, trajectory, hit)
+                safety = SafetyAssessment(clearance, slack, exit_directions, wall, postkill_safe)
                 damage_risk = max(0, -clearance)
-                utility = hit*6+stance+evade+modules["escape"].score(escape)-(.04 if move != self.previous_move else 0)
+                utility = hit*6+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)
                 if wall: utility -= 100
-                candidates.append({"move": move, "shoot": shot, "safe": not wall and clearance > 0 and postkill_safe and slack >= 6,
+                candidates.append({"move": move, "shoot": shot, "safe": safety.safe,
                                    "clearance": clearance, "wall": wall, "hit": hit, "escape": escape,
                                    "escape_slack": slack, "escape_directions": exit_directions,
                                    "utility": utility, "risk": damage_risk+(100 if not postkill_safe else 0), "fire_reason": attack.reason,

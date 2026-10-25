@@ -12,6 +12,12 @@ class CapabilitySet:
 
 
 @dataclass(frozen=True)
+class MotionProposal:
+    waypoints: tuple[Vec, ...]
+    reason: str = "weapon_attack_geometry"
+
+
+@dataclass(frozen=True)
 class AttackProposal:
     shoot: tuple[int, int]
     hit_score: float
@@ -115,7 +121,7 @@ class KeepRange:
     def __init__(self, params): self.params = params
     def route(self, geometry, s, target, build, weapon, excluded=(), terrain=False):
         provider = getattr(weapon, "firing_route", None)
-        return provider(geometry, s.player.pos, target, build, excluded, terrain) if provider else []
+        return MotionProposal(tuple(provider(geometry, s.player.pos, target, build, excluded, terrain))) if provider else MotionProposal((), "no_weapon_route_provider")
     def score(self, delta, desired, s, build):
         low, high = (self.params[x]*build.effective_range for x in ("min_range_ratio", "max_range_ratio"))
         return -max(low-delta.length(), 0, delta.length()-high)/50-min(abs(delta.x), abs(delta.y))/90
@@ -154,12 +160,14 @@ class MinimalShift(MaxClearance):
 
 class KeepRoutes:
     def __init__(self, params): self.params = params
-    def score(self, fraction): return min(.7, fraction)*.8-(2 if fraction < self.params["min_safe_area_ratio"] else 0)
+    def score(self, fraction, slack):
+        return min(.7, fraction)*.8-(2 if fraction < self.params["min_safe_area_ratio"] else 0)+min(1., max(0., slack)/self.params["horizon_ticks"])*.1
 
 
 class LocalRepath:
     def __init__(self, params): self.params = params
-    def route_index(self, level, failures, count): return min(max(0, count-1), failures) if level else 0
+    def reject_goal(self, frame, level, last_recovery):
+        return bool(level and frame-last_recovery >= max(15, self.params["recovery_ticks"]*7.5))
 
 
 class NormalTears:

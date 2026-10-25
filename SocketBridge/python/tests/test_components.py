@@ -85,7 +85,7 @@ class TestReplaceableComponents(unittest.TestCase):
 
     def test_legacy_plan_is_explicitly_upgraded(self):
         s = snapshot(); plan = default_plan(context(s)).model_dump()
-        plan["schema_version"] = 1; plan.pop("required_capabilities")
+        plan["schema_version"] = 1; plan["context_ref"]["catalog_revision"] = 1; plan.pop("required_capabilities")
         upgraded = compile_plan(plan, context(s))
         self.assertEqual(upgraded.schema_version, 2)
         self.assertEqual(upgraded.required_capabilities, ["normal_tears"])
@@ -99,6 +99,13 @@ class TestReplaceableComponents(unittest.TestCase):
 
 
 class TestThreats(unittest.TestCase):
+    def test_ticking_spider_kill_is_unsafe_near_player(self):
+        s = snapshot(); e = s.enemies[0]; e.type = 250; e.hp = 1
+        self.assertFalse(ThreatField(s).attack_safe(e, BuildResolver().update(s), [e.pos]*13, 1))
+
+    def test_airborne_hopper_retains_landing_threat(self):
+        s = snapshot(); s.enemies[0].type = 29; s.enemies[0].collision_class = 0
+        self.assertTrue(ThreatField(s).threats)
     def test_escape_reserve_follows_withdrawal_instead_of_holding_still(self):
         s = snapshot(enemies=False)
         s.projectiles["enemy_projectiles"] = [{"pos": {"x": 200, "y": 160}, "vel": {"x": 4.2, "y": 0}, "collision_radius": 5}]
