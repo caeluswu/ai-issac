@@ -84,6 +84,7 @@ class JointActionSolver:
         self.last_risk = 0.
         self.last_candidates = []
         self.max_hp = 1
+        self.budget_exhausted = False
 
     def select_profile(self, s, plan, build):
         selected = plan.default_profile
@@ -170,7 +171,11 @@ class JointActionSolver:
         horizon = profile.escape.params["horizon_ticks"]
         routes = {}
         candidates = []
+        self.budget_exhausted = False
         for move in MOVES:
+            if candidates and (time.perf_counter()-started)*1000 > 26:
+                self.budget_exhausted = True
+                break
             desired = Vec(x=move[0], y=move[1]).unit()*build.move_speed
             position, velocity = s.player.pos, s.player.vel
             trajectory = [position]
@@ -208,7 +213,8 @@ class JointActionSolver:
                 candidates.append({"move": move, "shoot": shot, "safe": not wall and clearance > 0 and postkill_safe and slack >= 6,
                                    "clearance": clearance, "wall": wall, "hit": hit, "escape": escape,
                                    "escape_slack": slack, "escape_directions": exit_directions,
-                                   "utility": utility, "risk": damage_risk+(100 if not postkill_safe else 0), "fire_reason": attack.reason})
+                                   "utility": utility, "risk": damage_risk+(100 if not postkill_safe else 0), "fire_reason": attack.reason,
+                                   "wait": attack.wait.__dict__ if attack.wait else None})
                 if not postkill_safe:
                     candidates.append({**candidates[-1], "shoot": (0, 0), "hit": 0.,
                                        "safe": not wall and clearance > 0 and slack >= 6,
@@ -225,5 +231,6 @@ class JointActionSolver:
                            score={k: best[k] for k in ("clearance", "hit", "escape", "utility", "risk", "escape_slack")},
                            diagnostics={"route_goal": [round(route_goal.x), round(route_goal.y)] if route_goal else None,
                                "route_remaining": sum(a.distance(b) for a, b in zip([s.player.pos]+route, route)),
-                               "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"]},
+                               "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"],
+                               "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates)},
                            decision_ms=(time.perf_counter()-started)*1000)

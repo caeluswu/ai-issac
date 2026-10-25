@@ -30,6 +30,10 @@ class ProgressSupervisor:
         self.boundary_counts = {}
         self.evidence = []
         self.danger_since = {}
+        self.wait_until = None
+        self.wait_consumed = False
+        self.wait_credit = 0
+        self.last_wait_frame = None
 
     def observe(self, s, action=None):
         self.events, self.evidence = [], []
@@ -76,7 +80,20 @@ class ProgressSupervisor:
         if self.evidence:
             self.last_progress = s.frame
             self.recovery_level = 0
-        age = s.frame-self.last_progress
+            self.wait_consumed = False
+            self.wait_credit = 0
+            self.wait_until = None
+        wait = action.diagnostics.get("wait") if action else None
+        if wait and not self.wait_consumed and wait.get("evidence") and wait.get("reason") in ("weapon_charge", "cooldown", "known_invulnerability"):
+            self.wait_until = min(s.frame+90, wait["deadline_frame"])
+            self.wait_consumed = True
+        waiting = self.wait_until is not None and s.frame < self.wait_until
+        if waiting and self.previous:
+            self.wait_credit += min(s.frame-self.previous.frame, max(0, self.wait_until-self.previous.frame))
+        age = max(0, s.frame-self.last_progress-self.wait_credit)
+        if waiting:
+            self.idle_since = None
+            self.blocked_since = None
         idle_age = s.frame-self.idle_since if self.idle_since is not None else 0
         blocked_age = s.frame-self.blocked_since if self.blocked_since is not None else 0
         self.max_no_progress = max(self.max_no_progress, age)

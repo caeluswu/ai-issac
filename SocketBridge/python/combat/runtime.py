@@ -384,6 +384,29 @@ class CombatSession:
         return ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id,
                           build_revision=build.revision, plan_revision=self.revision)
 
+    async def resume_owned_pause(self, frozen):
+        """Confirm game updates resumed; key injection alone is not evidence."""
+        if not self.pause_owned: raise RuntimeError("UNOWNED_RESUME")
+        for attempt in range(3):
+            latest = self.observation.latest
+            if latest and latest.room_visit_id != frozen.room_visit_id: raise RuntimeError("RESUME_ROOM_CHANGED")
+            if latest and not latest.paused and latest.frame > frozen.frame:
+                self.pause_owned = False
+                return
+            if not self.heartbeat or time.monotonic()-self.heartbeat_at >= 1 or not self.heartbeat.get("paused"):
+                raise RuntimeError("PAUSE_RESUME_UNCONFIRMED")
+            await self.pause.toggle()
+            began = time.monotonic()
+            while time.monotonic()-began < .8:
+                latest = self.observation.latest
+                if latest and not latest.paused and latest.frame > frozen.frame:
+                    self.pause_owned = False
+                    self.log("resume_confirmed", frame=latest.frame, attempts=attempt+1)
+                    return
+                await asyncio.sleep(.02)
+            self.log("resume_retry", attempt=attempt+1)
+        raise TimeoutError("RESUME_NOT_CONFIRMED")
+
     async def configure_room(self, s):
         frozen, began = s, None
         try:
@@ -401,15 +424,17 @@ class CombatSession:
             if self.pause_owned:
                 # A transition/unknown pause state must not be blindly toggled.
                 if self.heartbeat and time.monotonic()-self.heartbeat_at < 1 and self.heartbeat.get("paused"):
-                    await self.pause.toggle()
+                    await self.resume_owned_pause(frozen)
                     self.pause.release_focus()
                 else: raise RuntimeError("PAUSE_RESUME_UNCONFIRMED")
-                self.pause_owned = False
             if began: self.pause_seconds += time.monotonic()-began
         fresh = await self.next_snapshot(after=frozen.snapshot_id)
         if fresh.room_visit_id != s.room_visit_id: raise RuntimeError("ROOM_CHANGED_DURING_PLAN")
         await self.set_mode("FORCE_AI")
-        return await self.next_snapshot(after=fresh.snapshot_id)
+        # Frames received before the correlated mode acknowledgement may still
+        # say MANUAL. Wait for an update produced after that acknowledgement.
+        stamp = self.observation.latest.snapshot_id
+        return await self.next_snapshot(after=stamp)
 
     async def navigate(self, s):
         initial_run = s.run_id
@@ -547,8 +572,7 @@ class CombatSession:
                     raise RuntimeError("START_CONTRACT")
                 self.build_resolver.update(initial)
                 frozen, began = await self.pause_for_plan(initial)
-                await self.pause.toggle()
-                self.pause_owned = False
+                await self.resume_owned_pause(frozen)
                 self.pause_seconds += time.monotonic()-began
                 await self.next_snapshot(after=frozen.snapshot_id)
                 result = "STARTUP_READY"

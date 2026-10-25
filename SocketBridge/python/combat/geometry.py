@@ -36,18 +36,27 @@ class GeometryService:
                           for i in self.walkable}
 
     def cell(self, p):
-        return round((p.y-self.origin.y)/40)*self.width + round((p.x-self.origin.x)/40)
+        return self.cell_xy(p.x, p.y)
+
+    def cell_xy(self, x, y):
+        return round((y-self.origin.y)/40)*self.width + round((x-self.origin.x)/40)
 
     def clear(self, p: Vec, *, shot=False, radius=None):
         allowed = self.shootable if shot else self.walkable
         r = (0 if shot else self.radius) if radius is None else radius
-        return all(self.cell(Vec(x=p.x+dx, y=p.y+dy)) in allowed
+        return all(self.cell_xy(p.x+dx, p.y+dy) in allowed
                    for dx, dy in ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
                                   (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707)))
 
     def line_clear(self, a, b, *, shot=False):
         n = max(1, math.ceil(a.distance(b)/8))
-        return all(self.clear(a+(b-a)*(i/n), shot=shot) for i in range(n+1))
+        allowed = self.shootable if shot else self.walkable
+        r = 0 if shot else self.radius
+        offsets = ((0, 0),) if shot else ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
+                                        (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707))
+        dx, dy = b.x-a.x, b.y-a.y
+        return all(self.cell_xy(a.x+dx*i/n+ox, a.y+dy*i/n+oy) in allowed
+                   for i in range(n+1) for ox, oy in offsets)
 
     def nearest(self, p):
         if not self.walkable: raise ValueError("No walkable cells")

@@ -106,6 +106,28 @@ class FixturePlanner:
 
 
 class TestSession(unittest.IsolatedAsyncioTestCase):
+    async def test_resume_retries_only_while_owned_pause_is_confirmed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            game = SimulatedRoom(); log = RunLog(Path(directory)/"run")
+            session = CombatSession(SocketBridge(port=0), None, game, log)
+            frozen = snapshot(); frozen.paused = True
+            session.observation.latest = frozen
+            session.pause_owned = True
+            session.heartbeat = {"paused": True}
+            import time
+            session.heartbeat_at = time.monotonic()
+            calls = []
+            async def ignore_first():
+                calls.append(1)
+                session.heartbeat_at = time.monotonic()
+                if len(calls) == 2:
+                    session.observation.latest = frozen.model_copy(update={"frame": frozen.frame+1, "paused": False})
+            game.toggle = ignore_first
+            await session.resume_owned_pause(frozen)
+            self.assertEqual(len(calls), 2)
+            self.assertFalse(session.pause_owned)
+            log.file.close()
+
     async def test_replanning_installs_at_action_boundary_while_control_continues(self):
         class SlowReplanner(FixturePlanner):
             def __init__(self): self.calls = 0; self.failure = False

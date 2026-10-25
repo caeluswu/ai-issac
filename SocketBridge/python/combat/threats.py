@@ -28,6 +28,16 @@ class ThreatForecast:
     def gap(self, a, b, tick, player_radius):
         if tick < self.start or tick > self.end: return 1000.
         if self.segment_end:
+            ex, ey = self.segment_end
+            # Segment/segment intersection prevents fast crossing between two
+            # safe endpoints from passing through a thin laser unnoticed.
+            dx, dy = b[0]-a[0], b[1]-a[1]
+            lx, ly = ex-self.x, ey-self.y
+            denominator = dx*ly-dy*lx
+            if abs(denominator) > 1e-9:
+                qx, qy = self.x-a[0], self.y-a[1]
+                u, v = (qx*ly-qy*lx)/denominator, (qx*dy-qy*dx)/denominator
+                if 0 <= u <= 1 and 0 <= v <= 1: return -self.radius-player_radius-self.uncertainty
             return min(distance_segment(*a, self.x, self.y, *self.segment_end),
                        distance_segment(*b, self.x, self.y, *self.segment_end))-self.radius-player_radius-self.uncertainty
         ax, ay = a[0]-self.x-self.vx*max(0, tick-1), a[1]-self.y-self.vy*max(0, tick-1)
@@ -91,21 +101,28 @@ class ThreatField:
                     0, 0, 100, end=6-(s.frame-death["frame"]), source="confirmed_death_approximate_radius"))
         self.buckets = defaultdict(set)
         for i, t in enumerate(self.threats):
-            xs, ys = [t.x, t.x+t.vx*45], [t.y, t.y+t.vy*45]
-            if t.segment_end: xs.append(t.segment_end[0]); ys.append(t.segment_end[1])
-            r = t.radius+t.uncertainty
-            for x in range(math.floor((min(xs)-r)/64), math.floor((max(xs)+r)/64)+1):
-                for y in range(math.floor((min(ys)-r)/64), math.floor((max(ys)+r)/64)+1): self.buckets[x, y].add(i)
+            bins = range(8) if t.vx or t.vy else (-1,)
+            for step in bins:
+                begin, end = (max(0, step*6-1), min(45, (step+1)*6)) if step >= 0 else (0, 0)
+                xs, ys = [t.x+t.vx*begin, t.x+t.vx*end], [t.y+t.vy*begin, t.y+t.vy*end]
+                if t.segment_end: xs.append(t.segment_end[0]); ys.append(t.segment_end[1])
+                r = t.radius+t.uncertainty
+                for x in range(math.floor((min(xs)-r)/64), math.floor((max(xs)+r)/64)+1):
+                    for y in range(math.floor((min(ys)-r)/64), math.floor((max(ys)+r)/64)+1): self.buckets[step, x, y].add(i)
 
-    def query(self, a, b, radius):
+    def query(self, a, b, radius, tick):
         indices = set()
         for x in range(math.floor((min(a[0], b[0])-radius)/64), math.floor((max(a[0], b[0])+radius)/64)+1):
             for y in range(math.floor((min(a[1], b[1])-radius)/64), math.floor((max(a[1], b[1])+radius)/64)+1):
-                indices.update(self.buckets.get((x, y), ()))
+                indices.update(self.buckets.get((-1, x, y), ()))
+                indices.update(self.buckets.get((min(7, int(tick//6)), x, y), ()))
         return (self.threats[i] for i in indices)
 
     def gap(self, a, b, tick, radius):
-        return min((t.gap(a, b, tick, radius) for t in self.query(a, b, radius)), default=1000.)
+        return min((t.gap(a, b, tick, radius) for t in self.query(a, b, radius, tick)), default=1000.)
+
+    def collides(self, a, b, tick, radius):
+        return any(t.gap(a, b, tick, radius) <= 0 for t in self.query(a, b, radius, tick))
 
     def escape(self, geometry, position, speed, radius, start_tick=12):
         origin = geometry.cell(position)
@@ -121,7 +138,7 @@ class ThreatField:
                 arrival = tick+40/max(1., speed)
                 if arrival+6 > 45: continue
                 a, b = geometry.positions[cell], geometry.positions[neighbor]
-                valid = all(self.gap((a.x, a.y), (b.x, b.y), t, radius) > 0
+                valid = all(not self.collides((a.x, a.y), (b.x, b.y), t, radius)
                             for t in (tick, arrival, arrival+6))
                 if not valid: continue
                 seen.add(neighbor)
@@ -133,7 +150,7 @@ class ThreatField:
         # Escape slack is the hold margin at the candidate endpoint; a viable
         # path is also required, so static free-area ratio cannot mask enclosure.
         point = (position.x, position.y)
-        ttc = next((t for t in range(start_tick, 46, 3) if self.gap(point, point, t, radius) <= 0), 51)
+        ttc = next((t for t in range(start_tick, 46, 3) if self.collides(point, point, t, radius)), 51)
         slack = ttc-start_tick-60/max(1., speed) if count else -45.
         return fraction, slack, count
 

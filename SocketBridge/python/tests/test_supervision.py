@@ -54,3 +54,17 @@ class TestProgress(unittest.TestCase):
             s = snapshot(frame=frame); s.player.pos.x += (frame % 20)*2
             result = monitor.observe(s, action(move=(1, 0), shoot=(1, 0)))
         self.assertEqual(result, "STALL_UNRECOVERED")
+
+    def test_verified_wait_is_bounded_and_cannot_be_renewed_without_progress(self):
+        monitor = ProgressSupervisor()
+        for frame in range(331):
+            a = action(wait={"reason": "weapon_charge", "token": str(frame), "deadline_frame": frame+90, "evidence": "fixture_weapon_phase"})
+            result = monitor.observe(snapshot(frame=frame), a)
+        self.assertEqual(result, "STALL_UNRECOVERED")
+        self.assertLessEqual(monitor.wait_credit, 90)
+
+    def test_unverified_wait_does_not_hide_zero_input(self):
+        monitor = ProgressSupervisor()
+        for frame in range(241):
+            result = monitor.observe(snapshot(frame=frame), action(wait={"reason": "llm_says_wait", "deadline_frame": 99999}))
+        self.assertEqual(result, "STALL_UNRECOVERED")

@@ -17,6 +17,15 @@ class AttackProposal:
     hit_score: float
     expected_damage: float
     reason: str
+    wait: "WaitEvidence | None" = None
+
+
+@dataclass(frozen=True)
+class WaitEvidence:
+    token: str
+    reason: str
+    deadline_frame: int
+    evidence: str
 
 
 class WeaponAdapter(Protocol):

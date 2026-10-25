@@ -69,5 +69,5 @@ class TestThreats(unittest.TestCase):
         self.assertLess(ThreatField(s).gap((280, 160), (280, 160), 1, 10), 0)
 
     def test_swept_laser_endpoint_crossing(self):
-        t = ThreatForecast("line", 100, 100, 0, 0, 5, segment_end=(400, 100))
-        self.assertLess(t.gap((200, 90), (200, 110), 1, 10), 0)
+        t = ThreatForecast("line", 100, 100, 0, 0, 1, segment_end=(400, 100))
+        self.assertLess(t.gap((200, 90), (200, 110), 1, 0), 0)

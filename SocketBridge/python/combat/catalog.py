@@ -11,6 +11,9 @@ class ComponentSpec:
     description: str
     inputs: tuple[str, ...]
     weapons: tuple[str, ...] = ("normal_tears",)
+    max_duration_frames: int = 90
+    state_scope: str = "room_and_profile"
+    failure_reasons: tuple[str, ...] = ("missing_input", "incompatible_capability", "no_feasible_proposal")
 
 
 # Each parameter is (default, minimum, maximum) or (default, choices).
@@ -88,4 +91,5 @@ def default_plan(context: ContextRef):
 
 def specs():
     return {n: {"parameters": s.parameters, "description": s.description, "inputs": s.inputs,
-                "weapons": s.weapons} for n, s in CATALOG.items()}
+                "weapons": s.weapons, "max_duration_frames": s.max_duration_frames,
+                "state_scope": s.state_scope, "failure_reasons": s.failure_reasons} for n, s in CATALOG.items()}
