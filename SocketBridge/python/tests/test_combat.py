@@ -19,7 +19,7 @@ class TestContracts(unittest.TestCase):
     def setUp(self): self.s = snapshot(); self.ref = context(self.s)
 
     def test_default_compiles(self):
-        self.assertEqual(len(default_plan(self.ref).profiles["safe"].model_fields), 7)
+        self.assertEqual(len(type(default_plan(self.ref).profiles["safe"]).model_fields), 7)
 
     def test_reject_unknown_component_and_parameter(self):
         for field, value in (("component", "target.exec"), ("params", {"exec": "arbitrary"})):
@@ -68,6 +68,22 @@ class TestContracts(unittest.TestCase):
         judge.observe(hurt); judge.observe(self.s)
         self.assertEqual(judge.damage, 2)
 
+    def test_non_blocking_hazard_remains_a_threat_after_clear(self):
+        judge = CombatJudge()
+        self.s.room.update(is_clear=True, enemy_count=0)
+        self.s.enemies[0].vulnerable = False
+        self.s.enemies[0].can_shut_doors = False
+        for frame in range(3):
+            self.s.frame = frame
+            result = judge.observe(self.s)
+        self.assertEqual(result, "CLEARED")
+        self.assertEqual(len(self.s.hostiles), 1)
+
+    def test_non_blocking_entity_cannot_override_uncleared_game(self):
+        self.s.enemies[0].can_shut_doors = False
+        judge = CombatJudge()
+        for _ in range(5): self.assertIsNone(judge.observe(self.s))
+
 
 class TestGeometryAndControl(unittest.TestCase):
     def setUp(self):
@@ -98,6 +114,16 @@ class TestGeometryAndControl(unittest.TestCase):
     def test_firing_at_stationary_enemy(self):
         solver = JointActionSolver(); action = solver.solve(self.s, self.p, self.b)
         self.assertEqual(action.shoot, (1, 0)); self.assertGreater(action.score["hit"], 0)
+
+    def test_short_lead_does_not_shorten_tear_range(self):
+        profile = self.p.profiles["safe"]
+        profile.aim.params.update(max_lead_ticks=3, movement_inheritance=False)
+        self.s.enemies[0].pos = self.s.player.pos+Vec(x=150, y=0)
+        for aim in ("aim.direct", "aim.predictive"):
+            profile.aim.component = aim
+            score = JointActionSolver().hit_score(self.s, self.b, profile, self.s.enemies[0],
+                                                  (1, 0), Vec(x=0, y=0), GeometryService(self.s))
+            self.assertGreater(score, 0)
 
     def test_prediction_changes_moving_target_score(self):
         solver = JointActionSolver(); profile = self.p.profiles["safe"]
@@ -142,6 +168,13 @@ class TestGeometryAndControl(unittest.TestCase):
         resolver = BuildResolver(); resolver.update(self.s)
         self.s.inventory["collectibles"]["118"] = 1
         with self.assertRaisesRegex(ValueError, "BUILD_CHANGED"): resolver.update(self.s)
+
+    def test_sealed_enemy_requires_breaking_plain_poop(self):
+        for y in range(1, 8): self.s.layout["cells"][str(y*15+8)]["collision"] = 3
+        self.s.layout["grid"]["68"] = {"type": 14, "variant": 0, "collision": 3, "x": 320, "y": 160}
+        action = JointActionSolver().solve(self.s, self.p, self.b)
+        self.assertEqual(action.target, "terrain:68")
+        self.assertEqual(action.shoot, (1, 0))
 
 
 class TestPlanner(unittest.IsolatedAsyncioTestCase):

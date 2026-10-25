@@ -1,9 +1,9 @@
-# 阶段任务契约；对应 docs/task-contract.zh-CN.md v0.3。
+# 阶段任务契约；对应 docs/task-contract.zh-CN.md v0.5。
 # draft：存档、场景和数值门槛尚未冻结；配置加载器和 schema 尚未实现。
 schema_version: 1
-contract_version: 3
+contract_version: 5
 status: draft
-contract_date: 2026-10-24
+contract_date: 2026-10-25
 contract_doc: docs/task-contract.zh-CN.md
 
 environment:
@@ -11,17 +11,29 @@ environment:
   build: "1.7.9b.J835"
   platform: windows
   executable_sha256: BB9FDA2535D94AE72E7FD4CD7D4A87DC9BFC27417E86F8F9190BFEEB8C9F10C2
-  mod_main_lua_sha256: 19967F2E3B2BB9D184614F99BEDC53798BAFD9E8D28599AAD9AD64BF59F326E1
+  mod_main_lua_sha256: 68185EF26F2CFA38DF17651E109039D876ED45E4393593D20C558594600DBE5B
   launch_args: ["--luadebug"]
   verify_hashes_before_evaluation: true
+  # 初始化时备份并配置；正式动作开始前核对，计时期间保持不变。
+  # 动作经模组执行，不要求前台；原生暂停按键短暂激活并恢复原窗口。
+  # 不得最小化游戏，暂停心跳依赖渲染回调。
+  game_options:
+    source: options.ini
+    frozen: true
+    pause_on_focus_lost: 0
+    fullscreen: 0
+    vsync: 1
+    music_enabled: 0
+    enable_debug_console: 1
+    console_scope: initialization_only
 
 save_profile:
   kind: fully_unlocked
   provider: project_owner
-  delivered: false
-  active_slot: null
-  baseline_sha256: null
-  unlock_manifest: null
+  delivered: true
+  active_slot: 1
+  baseline_sha256: 0477CE1F84B1C127E440B2B1FFE2E23D580D7D30C4F208AED79966EEBFC8A3A1
+  unlock_manifest: configs/task/save-baseline.slot-1.json
   restore_method: copy_from_protected_baseline
   record_hash_before_after: true
 
@@ -54,7 +66,9 @@ controller:
     component_contract: [weapon_item_compatibility, preconditions, parameter_schema,
       parameter_bounds, termination, failure_reason, max_duration_frames]
     states: [WAIT_READY, ASSESS, ENGAGE, REPOSITION, EVADE, VERIFY_CLEAR, EXIT, RECOVER, SAFE_STOP]
-    interrupt_on: [room_change, death, focus_loss, disconnect, planner_cancel]
+    interrupt_on: [room_change, death, disconnect, planner_cancel]
+    focus_required_for_actions: false
+    focus_required_for_native_pause: true
     observation_staleness_guard: required
     action_ttl_guard: required
   upper:
@@ -160,3 +174,22 @@ open_items:
   - floor_and_mom_entity_identifiers
   - deepseek_model_endpoint_timeout_and_budget
   - m2_m3_stability_gates_and_seed_sample_sizes
+  - runner_reads_frozen_game_options_and_aborts_on_mismatch
+
+change_log:
+  - version: 5
+    date: 2026-10-25
+    change: >-
+      取消控制器对前台窗口的校验：send_action 不再要求前台，动作经模组输入缓存可在后台执行；
+      interrupt_on 移除 focus_loss。NativePause 改为"置前游戏窗口 → 发 Escape → 确认暂停 →
+      恢复后再置前发 Escape → 归还原前台窗口"，置前失败抛 GAME_WINDOW_ACTIVATION_FAILED，
+      不把 Escape 注入未知窗口。窗口不得最小化（渲染回调中断会使暂停心跳失效）。
+  - version: 4
+    date: 2026-10-25
+    change: >-
+      运行环境选项冻结项修订：pause_on_focus_lost 由 1 改为 0，并新增 game_options 冻结块
+      （fullscreen/vsync/music/enable_debug_console）。失焦自动暂停会停止 MC_POST_UPDATE，
+      使模组既不连接也不发快照，与启动程序必然切换前台窗口冲突。
+  - version: 3
+    date: 2026-10-24
+    change: M1/M2/M3 里程碑划分与 DeepSeek 上层接入范围

@@ -1,6 +1,6 @@
 # ── 游戏本体 ─────────────────────────────────────────────────────────
 # 重打包游戏安装目录约 1.47 GB，不纳入版本控制。
-# 构建号、exe / 模组哈希、options.ini 关键项记录在 docs/task-contract.zh-CN.md §2。
+# 构建号、exe / 模组哈希、options.ini 冻结项记录在 docs/task-contract.zh-CN.md §3.1。
 /The Binding of Isaac Rebirth Repentance/
 
 # ── Python 环境与缓存 ────────────────────────────────────────────────
@@ -25,6 +25,7 @@ artifacts/preflight-backup-*/**/*.dat
 
 # ── 运行时临时产物 ──────────────────────────────────────────────────
 artifacts/tmp-*/
+artifacts/tmp-*
 *.tmp
 Thumbs.db
 desktop.ini
@@ -32,4 +33,8 @@ desktop.ini
 # Local credentials and reproducible runtime traces
 .env.local
 artifacts/runs/
+artifacts/save-baselines/
 configs/knowledge/cache/
+
+# agent
+.dsh/

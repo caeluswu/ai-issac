@@ -52,7 +52,7 @@ class CombatJudge:
         self.enemy_hp = current
         self.previous = s
         if s.player.dead or s.hp <= 0: return "DEAD"
-        if s.room["is_clear"] and s.room["enemy_count"] == 0 and not s.hostiles:
+        if s.room["is_clear"] and s.room["enemy_count"] == 0 and not any(e.can_shut_doors for e in s.hostiles):
             self.clear_frames += 1
         else: self.clear_frames = 0
         if self.clear_frames >= 3: return "CLEARED"

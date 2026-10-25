@@ -83,3 +83,46 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(e.type, "PLAYER_DAMAGE_ATTEMPT")
         self.assertEqual(e.data.hp_before, 6)
         self.assertIsNone(e.data.hp_after)
+
+    def test_reconnect_while_paused_uses_render_clock(self):
+        self.lua.execute('''
+            paused=true; attempts=0; api.State.connected=false
+            api.State.updateCount=0; api.State.renderCount=0
+            package.preload["socket.core"]=function() return {tcp=function()
+                return {settimeout=function() end, connect=function() attempts=attempts+1; return nil,"refused" end,
+                        close=function() end}
+            end} end
+            for i=1,121 do callbacks[ModCallbacks.MC_POST_RENDER]() end
+        ''')
+        self.assertEqual(self.lua.globals().attempts, 2)
+        self.assertEqual(self.api.State.updateCount, 0)
+
+    def test_seed_formatting_is_bounded_and_does_not_reset_run(self):
+        self.lua.execute('Seeds={Seed2String=function(seed) return "formatted:"..tostring(seed) end}')
+        result = self.lua.eval('api.Commands.process({command="FORMAT_SEEDS",params={values={1,4294967295}}})')
+        self.assertTrue(result.success)
+        self.assertEqual(result.seeds[2], "formatted:4294967295")
+        for values in ("{}", "{0}", "{-1}", "{1.5}", "{4294967296}"):
+            result = self.lua.eval('api.Commands.process({command="FORMAT_SEEDS",params={values='+values+'}})')
+            self.assertFalse(result.success)
+
+    def test_prepare_run_explicitly_clears_custom_seed_and_effects(self):
+        self.lua.execute('''
+            initialSeed="OLD1 SEED"; effects=true; executed=nil
+            Seeds={IsStringValidSeed=function(s) return s=="ABCD EFGH" end}
+            local seeds={ClearSeedEffects=function() effects=false end,
+                         SetStartSeed=function(self,seed) initialSeed=seed end}
+            Game=function() return {GetSeeds=function() return seeds end} end
+            Isaac.ExecuteCommand=function(command) executed=command end
+        ''')
+        result = self.lua.eval('api.Commands.process({command="PREPARE_RUN",params={seed=""}})')
+        self.assertTrue(result.success)
+        self.assertEqual(self.lua.globals().initialSeed, "")
+        self.assertFalse(self.lua.globals().effects)
+        self.assertEqual(self.lua.globals().executed, "restart 0")
+        self.assertEqual(self.api.State.controlMode, "MANUAL")
+        result = self.lua.eval('api.Commands.process({command="PREPARE_RUN",params={seed="ABCD EFGH"}})')
+        self.assertTrue(result.success)
+        self.assertEqual(self.lua.globals().initialSeed, "ABCD EFGH")
+        result = self.lua.eval('api.Commands.process({command="PREPARE_RUN",params={seed="invalid"}})')
+        self.assertFalse(result.success)

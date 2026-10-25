@@ -106,10 +106,12 @@ local Network = {
 
 function Network.connect()
     if State.connected then return true end
-    if State.updateCount - Network.lastRetryFrame < Network.retryInterval then
+    -- Rendering continues in the pause menu while game updates stop.
+    -- Use render time for retries so a paused/disconnected client can recover.
+    if State.renderCount - Network.lastRetryFrame < Network.retryInterval then
         return false
     end
-    Network.lastRetryFrame = State.updateCount
+    Network.lastRetryFrame = State.renderCount
 
     local requireOk, socketMod = pcall(function()
         return require("socket.core")
@@ -155,6 +157,7 @@ function Network.disconnect()
         State.socket = nil
     end
     State.connected = false
+    State.receivePartial = nil
     if InputExecutor then InputExecutor.reset() end
     State.controlMode = "MANUAL"
 end
@@ -668,6 +671,7 @@ SensorRegistry:register("ENEMIES", {
             id = entity.Index,
             instance_id = tostring(entity.InitSeed) .. ":" .. tostring(entity.Index),
             vulnerable = entity:IsVulnerableEnemy(),
+            can_shut_doors = npc == nil or npc.CanShutDoors,
             collision_class = entity.EntityCollisionClass,
             friendly = entity:HasEntityFlags(EntityFlag.FLAG_FRIENDLY),
             dead = entity:IsDead(),
@@ -963,7 +967,7 @@ function CustomCollectors.PLAYER_INVENTORY()
                 activeSlots[tostring(slot)] = {
                     item = activeItem,
                     charge = player:GetActiveCharge(slot),
-                    max_charge = player:GetActiveMaxCharge(slot),
+                    max_charge = Isaac.GetItemConfig():GetCollectible(activeItem).MaxCharges,
                     battery_charge = player:GetBatteryCharge(slot),
                 }
             end
@@ -1120,6 +1124,7 @@ function SensorRegistry:collect(name, forceCollect)
 
     if not success then
         print("[SB ERR] collect(" .. name .. ") pcall FAILED: " .. tostring(data))
+        Isaac.DebugString("[SB ERR] collect(" .. name .. "): " .. tostring(data))
         return nil, nil
     end
     if data == nil then
@@ -1425,6 +1430,21 @@ CommandHandler.register("GET_CONTROL_MODE", function()
     return { success = true, mode = State.controlMode }
 end)
 
+-- Pure formatting for precommitted evaluation seeds. No game RNG is advanced.
+CommandHandler.register("FORMAT_SEEDS", function(params)
+    if type(params.values) ~= "table" or #params.values < 1 or #params.values > 100 then
+        return {success=false, error="Expected 1..100 uint32 seeds"}
+    end
+    local seeds = {}
+    for _, value in ipairs(params.values) do
+        if type(value) ~= "number" or value < 1 or value > 4294967295 or value ~= math.floor(value) then
+            return {success=false, error="Expected nonzero uint32"}
+        end
+        table.insert(seeds, Seeds.Seed2String(value))
+    end
+    return {success=true, seeds=seeds}
+end)
+
 CommandHandler.register("EXEC_CONSOLE", function(params)
     if params.command then
         local success, result = pcall(function() return Isaac.ExecuteCommand(params.command) end)
@@ -1435,6 +1455,23 @@ CommandHandler.register("EXEC_CONSOLE", function(params)
         end
     end
     return { success = false, error = "No command provided" }
+end)
+
+-- Runner-only initialization, never exposed as a planner tool. An ordinary
+-- console restart preserves a previously entered custom seed; explicitly clear
+-- it for random runs and discard Easter-egg seed effects before restarting.
+CommandHandler.register("PREPARE_RUN", function(params)
+    local seed = params.seed or ""
+    if type(seed) ~= "string" or (seed ~= "" and not Seeds.IsStringValidSeed(seed)) then
+        return {success=false, error="Invalid seed"}
+    end
+    InputExecutor.reset()
+    State.controlMode = "MANUAL"
+    local seeds = Game():GetSeeds()
+    seeds:ClearSeedEffects()
+    seeds:SetStartSeed(seed)
+    Isaac.ExecuteCommand("restart 0")
+    return {success=true, seed=seed, character=0}
 end)
 
 -- ============================================================================
@@ -1658,6 +1695,7 @@ end)
 -- MC_POST_RENDER — render loop (60 tps, ignores pause)
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, function()
     State.renderCount = State.renderCount + 1
+    if not State.connected then Network.connect() end
     if State.connected and Game():IsPaused() then
         InputExecutor.reset()
         pumpCommands()
@@ -1771,7 +1809,7 @@ end
 -- MC_POST_GAME_STARTED — game start
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, continued)
     State.updateCount = 0
-    Network.lastRetryFrame = -Network.retryInterval
+    Network.lastRetryFrame = State.renderCount - Network.retryInterval
     State.currentRoom = -1
     State.roomVisit = 0
     State.runId = tostring(Game():GetSeeds():GetStartSeed()) .. ":" .. tostring(Isaac.GetTime())

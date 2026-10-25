@@ -50,6 +50,7 @@ class Enemy(Observed):
     friendly: bool
     dead: bool
     collision_class: int
+    can_shut_doors: bool = True  # Missing legacy evidence remains blocking.
 
 
 class WorldSnapshot(Observed):

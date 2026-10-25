@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "slot": 1,
+  "unlock_status": "owner_declared_fully_unlocked",
+  "unlock_verification": "project owner confirmation; no automated achievement verification",
+  "created_at": "2026-10-25T16:09:37.959785+00:00",
+  "files": {
+    "persistentgamedata1.dat": {
+      "path": "artifacts/save-baselines/slot-1/persistentgamedata1.dat",
+      "sha256": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1"
+    },
+    "gamestate1.dat": {
+      "path": "artifacts/save-baselines/slot-1/gamestate1.dat",
+      "sha256": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+    }
+  }
+}

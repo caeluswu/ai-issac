@@ -1,0 +1,61 @@
+"""Freeze random seeds before any combat, then run every sample without selection."""
+import argparse
+from datetime import datetime, timezone
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parent
+
+
+def checked_seeds(path):
+    value = json.loads(path.read_text(encoding="utf-8"))
+    digest = hashlib.sha256("\n".join(value["seeds"]).encode()).hexdigest()
+    if digest != value["seeds_sha256"]: raise ValueError("SEED_MANIFEST_HASH_MISMATCH")
+    return value
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--count", type=int, default=10)
+    parser.add_argument("--slot", type=int, choices=(1, 2, 3), default=1)
+    parser.add_argument("--seeds", type=Path, help="replay an existing frozen list instead of generating one")
+    parser.add_argument("--local-only", action="store_true", help="paired rule baseline")
+    args = parser.parse_args()
+    if not 1 <= args.count <= 100: parser.error("count must be 1..100")
+    destination = ROOT/"artifacts/runs"/("batch-"+datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ"))
+    destination.mkdir(parents=True)
+    base = [sys.executable, str(ROOT/"run_first_room.py"), "--slot", str(args.slot)]
+    seed_file = destination/"seeds.json"
+    if args.seeds:
+        manifest = checked_seeds(args.seeds)
+        seed_file.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    else:
+        print(f"Preparing seed batch: {destination}", flush=True)
+        result = subprocess.run(base+["--startup-only", "--prepare-seeds", str(seed_file),
+                                "--seed-count", str(args.count), "--output-dir", str(destination/"setup")], cwd=ROOT)
+        if result.returncode: return result.returncode
+        manifest = checked_seeds(seed_file)
+    reports = []
+    for index, seed in enumerate(manifest["seeds"], 1):
+        run_dir = destination/f"sample-{index:02d}"
+        print(f"[{index}/{len(manifest['seeds'])}] {seed}", flush=True)
+        with (destination/f"sample-{index:02d}-console.txt").open("w", encoding="utf-8") as output:
+            cmd = base+["--seed", seed, "--output-dir", str(run_dir)]
+            if args.local_only: cmd.append("--local-only")
+            result = subprocess.run(cmd, cwd=ROOT, stdout=output, stderr=subprocess.STDOUT)
+        report = json.loads((run_dir/"report.json").read_text(encoding="utf-8")) if (run_dir/"report.json").exists() else {
+            "result": "PROCESS_FAILED", "success": False, "error": "No report; inspect child console"}
+        reports.append({"index": index, "planned_seed": seed, "exit_code": result.returncode,
+                        "run_directory": str(run_dir), **report})
+        (destination/"summary.json").write_text(json.dumps({"seed_manifest": manifest,
+            "local_only": args.local_only, "completed": len(reports), "planned": len(manifest["seeds"]),
+            "reports": reports}, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"  {report['result']}; damage={report.get('damage_half_hearts')}; error={report.get('error')}", flush=True)
+    print(f"Batch artifacts: {destination}", flush=True)
+    return 0 if all(r["exit_code"] == 0 for r in reports) else 1
+
+
+if __name__ == "__main__": raise SystemExit(main())

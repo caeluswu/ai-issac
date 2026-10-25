@@ -36,6 +36,7 @@ class BridgeServer:
         self._writer: Optional[asyncio.StreamWriter] = None
         self._reader: Optional[asyncio.StreamReader] = None
         self._running = False
+        self._accept_task = None
         self._connected = False
         self._send_lock = asyncio.Lock()
 
@@ -53,12 +54,13 @@ class BridgeServer:
 
     async def start(self) -> None:
         """Start listening for game connections."""
-        self._running = True
+        if self._running: raise RuntimeError("Server already started")
         self._server = await asyncio.start_server(
             self._handle_client, self.host, self.port, limit=1024 * 1024,
         )
+        self._running = True
         logger.info("Server listening on %s:%d", self.host, self.port)
-        asyncio.create_task(self._accept_loop())
+        self._accept_task = asyncio.create_task(self._accept_loop(self._server))
 
     async def stop(self) -> None:
         """Stop the server."""
@@ -75,14 +77,18 @@ class BridgeServer:
             self._server.close()
             await self._server.wait_closed()
             self._server = None
+        if self._accept_task:
+            self._accept_task.cancel()
+            await asyncio.gather(self._accept_task, return_exceptions=True)
+            self._accept_task = None
         self._connected = False
         logger.info("Server stopped")
 
-    async def _accept_loop(self) -> None:
+    async def _accept_loop(self, server) -> None:
         """Accept connections (runs as background task)."""
         try:
-            async with self._server:
-                await self._server.serve_forever()
+            async with server:
+                await server.serve_forever()
         except asyncio.CancelledError:
             pass
         except Exception as e:
@@ -94,16 +100,19 @@ class BridgeServer:
         addr = writer.get_extra_info("peername")
 
         # Close previous connection if any
-        if self._writer:
-            try:
-                self._writer.close()
-                await self._writer.wait_closed()
-            except Exception:
-                pass
-
+        previous = self._writer
         self._reader = reader
         self._writer = writer
         self._connected = True
+        if previous:
+            try:
+                previous.close()
+                await previous.wait_closed()
+            except Exception:
+                pass
+        if self._writer is not writer:
+            writer.close()
+            return
         logger.info("Game connected from %s", addr)
 
         # Fire connected callbacks
@@ -115,7 +124,7 @@ class BridgeServer:
 
         # Read loop
         try:
-            while self._running and self._connected:
+            while self._running and self._connected and self._writer is writer:
                 try:
                     line = await asyncio.wait_for(reader.readline(), timeout=5.0)
                 except asyncio.TimeoutError:
@@ -124,6 +133,7 @@ class BridgeServer:
                 if not line:
                     logger.info("Game disconnected (EOF)")
                     break
+                if self._writer is not writer: break
 
                 line_str = line.decode("utf-8").strip()
                 if not line_str:
@@ -155,20 +165,22 @@ class BridgeServer:
             logger.error("Read loop error: %s", e)
             self.errors += 1
         finally:
-            self._connected = False
+            if self._writer is writer:
+                self._connected = False
             try:
                 writer.close()
                 await writer.wait_closed()
             except Exception:
                 pass
-            self._writer = None
-            self._reader = None
+            if self._writer is writer:
+                self._writer = None
+                self._reader = None
 
-            for cb in self._on_disconnected:
-                try:
-                    await cb()
-                except Exception as e:
-                    logger.error("Disconnected callback error: %s", e)
+                for cb in self._on_disconnected:
+                    try:
+                        await cb()
+                    except Exception as e:
+                        logger.error("Disconnected callback error: %s", e)
 
     # ── send ────────────────────────────────────────────────────────────
 

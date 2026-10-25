@@ -9,6 +9,7 @@ from pathlib import Path
 import time
 import urllib.request
 import urllib.parse
+import urllib.error
 from .models import ContextRef, BattleAssessment, BattlePlan
 from .catalog import compile_plan, default_plan, specs
 from .controller import JointActionSolver
@@ -39,11 +40,20 @@ class DeepSeekClient:
         def request():
             req = urllib.request.Request(self.base_url+"/chat/completions", data=json.dumps(body).encode(),
                 headers={"Content-Type": "application/json", "Authorization": "Bearer "+self.key})
-            with urllib.request.urlopen(req, timeout=self.timeout) as response:
-                data = json.load(response)
+            deadline = time.monotonic()+self.timeout
+            for attempt in range(3):
+                try:
+                    with urllib.request.urlopen(req, timeout=max(1, deadline-time.monotonic())) as response:
+                        data = json.load(response)
+                    break
+                except urllib.error.HTTPError as exc:
+                    if exc.code not in (429, 500, 502, 503, 504) or attempt == 2: raise
+                except (urllib.error.URLError, TimeoutError):
+                    if attempt == 2 or time.monotonic() >= deadline: raise
+                time.sleep(.5*(attempt+1))
             content = data["choices"][0]["message"].get("content")
             if not content: raise ValueError("DeepSeek returned empty JSON content")
-            return content, data.get("usage", {})
+            return content, {**data.get("usage", {}), "finish_reason": data["choices"][0].get("finish_reason")}
         return await asyncio.wait_for(asyncio.to_thread(request), timeout=self.timeout+1)
 
 
@@ -127,6 +137,7 @@ class Planner:
             "tools: lookup_enemy_mechanics(type), lookup_player_mechanics(), get_component_specs(), "
             "inspect_entity(instance_id), inspect_room_region(cell_ids), preview_plan(plan). "
             "Maximum two tool rounds, three calls per round. Otherwise return the requested final object. "
+            "Prefer a single complete tactic profile; add profiles only when a concrete switch condition requires them. "
             "Schema: "+json.dumps(schema)+" Example JSON: "+json.dumps(example)},
             {"role": "user", "content": json.dumps({"stage": kind, "context": context, "assessment": assessment}, ensure_ascii=False)}]
         repairs, tool_rounds = 0, 0
@@ -136,6 +147,7 @@ class Planner:
             self.log("llm_response", stage=kind, content=content, usage=usage)
             messages.append({"role": "assistant", "content": content})
             try:
+                if usage.get("finish_reason") == "length": raise ValueError("Output token limit reached; return a shorter complete JSON object")
                 value = json.loads(content)
                 if "tool_calls" in value:
                     if tool_rounds >= 2 or not 1 <= len(value["tool_calls"]) <= 3: raise ValueError("Tool budget exceeded")
@@ -159,7 +171,11 @@ class Planner:
                 self.log("llm_validation_error", stage=kind, error=str(exc), repair=repairs)
                 if repairs >= 2: raise ValueError(f"{kind} failed validation after two repairs") from exc
                 repairs += 1
-                messages.append({"role": "user", "content": "Repair your final JSON. Validation error: "+str(exc)})
+                messages.append({"role": "user", "content": json.dumps({
+                    "instruction": "Return the entire corrected final JSON object, not a patch or continuation. "
+                                   "Use the example's exact nesting and required fields. Keep one profile if possible. "
+                                   "Balance every object/array and close the root object. Do not repeat tool calls.",
+                    "validation_error": str(exc), "valid_shape_example": example}, ensure_ascii=False)})
 
     async def plan(self, s, build, revision=0, feedback=None):
         ref, context = self.context(s, build, revision, feedback)

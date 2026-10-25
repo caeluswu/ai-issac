@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import math
 import statistics
 import time
-from .models import Vec, ZERO, BuildProfile, ActionFrame
+from .models import Vec, ZERO, BuildProfile, ActionFrame, Enemy
 from .geometry import GeometryService, segment_distance
 
 MOVES = tuple((x, y) for y in (-1, 0, 1) for x in (-1, 0, 1))
@@ -123,11 +123,19 @@ class JointActionSolver:
         relative = launch-enemy_velocity
         delta = target.pos-s.player.pos
         ticks = delta.dot(relative)/max(1e-9, relative.dot(relative))
-        if ticks < 0 or ticks > profile.aim.params["max_lead_ticks"] or ticks*launch.length() > build.effective_range: return 0.
+        # max_lead_ticks bounds the *enemy forecast*, not tear lifetime. A
+        # distant stationary target remains shootable even with a short lead.
+        forecast_ticks = min(max(0, ticks), profile.aim.params["max_lead_ticks"])
+        if ticks > forecast_ticks and enemy_velocity.length() > 0:
+            delta = target.pos+enemy_velocity*forecast_ticks-s.player.pos
+            ticks = delta.dot(launch)/max(1e-9, launch.dot(launch))
+        if ticks < 0 or ticks*launch.length() > build.effective_range: return 0.
         hit = s.player.pos+launch*ticks
-        miss = hit.distance(target.pos+enemy_velocity*ticks)
+        miss = hit.distance(target.pos+enemy_velocity*min(ticks, profile.aim.params["max_lead_ticks"]))
+        miss += enemy_velocity.length()*max(0, ticks-forecast_ticks)*.2
         margin = target.collision_radius+5
-        if not geometry.line_clear(s.player.pos, hit, shot=True): return 0.
+        end = hit-(hit-s.player.pos).unit()*22 if target.instance_id.startswith("terrain:") else hit
+        if not geometry.line_clear(s.player.pos, end, shot=True): return 0.
         return max(0., 1-miss/(margin+8))*(1 if build.calibrated else .8)
 
     def solve(self, s, plan, build):
@@ -135,6 +143,24 @@ class JointActionSolver:
         name, profile = self.select_profile(s, plan, build)
         target = self.target(s, profile, build)
         g = GeometryService(s)
+        route = g.firing_route(s.player.pos, target.pos, build.effective_range) if target else []
+        if target and not route:
+            # Normal tears can open an otherwise sealed lane through ordinary
+            # poop. TNT, explosive/red poop and unknown variants are excluded.
+            blockers = []
+            for index, grid in (s.layout["grid"] or {}).items():
+                if grid["type"] == 14 and grid["variant"] == 0 and grid["collision"] != 0:
+                    position = Vec(x=grid["x"], y=grid["y"])
+                    path = g.firing_route(s.player.pos, position, build.effective_range, terrain=True)
+                    if path: blockers.append((len(path)*40+position.distance(s.player.pos), index, position, path))
+            if blockers:
+                _, index, position, route = min(blockers, key=lambda x: (x[0], x[1]))
+                target = Enemy(instance_id="terrain:"+index, type=0, variant=0, pos=position, vel=ZERO,
+                               hp=1, max_hp=1, collision_radius=18, vulnerable=True, friendly=False, dead=False, collision_class=0)
+        # Route following supplies long-horizon progress to the short local
+        # rollout. Without it a safe local optimum can strand the controller.
+        while route and route[0].distance(s.player.pos) < 18: route.pop(0)
+        waypoint = route[0] if route else None
         predictions = MotionPredictor().forecast(s)
         extra = profile.evade.params["extra_margin_px"]
         self.positions.append((s.frame, s.player.pos))
@@ -198,6 +224,8 @@ class JointActionSolver:
                     path = g.path(s.player.pos, target.pos)
                     if len(path) > 1: stance += (path[1]-s.player.pos).unit().dot(desired)/max(1, build.move_speed)
                     if move == self.previous_move: stance -= 2
+                if waypoint:
+                    stance += (s.player.pos.distance(waypoint)-position.distance(waypoint))*.12
             evade = min(100, clearance)/150 if profile.evade.component == "evade.max_clearance" else -desired.length()*.04
             for shot in SHOTS:
                 hit = self.hit_score(s, build, profile, target, shot, desired, g)

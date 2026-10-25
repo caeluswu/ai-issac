@@ -79,6 +79,30 @@ class GeometryService:
                     safe.discard(i); break
         return safe
 
+    def firing_route(self, start, target, effective_range, terrain=False):
+        """Reach a cardinal firing lane, including around obstructing rocks."""
+        origin = self.nearest(start)
+        queue, parents, depth = deque([origin]), {}, {origin: 0}
+        best = None
+        while queue:
+            i = queue.popleft(); p = self.positions[i]
+            delta = target-p; distance = delta.length()
+            if (25 if terrain else 55) <= distance <= effective_range*.85 and min(abs(delta.x), abs(delta.y)) <= 14:
+                end = target-delta.unit()*22 if terrain else target
+                if self.clear(p) and self.line_clear(p, end, shot=True):
+                    score = depth[i]*40+abs(distance-effective_range*.5)*.15
+                    if best is None or score < best[0]: best = (score, i)
+            for j in self.neighbors.get(i, []):
+                if j not in depth:
+                    depth[j], parents[j] = depth[i]+1, i; queue.append(j)
+        if best is None: return []
+        path, i = [], best[1]
+        while True:
+            path.append(self.positions[i])
+            if i not in parents: break
+            i = parents[i]
+        return list(reversed(path))
+
     def reachable_fraction(self, position, safe, max_steps):
         origin = self.cell(position)
         if origin not in safe: return 0.

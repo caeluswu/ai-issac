@@ -104,6 +104,7 @@ class SocketBridge:
         if self._recorder and self._recorder.is_recording:
             self._recorder.stop_session()
         await self._server.stop()
+        self._connected = False
 
     async def _on_game_connected(self):
         self._connected = True
@@ -172,6 +173,12 @@ class SocketBridge:
             "command": "EXEC_CONSOLE",
             "params": {"command": command},
         })
+
+    async def send_command(self, command: str, params: Optional[dict] = None,
+                           request_id: Optional[str] = None) -> bool:
+        """Send a correlated command; raw callbacks receive its request_id."""
+        return await self._server.send({"command": command, "params": params or {},
+                                        "request_id": request_id})
 
     async def set_control_mode(self, mode: str) -> bool:
         """Send a mode change; listen for command_result to confirm it."""
