@@ -432,7 +432,8 @@ class CombatSession:
 
     def context_ref(self, s, build):
         return ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id,
-                          build_revision=build.revision, plan_revision=self.revision)
+                          build_revision=build.revision, plan_revision=self.revision,
+                          floor_instance_id=s.floor.instance_id if s.floor else None)
 
     async def resume_owned_pause(self, frozen):
         """Confirm game updates resumed; key injection alone is not evidence."""

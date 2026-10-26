@@ -26,4 +26,5 @@ def snapshot(frame=10, enemies=True, **updates):
 
 
 def context(s):
-    return ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id)
+    return ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id,
+                      floor_instance_id=s.floor.instance_id if s.floor else None)

@@ -147,7 +147,7 @@ class ActiveItem(BaseModel):
     """Active item slot data."""
     item: int = 0
     charge: int = 0
-    max_charge: int = 0
+    max_charge: int | None = None
     battery_charge: int = 0
 
     model_config = {"extra": "allow"}
@@ -316,7 +316,7 @@ class Pickup(BaseModel):
     """PICKUPS — collected on room entry + every 15 frames."""
     id: int = Field(..., ge=0)
     variant: int = 0
-    sub_type: int = 0
+    sub_type: int | None = None
     pos: Vector2D = Field(default_factory=Vector2D)
     price: int = 0
     shop_item_id: int = -1

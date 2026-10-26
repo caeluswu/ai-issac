@@ -184,10 +184,11 @@ class JointActionSolver:
     def solve(self, s, plan, build, movement_only=False, navigation_goal=None, allowed_devices=()):
         started = time.perf_counter()
         ref = plan.context_ref
-        if (ref.run_id, ref.room_visit_id, ref.build_revision) != (s.run_id, s.room_visit_id, build.revision):
+        floor_id = s.floor.instance_id if s.floor else None
+        if (ref.run_id, ref.room_visit_id, ref.build_revision, ref.floor_instance_id) != (s.run_id, s.room_visit_id, build.revision, floor_id):
             raise ValueError("STALE_PLAN_CONTEXT")
         name, profile = self.select_profile(s, plan, build)
-        key = (s.run_id, s.room_visit_id, build.family, build.revision, ref.catalog_revision, profile.model_dump_json())
+        key = (s.run_id, floor_id, s.room_visit_id, build.family, build.revision, ref.catalog_revision, profile.model_dump_json())
         if key != self.module_key:
             self.modules = {slot: resilient_component(getattr(profile, slot), slot, self.registry, build.family) for slot in type(profile).model_fields}
             self.module_key = key

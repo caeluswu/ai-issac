@@ -52,7 +52,7 @@
 
 ## 文档导航
 
-**当前工作入口：[M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md)。** 当前已完成准备方案与结构评估，P1–P6 工程准备待实现；下一项为 P1 组件输出校验与兼容回退。M2-A 指首层连续通关，M2-B 指 DeepSeek 实际开发新机制组件；EID 计划内 A–F 是学习功能步骤。
+**当前工作入口：[M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md)。** P0–P2 已完成合同、组件边界和 V2 观测接入，验证范围见 [P0–P2 验证报告](docs/phase-2a-p0-p2-validation.zh-CN.md)；下一项为 P3 构筑事务与健康账本。M2-A 指首层连续通关，M2-B 指 DeepSeek 实际开发新机制组件；EID 计划内 A–F 是学习功能步骤。
 
 建议阅读顺序：任务契约 → 总体架构 → 二、三阶段路线 → M2-A 准备清单 → 对应专项设计。判断已实现能力时查验收与审查报告，计划文档不作为完成证据。
 
@@ -71,6 +71,7 @@
 |---|---|
 | [M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md) | 当前执行队列 P0–P8、组件职责、支持矩阵、依赖和准入用例；统一准备顺序 |
 | [战斗组件合同](docs/component-contract.zh-CN.md) | 可信组件 DTO、能力、宿主限额、上下文与生命周期边界 |
+| [V2 观测合同](docs/observation-v2.zh-CN.md) | 拾取物、武器集合、临时效果、库存覆盖、健康与楼层身份；旧协议兼容 |
 | [EID 与本地经验学习计划](docs/eid-local-learning-plan.zh-CN.md) | 来源接入、拾取决策、被动观测、有界实验、证据更新与经验复用 |
 | [独立知识库接口计划](docs/knowledge-project-interface-plan.zh-CN.md) | 跨项目所有权、分层、查询合同、版本化数据包与本项目 Gateway |
 | [道具知识与 DeepSeek 组件开发](docs/item-knowledge-and-skill-evolution.zh-CN.md) | 道具能力分类、程序生成物品、模型编程、验证发布与角色取舍 |
@@ -87,6 +88,7 @@
 
 | 文档 | 职责与范围 |
 |---|---|
+| [M2-A P0–P2 验证](docs/phase-2a-p0-p2-validation.zh-CN.md) | 组件边界本地回归和 J835 只读 V2 实机证据；不代表拾取后控制已通过 |
 | [第一阶段实机验收](docs/phase-1-live-validation.zh-CN.md) | 自动启动、出门、DeepSeek 配置和首个战斗房的闭环证据 |
 | [第一阶段优化验收](docs/phase-1-optimization-validation.zh-CN.md) | 优化后的清房、损失、耗时与保留失败；不代表整层胜率 |
 | [第一阶段扩展性审查](docs/phase-1-extensibility-review.zh-CN.md) | 当前源码的道具/长局扩展阻断及离线边界探针，作为准备工作的依据 |

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 from typing import Any, Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 
 
 class Strict(BaseModel):
@@ -53,8 +53,81 @@ class Enemy(Observed):
     can_shut_doors: bool = True  # Missing legacy evidence remains blocking.
 
 
+class WeaponObservation(Strict):
+    status: Literal["known", "partial", "unknown"]
+    types: list[int] = Field(max_length=64)
+    unknowns: list[str]
+
+
+class EffectObservation(Strict):
+    kind: Literal["collectible", "trinket", "null", "unknown"]
+    item_id: int | None
+    count: int = Field(ge=0)
+    cooldown: int
+
+
+class TemporaryEffectsObservation(Strict):
+    status: Literal["known", "partial", "unknown"]
+    items: list[EffectObservation] = Field(max_length=256)
+    unknowns: list[str]
+
+
+class InventoryCoverage(Strict):
+    static_status: Literal["known", "partial", "unknown"]
+    catalog_max_id: int | None = Field(default=None, ge=0)
+    dynamic_status: Literal["unknown", "partial"]
+    observed_dynamic_ids: list[int]
+    unknowns: list[str]
+
+
+class FloorObservation(Strict):
+    instance_id: str = Field(min_length=1)
+    generation: int = Field(ge=0)
+    stage: int = Field(ge=0)
+    stage_type: int = Field(ge=0)
+    dimension: int | None = Field(default=None, ge=0, le=2)
+    room_list_index: int | None = None
+    unknowns: list[str]
+
+
+class PickupObservation(Observed):
+    id: int
+    instance_id: str = Field(min_length=1)
+    variant: int
+    sub_type: int | None = None
+    pos: Vec
+    vel: Vec
+    collision_radius: float = Field(ge=0)
+    price: int | None = None  # negative prices represent health deals
+    shop_item_id: int | None = None
+    wait: int | None = None
+    options_pickup_index: int | None = None
+    identity_visibility: Literal["visible", "hidden", "unknown"]
+    identity_reason: str
+
+    @model_validator(mode="after")
+    def no_hidden_collectible_identity(self):
+        if self.variant == 100 and self.identity_visibility != "visible" and self.sub_type is not None:
+            raise ValueError("Unverified collectible identity must be redacted")
+        return self
+
+
+class HealthObservation(Strict):
+    dead: bool
+    red_hearts: int = Field(ge=0)
+    max_hearts: float = Field(ge=0)
+    soul_hearts: int = Field(ge=0)
+    black_hearts: int = Field(ge=0)  # API bitmask, not another HP count
+    bone_hearts: int = Field(ge=0)
+    golden_hearts: int = Field(ge=0)
+    eternal_hearts: int = Field(ge=0)
+    rotten_hearts: int = Field(ge=0)
+    broken_hearts: int = Field(ge=0)
+    extra_lives: int = Field(ge=0)
+
+
 class WorldSnapshot(Observed):
-    schema_version: Literal[1]
+    schema_version: Literal[1, 2]
     run_id: str
     room_visit_id: str
     frame: int = Field(ge=0)
@@ -74,14 +147,28 @@ class WorldSnapshot(Observed):
     seed: str
     applied_action_id: int | None = None
     applied_frame: int | None = None
+    pickups: list[PickupObservation] | None = None
+    weapons: WeaponObservation | None = None
+    effects: TemporaryEffectsObservation | None = None
+    inventory_coverage: InventoryCoverage | None = None
+    floor: FloorObservation | None = None
+    health_observation: HealthObservation | None = None
 
     @model_validator(mode="before")
     @classmethod
     def lua_tables(cls, value):
         d = dict(value)
-        for k in ("enemies", "bombs", "hazards"):
+        for k in ("enemies", "bombs", "hazards", "pickups"):
             if d.get(k) == {}: d[k] = []
         if d.get("movement_inheritance") == []: d["movement_inheritance"] = {}
+        for key in ("weapons", "effects", "inventory_coverage"):
+            if isinstance(d.get(key), dict):
+                group = dict(d[key])
+                for name in ("types", "items", "unknowns", "observed_dynamic_ids"):
+                    if group.get(name) == {}: group[name] = []
+                d[key] = group
+        if isinstance(d.get("floor"), dict) and d["floor"].get("unknowns") == {}:
+            d["floor"] = {**d["floor"], "unknowns": []}
         return d
 
     @model_validator(mode="after")
@@ -94,6 +181,21 @@ class WorldSnapshot(Observed):
             if any(k not in group for k in keys):
                 raise ValueError(f"Missing critical observation: {keys}")
         if not self.layout["cells"]: raise ValueError("Empty room geometry")
+        if self.schema_version == 2:
+            for name in ("pickups", "weapons", "effects", "inventory_coverage", "floor", "health_observation"):
+                if getattr(self, name) is None: raise ValueError("Missing V2 observation: "+name)
+            if not self.floor.instance_id.startswith(self.run_id+":floor:"):
+                raise ValueError("Floor belongs to a different run")
+            if (self.floor.stage, self.floor.stage_type) != (self.room["stage"], self.room.get("stage_type")):
+                raise ValueError("Inconsistent floor observation")
+            if self.health_observation.dead != self.player.dead:
+                raise ValueError("Inconsistent life observation")
+            ordinary = self.weapons.status == "known" and self.weapons.types == [1]
+            if self.stats["weapon_type"] != (1 if ordinary else -1):
+                raise ValueError("Inconsistent legacy weapon observation")
+            for name in type(self.health_observation).model_fields:
+                if name != "dead" and self.health.get(name) != getattr(self.health_observation, name):
+                    raise ValueError("Inconsistent health observation: "+name)
         return self
 
     @property
@@ -111,8 +213,23 @@ class ContextRef(Strict):
     room_visit_id: str
     snapshot_id: str
     build_revision: int = 1
-    catalog_revision: int = Field(default=2, ge=1, le=2)
+    catalog_revision: int | str = 2
     plan_revision: int = 0
+    floor_instance_id: str | None = None
+
+    @field_validator("catalog_revision", mode="before")
+    @classmethod
+    def catalog_type(cls, value):
+        if type(value) not in (int, str): raise ValueError("Catalog revision must be integer or string")
+        return value
+
+    @model_validator(mode="after")
+    def version_identity(self):
+        revision = self.catalog_revision
+        if isinstance(revision, int):
+            if revision < 1: raise ValueError("Invalid catalog revision")
+        elif not revision.strip() or len(revision) > 128: raise ValueError("Invalid catalog revision")
+        return self
 
 
 class ComponentChoice(Strict):

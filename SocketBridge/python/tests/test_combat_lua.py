@@ -21,7 +21,7 @@ class TestLuaInput(unittest.TestCase):
             print=function() end
         ''')
         source = (Path(__file__).parents[2]/"main.lua").read_text(encoding="utf-8")
-        self.api = self.lua.execute(source+"\nreturn {State=State, Network=Network, Input=InputExecutor, Commands=CommandHandler, Custom=CustomCollectors}")
+        self.api = self.lua.execute(source+"\nreturn {State=State, Network=Network, Input=InputExecutor, Commands=CommandHandler, Custom=CustomCollectors, Sensors=SensorRegistry}")
         self.lua.globals().api = self.api
         self.lua.execute("api.Network.send=function(value) lastSent=value; return true end; api.State.controlMode='FORCE_AI'")
 

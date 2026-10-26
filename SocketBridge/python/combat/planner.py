@@ -111,7 +111,8 @@ class Planner:
 
     def context(self, s, build, revision, feedback):
         ref = ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id,
-                         build_revision=build.revision, plan_revision=revision)
+                         build_revision=build.revision, plan_revision=revision,
+                         floor_instance_id=s.floor.instance_id if s.floor else None)
         g = GeometryService(s)
         data = {"context_ref": ref.model_dump(), "task": {"objective": "clear current room", "allowed": ["move", "shoot"],
                  "forbidden": ["items", "bombs", "cards", "pills", "drop", "code_execution"], "timeout_ticks": 3600},

@@ -36,6 +36,7 @@ class ProposalContext:
     catalog_revision: int | str
     observed_frame: int
     valid_until_frame: int
+    floor_instance_id: str | None = None
 
 
 @dataclass(frozen=True)

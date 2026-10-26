@@ -1,0 +1,67 @@
+{
+  "result": "OBSERVATION_V2_READY",
+  "samples": 16,
+  "frame_range": [
+    1,
+    16
+  ],
+  "mode": "MANUAL",
+  "floor": {
+    "instance_id": "2238142133:87940694:floor:0",
+    "generation": 0,
+    "stage": 1,
+    "stage_type": 1,
+    "dimension": 0,
+    "room_list_index": 8,
+    "unknowns": []
+  },
+  "weapons": {
+    "status": "known",
+    "types": [
+      1
+    ],
+    "unknowns": []
+  },
+  "effects": {
+    "status": "known",
+    "items": [],
+    "unknowns": []
+  },
+  "inventory_coverage": {
+    "static_status": "known",
+    "catalog_max_id": 732,
+    "dynamic_status": "unknown",
+    "observed_dynamic_ids": [],
+    "unknowns": [
+      "dynamic_inventory_not_enumerable_in_original_api"
+    ]
+  },
+  "health": {
+    "dead": false,
+    "red_hearts": 6,
+    "max_hearts": 6.0,
+    "soul_hearts": 0,
+    "black_hearts": 0,
+    "bone_hearts": 0,
+    "golden_hearts": 0,
+    "eternal_hearts": 0,
+    "rotten_hearts": 0,
+    "broken_hearts": 0,
+    "extra_lives": 0
+  },
+  "pickups_seen": 16,
+  "source_hashes": {
+    "source": "7b3311a44cc2a498e148191fa5555a9c4cb10ec023d8cb6c09a34c0c12818530",
+    "installed": "7b3311a44cc2a498e148191fa5555a9c4cb10ec023d8cb6c09a34c0c12818530"
+  },
+  "validation_errors": [],
+  "scope": "live_observation_only_not_item_pickup_or_combat",
+  "paid_api_calls": 0,
+  "game_version": "Repentance 1.7.9b.J835",
+  "trace_sha256": "8a80dfe71bced1730cea5fd2deb8675edb80077d893ddee4603cc4120d9560d7",
+  "trace_path": "artifacts/runs/m2-observation-20261026T102717180380Z/trace.jsonl",
+  "local_regression": {
+    "passed": 226,
+    "seconds": 47.627
+  }
+}

@@ -1,0 +1,51 @@
+# COMBAT_FRAME V2 观测合同
+
+适用构建：忏悔原版 `1.7.9b.J835`。Lua 原子采集后输出 `schema_version=2`，Python `WorldSnapshot` 同时支持 V1/V2。SocketBridge 外层传输仍为 3.0，本合同版本与传输版本分开。
+
+## 字段与未知语义
+
+V2 保留 V1 的 room、layout、player、stats、health、inventory、敌人及弹体等字段，并要求下列扩展。旧记录缺少扩展时返回 `None`，不会补成已知空集合；Lua 的空 table 在明确的列表字段规范化为 `[]`。
+
+| 扩展 | 内容 | 限制 |
+|---|---|---|
+| `pickups` | 局内实体身份、当前 subtype、位置/速度/半径、价格、商店/选择组、等待与可见性依据 | 同一实体轮换时 ID 稳定而 subtype 可变；不是实际拾取确认 |
+| `weapons` | HasWeaponType 返回的有效类型集合，known/partial/unknown 与缺口 | 多类型不能压成普通泪弹；不等于已经有对应控制组件 |
+| `effects` | 临时效果 kind、item_id、count、cooldown；获取状态和缺口 | 不代表所有随机效果均可穷举；非空效果已做 Lua 合同测试，实机仅核验当前场景 |
+| `inventory_coverage` | 运行时静态目录边界、扫描状态、可读的动态主动 ID、不可读范围 | 原版动态物品完整库存/效果保留 unknown，不扩大固定扫描上限冒充完整支持 |
+| `health_observation` | 存活标志、红/魂/骨心、各容器与特殊心、额外生命 | 黑心字段是 API 位掩码；P3 再接健康账本与复活判定 |
+| `floor` | run 内地图生成实例、stage/type、当前房间 ListIndex、维度及缺口 | 原版通过当前房间描述符指针比较识别维度；不查询未探索房间敌人或奖励 |
+
+所有扩展由同一次同步 Lua 采集产生，不拼接不同传输帧的传感器缓存。V2 缺组、楼层进度不一致、健康副本不一致或武器兼容标志不一致会拒收并记录错误。
+
+静态库存按 `GetCollectibles().Size-1` 读取目录，再用 `GetCollectibleNum(id, true)` 获取真实持有数；不扫描无定义的额外 ID，也不把临时效果计入真实持有数。主动槽保留负 ID，找不到配置时 max_charge 为空。饰品、卡牌/药丸、充能和资源继续由 inventory 提供。
+
+## 可见性
+
+普通物理掉落物保留变体；药丸仅保留外观颜色，不由此揭示实际效果。收藏品身份默认未知，仅对 Isaac、stage 1、stage_type 0–2、无盲目诅咒且正 ID 的当前普通底座按明确范围开放；盲目诅咒为 hidden，其他未验证情形为 unknown，两者均不导出 subtype。旧 PICKUPS 通道复用同一过滤器。
+
+这不是任意角色、替代路线或视觉机制的完整身份识别器。遇到额外遮蔽机制应收紧范围或新增经验证的适配器，不能由“读到了底层 ID”推断允许使用。当前合同不启用隐藏身份辅助开关。
+
+## 上下文与生命周期
+
+`floor.instance_id` 由 run 和地图生成计数构成，`MC_POST_NEW_LEVEL` 更新地图实例并独立释放输入、回到 MANUAL。房间变化同时比较地图生成序号、当前房间 ListIndex 与入口索引，避免同索引的不同实例复用 room visit。
+
+计划 `ContextRef` 增加可空 floor_instance_id，目录修订可为正整数或非空版本字符串。运行器、规划器与求解器均绑定楼层身份；显式过期提案或缺少当前 V2 楼层身份的计划不可执行。当前构筑事务尚未由本观测版本自动完成。
+
+## 验证与复现
+
+本地运行：
+
+```powershell
+Set-Location SocketBridge/python
+..\..\.venv\Scripts\python.exe -m unittest tests.test_observation_v2 tests.test_combat_lua -q
+```
+
+已有模组与源码一致、游戏位于可观察房间时，从项目根目录运行只读探针：
+
+```powershell
+.\.venv\Scripts\python.exe scripts/probe_m2_observations.py
+```
+
+探针监听本机桥接，将模式恢复 MANUAL，采集快照后断开，输出本地 trace 与 summary；不启动/重开游戏、不控制移动射击、不调用模型。失败和已采样内容保留，不能将超时改为通过。原始产物位于忽略 Git 的 `artifacts/runs/`。
+
+API 依据：[ItemConfig](https://wofsauge.github.io/IsaacDocs/rep/ItemConfig.html)、[WeaponType](https://wofsauge.github.io/IsaacDocs/rep/enums/WeaponType.html)、[TemporaryEffects](https://wofsauge.github.io/IsaacDocs/rep/TemporaryEffects.html)、[RoomDescriptor](https://wofsauge.github.io/IsaacDocs/rep/RoomDescriptor.html)。资料接口与目标 J835 的实际可读范围分别记录，不能将文档说明等同于全机制实测。

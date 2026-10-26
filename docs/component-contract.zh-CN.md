@@ -6,7 +6,7 @@
 
 能力声明明确 family、能否移动攻击、能否破坏普通障碍；未声明的可选能力默认不具备。组件只产生计算结果，不直接进行 IO、发按键、消费资源或改写传入快照。武器路由和逐帧观测为独立可选接口。
 
-参数由目录边界检查，实际构筑与所需能力必须匹配。上下文包含 run、room visit、build revision、catalog revision；P2 补楼层实例到计划上下文。版本不匹配的结果不可执行。
+参数由目录边界检查，实际构筑与所需能力必须匹配。上下文包含 run、floor instance、room visit、build revision、catalog revision；V1 历史记录的楼层身份允许为空。版本不匹配的结果不可执行。
 
 ## 输出与预算
 

@@ -48,9 +48,11 @@ local State = {
 
     -- Room tracking
     currentRoom = -1,
+    currentRoomIdentity = nil,
     roomEntered = false,
     roomVisit = 0,
     runId = "boot",
+    floorGeneration = 0,
     recentDeaths = {},
 
     -- Subscription
@@ -819,16 +821,7 @@ SensorRegistry:register("PICKUPS", {
     triggers = { "MC_POST_PICKUP_INIT", "MC_POST_NEW_ROOM" },
     extract = function(entity, player)
         if entity.Type ~= EntityType.ENTITY_PICKUP then return nil end
-        local pickup = entity:ToPickup()
-        return {
-            id = entity.Index,
-            variant = entity.Variant,
-            sub_type = entity.SubType,
-            pos = Helpers.vectorToTable(entity.Position),
-            price = pickup and pickup.Price or 0,
-            shop_item_id = pickup and pickup.ShopItemId or -1,
-            wait = pickup and pickup.Wait or 0,
-        }
+        return Helpers.pickupObservation(entity, player)
     end,
 })
 
@@ -892,6 +885,99 @@ SensorRegistry:register("FIRE_HAZARDS", {
 
 local CustomCollectors = {}
 
+-- Optional observations preserve absence instead of inventing a false/zero.
+function Helpers.optional(fn)
+    local ok, value = pcall(fn)
+    if ok then return value end
+    return nil
+end
+
+function Helpers.weaponObservation(player)
+    local result = {status="known", types={}, unknowns={}}
+    local seen, checked = {}, 0
+    for name, id in pairs(WeaponType) do
+        if type(name) == "string" and name:match("^WEAPON_") and type(id) == "number" and not seen[id] then
+            seen[id] = true
+            local value = Helpers.optional(function() return player:HasWeaponType(id) end)
+            checked = checked+1
+            if value == true then table.insert(result.types, id)
+            elseif value ~= false then result.status="partial"; table.insert(result.unknowns, name) end
+        end
+    end
+    if checked == 0 then result.status="unknown"; table.insert(result.unknowns, "weapon_enum_unavailable") end
+    table.sort(result.types)
+    return result
+end
+
+function Helpers.effectObservation(player)
+    local result = {status="known", items={}, unknowns={}}
+    local list = Helpers.optional(function() return player:GetEffects():GetEffectsList() end)
+    local size = list and Helpers.optional(function() return list.Size end)
+    if type(size) ~= "number" or size < 0 then
+        result.status="unknown"; table.insert(result.unknowns, "effect_list_unavailable"); return result
+    end
+    if size > 256 then result.status="partial"; table.insert(result.unknowns, "effect_list_truncated") end
+    for index=0, math.min(size, 256)-1 do
+        local effect = Helpers.optional(function() return list:Get(index) end)
+        local record = effect and Helpers.optional(function()
+            local item, kind = effect.Item, "unknown"
+            if item:IsCollectible() then kind="collectible"
+            elseif item:IsTrinket() then kind="trinket"
+            elseif item:IsNull() then kind="null" end
+            return {kind=kind, item_id=item.ID, count=effect.Count, cooldown=effect.Cooldown}
+        end)
+        if record then table.insert(result.items, record)
+        else result.status="partial"; table.insert(result.unknowns, "effect_entry_unavailable:"..index) end
+    end
+    return result
+end
+
+function Helpers.floorObservation()
+    local level = Game():GetLevel()
+    local dimension, listIndex
+    local desc = Helpers.optional(function() return level:GetCurrentRoomDesc() end)
+    if desc then
+        listIndex = desc.ListIndex
+        for d=0,2 do
+            local equal = Helpers.optional(function()
+                return GetPtrHash(desc) == GetPtrHash(level:GetRoomByIdx(desc.SafeGridIndex, d))
+            end)
+            if equal then dimension=d; break end
+        end
+    end
+    local result = {instance_id=State.runId..":floor:"..State.floorGeneration,
+        generation=State.floorGeneration, stage=level:GetStage(), stage_type=level:GetStageType(),
+        dimension=dimension, room_list_index=listIndex, unknowns={}}
+    if dimension == nil then table.insert(result.unknowns, "dimension_unavailable") end
+    if listIndex == nil then table.insert(result.unknowns, "room_list_index_unavailable") end
+    return result
+end
+
+function Helpers.pickupObservation(entity, player)
+    local pickup = entity:ToPickup()
+    local visibility, reason, subtype = "visible", "visible_variant", entity.SubType
+    if entity.Variant == 100 then
+        visibility, reason = "unknown", "appearance_not_verified"
+        local visible = Helpers.optional(function()
+            local level = Game():GetLevel()
+            return player:GetPlayerType() == 0 and level:GetStage() == 1 and level:GetStageType() <= 2
+                and (level:GetCurses() & LevelCurse.CURSE_OF_BLIND) == 0 and entity.SubType > 0
+        end)
+        local blind = Helpers.optional(function() return (Game():GetLevel():GetCurses() & LevelCurse.CURSE_OF_BLIND) ~= 0 end)
+        if blind then visibility, reason="hidden", "curse_of_blind"
+        elseif visible then visibility, reason="visible", "isaac_standard_first_floor_no_blind" end
+        if visibility ~= "visible" then subtype=nil end
+    elseif entity.Variant == 70 then
+        visibility, reason="unknown", "pill_color_only"
+    end
+    return {id=entity.Index, instance_id=State.runId..":"..tostring(entity.InitSeed)..":"..entity.Index,
+        variant=entity.Variant, sub_type=subtype, pos=Helpers.vectorToTable(entity.Position),
+        vel=Helpers.vectorToTable(entity.Velocity), collision_radius=entity.Size,
+        price=pickup and pickup.Price, shop_item_id=pickup and pickup.ShopItemId,
+        wait=pickup and pickup.Wait, options_pickup_index=pickup and pickup.OptionsPickupIndex,
+        identity_visibility=visibility, identity_reason=reason}
+end
+
 function CustomCollectors.PLAYER_POSITION()
     local players = Helpers.getPlayers()
     local data = {}
@@ -914,12 +1000,14 @@ function CustomCollectors.PLAYER_STATS()
     local players = Helpers.getPlayers()
     local data = {}
     for i, player in ipairs(players) do
+        local weapons = Helpers.weaponObservation(player)
         data[i] = {
             player_type = player:GetPlayerType(),
             damage = player.Damage, speed = player.MoveSpeed,
             tears = player.MaxFireDelay,
             max_fire_delay = player.MaxFireDelay,
-            weapon_type = player:HasWeaponType(WeaponType.WEAPON_TEARS) and 1 or -1,
+            weapon_type = weapons.status == "known" and #weapons.types == 1 and weapons.types[1] == WeaponType.WEAPON_TEARS and 1 or -1,
+            weapons = weapons,
             range = player.TearRange, tear_range = player.TearRange,
             shot_speed = player.ShotSpeed, luck = player.Luck,
             tear_height = player.TearHeight,
@@ -957,28 +1045,37 @@ function CustomCollectors.PLAYER_INVENTORY()
             card_0 = player:GetCard(0), pill_0 = player:GetPill(0),
             collectible_count = player:GetCollectibleCount(),
         }
-        -- Collectibles
+        -- The catalog is runtime-sized; generated negative IDs are not enumerable
+        -- with the original API, so coverage must remain explicit.
         local items = {}
-        if playerData.collectible_count > 0 then
-            for itemId = 1, 733 do
-                if player:HasCollectible(itemId, true) then
-                    local count = player:GetCollectibleNum(itemId, true)
-                    if count > 0 then items[tostring(itemId)] = count end
-                end
+        local catalogMax = Helpers.optional(function() return Isaac.GetItemConfig():GetCollectibles().Size-1 end)
+        local coverage = {static_status="known", catalog_max_id=catalogMax, dynamic_status="unknown",
+            observed_dynamic_ids={}, unknowns={"dynamic_inventory_not_enumerable_in_original_api"}}
+        if type(catalogMax) ~= "number" or catalogMax < 0 then
+            coverage.static_status="unknown"; table.insert(coverage.unknowns, "catalog_size_unavailable")
+        else
+            if catalogMax > 10000 then coverage.static_status="partial"; table.insert(coverage.unknowns,"catalog_scan_truncated") end
+            for itemId=1, math.min(catalogMax, 10000) do
+                local count = Helpers.optional(function() return player:GetCollectibleNum(itemId, true) end)
+                if type(count) ~= "number" then coverage.static_status="partial"
+                elseif count > 0 then items[tostring(itemId)] = count end
             end
         end
         playerData.collectibles = items
+        playerData.inventory_coverage = coverage
         -- Active items
         local activeSlots = {}
         for slot = 0, 3 do
             local activeItem = player:GetActiveItem(slot)
-            if activeItem > 0 then
+            if activeItem ~= 0 then
+                local config = Helpers.optional(function() return Isaac.GetItemConfig():GetCollectible(activeItem) end)
                 activeSlots[tostring(slot)] = {
                     item = activeItem,
                     charge = player:GetActiveCharge(slot),
-                    max_charge = Isaac.GetItemConfig():GetCollectible(activeItem).MaxCharges,
+                    max_charge = config and config.MaxCharges,
                     battery_charge = player:GetBatteryCharge(slot),
                 }
+                if activeItem < 0 then table.insert(coverage.observed_dynamic_ids, activeItem) end
             end
         end
         playerData.active_items = activeSlots
@@ -999,6 +1096,8 @@ function CustomCollectors.PROJECTILES()
                 pos = Helpers.vectorToTable(entity.Position),
                 vel = Helpers.vectorToTable(entity.Velocity),
                 variant = entity.Variant, collision_radius = entity.Size,
+                owner_type = entity.SpawnerType,
+                owner_seed = entity.SpawnerEntity and entity.SpawnerEntity.InitSeed,
                 height = proj and proj.Height or 0,
                 falling_speed = proj and proj.FallingSpeed or 0,
                 falling_accel = proj and proj.FallingAccel or 0,
@@ -1008,6 +1107,8 @@ function CustomCollectors.PROJECTILES()
             local tearData = {
                 id = entity.Index,
                 instance_id = tostring(entity.InitSeed) .. ":" .. tostring(entity.Index),
+                owner_type = entity.SpawnerType,
+                owner_seed = entity.SpawnerEntity and entity.SpawnerEntity.InitSeed,
                 pos = Helpers.vectorToTable(entity.Position),
                 vel = Helpers.vectorToTable(entity.Velocity),
                 variant = entity.Variant, collision_radius = entity.Size,
@@ -1498,8 +1599,9 @@ SensorRegistry:register("COMBAT_FRAME", {
 function CustomCollectors.COMBAT_FRAME()
     local player = Isaac.GetPlayer(0)
     if not player then return nil end
-    local enemies, bombs, hazards = {}, {}, {}
+    local enemies, bombs, hazards, pickups = {}, {}, {}, {}
     for _, e in ipairs(Isaac.GetRoomEntities()) do
+        if e.Type == EntityType.ENTITY_PICKUP then table.insert(pickups, Helpers.pickupObservation(e, player)) end
         if e:ToNPC() and e:IsActiveEnemy(false) then
             local value = SensorRegistry.sensors.ENEMIES.extract(e, player)
             if value then table.insert(enemies, value) end
@@ -1520,12 +1622,19 @@ function CustomCollectors.COMBAT_FRAME()
         if State.updateCount - death.frame <= 90 then table.insert(deaths, death) end
     end
     State.recentDeaths = deaths
-    return {schema_version = 1, run_id = State.runId,
+    local position = CustomCollectors.PLAYER_POSITION()[1]
+    local stats = CustomCollectors.PLAYER_STATS()[1]
+    local health = CustomCollectors.PLAYER_HEALTH()[1]
+    local inventory = CustomCollectors.PLAYER_INVENTORY()[1]
+    local healthObservation = {dead=position.dead}
+    for name, value in pairs(health) do healthObservation[name]=value end
+    return {schema_version = 2, run_id = State.runId,
         room_visit_id = State.runId .. ":" .. tostring(State.roomVisit),
         frame = State.updateCount, paused = Game():IsPaused(), mode = State.controlMode,
         room = CustomCollectors.ROOM_INFO(), layout = CustomCollectors.ROOM_LAYOUT(),
-        player = CustomCollectors.PLAYER_POSITION()[1], stats = CustomCollectors.PLAYER_STATS()[1],
-        health = CustomCollectors.PLAYER_HEALTH()[1], inventory = CustomCollectors.PLAYER_INVENTORY()[1],
+        player=position, stats=stats, health=health, inventory=inventory,
+        weapons=stats.weapons, effects=Helpers.effectObservation(player), floor=Helpers.floorObservation(),
+        pickups=pickups, inventory_coverage=inventory.inventory_coverage, health_observation=healthObservation,
         enemies = enemies, projectiles = CustomCollectors.PROJECTILES(), bombs = bombs, hazards = hazards,
         recent_deaths = deaths,
         movement_inheritance = inherited,
@@ -1613,7 +1722,9 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, function()
 
     -- Room change detection
     local currentRoom = Game():GetLevel():GetCurrentRoomIndex()
-    if currentRoom ~= State.currentRoom then
+    local listIndex = Helpers.optional(function() return Game():GetLevel():GetCurrentRoomDesc().ListIndex end)
+    local roomIdentity = State.floorGeneration..":"..tostring(listIndex)..":"..currentRoom
+    if currentRoom ~= State.currentRoom or roomIdentity ~= State.currentRoomIdentity then
         local prevRoom = State.currentRoom
 
         -- Fire sensor triggers
@@ -1630,6 +1741,7 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, function()
             InputExecutor.reset()
             State.controlMode = "MANUAL"
             State.currentRoom = currentRoom
+            State.currentRoomIdentity = roomIdentity
             State.roomVisit = State.roomVisit + 1
             State.recentDeaths = {}
             State.roomEntered = true
@@ -1825,11 +1937,21 @@ if ModCallbacks.MC_POST_PLAYER_DEATH then
     end)
 end
 
+-- Generation identity must change even when the room index is reused.
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, function()
+    State.floorGeneration = State.floorGeneration+1
+    State.currentRoom = -1
+    State.recentDeaths = {}
+    InputExecutor.reset()
+    State.controlMode = "MANUAL"
+end)
+
 -- MC_POST_GAME_STARTED — game start
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, function(_, continued)
     State.updateCount = 0
     Network.lastRetryFrame = State.renderCount - Network.retryInterval
     State.currentRoom = -1
+    State.currentRoomIdentity = nil
     State.roomVisit = 0
     State.runId = tostring(Game():GetSeeds():GetStartSeed()) .. ":" .. tostring(Isaac.GetTime())
     State.messageSeq = 0

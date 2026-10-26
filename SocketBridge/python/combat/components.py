@@ -29,7 +29,7 @@ class ResilientComponent:
     def bind(self, snapshot, build, ref):
         self.snapshot = snapshot
         self.context = ProposalContext(snapshot.run_id, snapshot.room_visit_id, build.revision,
-                                       ref.catalog_revision, snapshot.frame, snapshot.frame)
+                                       ref.catalog_revision, snapshot.frame, snapshot.frame, ref.floor_instance_id)
     def fail(self, method, exc):
         self.broken = True
         self.failure = {"component": self.identity, "method": method, "error": type(exc).__name__+": "+str(exc)}
