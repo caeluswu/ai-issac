@@ -113,7 +113,9 @@ class TestReplaceableComponents(unittest.TestCase):
 
     def test_weapon_replacement_does_not_change_scheduler(self):
         class FixtureCharge:
-            capabilities = CapabilitySet("fixture_charge")
+            # This fixture replaces implementation within a normal-tears
+            # contract; a different family is covered by the adapter test.
+            capabilities = CapabilitySet("normal_tears")
             def __init__(self, params): pass
             def propose(self, s, build, profile, target, velocity, geometry, aim=None):
                 return [AttackProposal((0, -1), .9, 1., "fixture_charge_release")]

@@ -1,8 +1,9 @@
 """Replaceable pure policy and weapon modules; no IO or controller references."""
 from .models import Vec, ZERO
 from .component_contracts import (
-    CapabilitySet, MotionProposal, AttackProposal, WaitEvidence, WeaponAdapter,
+    CapabilitySet, MotionProposal, AttackProposal, WaitEvidence, WeaponAdapter, ProposalContext, HOST_LIMITS,
 )
+from .component_validation import validate_result
 
 
 class Registry:
@@ -16,23 +17,44 @@ class Registry:
 
 
 class ResilientComponent:
-    """Isolate a registered module failure; the deterministic substitute is IO-free."""
-    def __init__(self, primary, fallback, identity):
+    """Quarantine returned-value faults in trusted modules; not code isolation."""
+    def __init__(self, primary, fallback, identity, family="normal_tears", max_wait_frames=90):
         self.primary, self.fallback, self.identity = primary, fallback, identity
+        self.family = family
+        self.max_wait_frames = min(max_wait_frames, HOST_LIMITS.max_wait_frames)
         self.broken = False
         self.failure = None
+        self.context = self.snapshot = None
+        self.last_observation = None
+    def bind(self, snapshot, build, ref):
+        self.snapshot = snapshot
+        self.context = ProposalContext(snapshot.run_id, snapshot.room_visit_id, build.revision,
+                                       ref.catalog_revision, snapshot.frame, snapshot.frame)
+    def fail(self, method, exc):
+        self.broken = True
+        self.failure = {"component": self.identity, "method": method, "error": type(exc).__name__+": "+str(exc)}
+    def checked(self, instance, method, args, kwargs):
+        value = getattr(instance, method)(*args, **kwargs)
+        if self.context is None: raise ValueError("component has no bound execution context")
+        return validate_result(method, value, self.context, self.snapshot, self.max_wait_frames)
     def __getattr__(self, name):
         instance = self.fallback if self.broken else self.primary
         value = getattr(instance, name)
-        if not callable(value): return value
+        if not callable(value):
+            if name == "capabilities" and (not isinstance(value, CapabilitySet) or value.family != self.family):
+                self.fail(name, ValueError("incompatible weapon capability declaration"))
+                return self.fallback.capabilities
+            return value
         def guarded(*args, **kwargs):
-            try: return getattr(self.fallback if self.broken else self.primary, name)(*args, **kwargs)
+            if name == "begin_frame":
+                if self.last_observation == self.context: return None
+                self.last_observation = self.context
+            try: return self.checked(self.fallback if self.broken else self.primary, name, args, kwargs)
             except Exception as exc:
-                if self.broken: raise
-                self.broken = True
-                self.failure = {"component": self.identity, "method": name, "error": type(exc).__name__+": "+str(exc)}
+                if self.broken: raise RuntimeError("COMPATIBLE_FALLBACK_FAILED: "+self.identity) from exc
+                self.fail(name, exc)
                 replacement = getattr(self.fallback, name, None)
-                return replacement(*args, **kwargs) if replacement else None
+                return self.checked(self.fallback, name, args, kwargs) if replacement else None
         return guarded
     def pop_failure(self):
         failure, self.failure = self.failure, None
@@ -44,17 +66,31 @@ DEFAULT_IDS = {"target": "target.threat_first", "position": "position.kite", "ai
                "recovery": "recovery.local_repath"}
 
 
-def resilient_component(choice, slot, registry):
+class NoFire:
+    """Neutral inputs for an unsupported family; release may still fire it."""
+    def __init__(self, family):
+        self.capabilities = CapabilitySet(family)
+    def propose(self, *args): return [AttackProposal((0, 0), 0, 0, "no_compatible_fire_fallback")]
+    def firing_route(self, *args, **kwargs): return []
+    def pending_damage(self, *args): return 0.
+
+
+def resilient_component(choice, slot, registry, family="normal_tears"):
     from .catalog import CATALOG
     name = DEFAULT_IDS[slot]
     fallback = EXECUTABLES.factories[name]({k: v[0] for k, v in CATALOG[name].parameters.items()})
+    if slot == "fire" and family != "normal_tears": fallback = NoFire(family)
     try: primary = registry.create(choice)
     except Exception as exc:
-        wrapped = ResilientComponent(fallback, fallback, choice.component)
-        wrapped.broken = True
-        wrapped.failure = {"component": choice.component, "method": "factory", "error": type(exc).__name__+": "+str(exc)}
+        wrapped = ResilientComponent(fallback, fallback, choice.component, family)
+        wrapped.fail("factory", exc)
         return wrapped
-    return ResilientComponent(primary, fallback, choice.component)
+    wrapped = ResilientComponent(primary, fallback, choice.component, family,
+                                 getattr(CATALOG.get(choice.component), "max_duration_frames", 90))
+    declared = getattr(primary, "capabilities", None)
+    if slot == "fire" and declared is not None and (not isinstance(declared, CapabilitySet) or declared.family != family):
+        wrapped.fail("capabilities", ValueError("incompatible weapon capability declaration"))
+    return wrapped
 
 
 class Target:

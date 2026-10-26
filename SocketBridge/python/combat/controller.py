@@ -117,21 +117,28 @@ class JointActionSolver:
         self.budget_exhausted = False
         self.emergency_until = -1
         self.emergency_profile = None
+        self.emergency_key = None
 
     def select_profile(self, s, plan, build):
         if s.frame < self.emergency_until or s.hp <= 2:
-            if build.family != "normal_tears": raise ValueError("UNSUPPORTED_EMERGENCY_PROFILE")
-            if self.emergency_profile is None:
+            emergency_key = (build.family, build.revision, plan.model_dump_json())
+            if self.emergency_key != emergency_key:
                 from .catalog import default_plan, compile_plan
                 emergency = default_plan(plan.context_ref)
                 p = emergency.profiles[emergency.default_profile]
+                if build.family != "normal_tears":
+                    original = plan.profiles[plan.default_profile]
+                    p.fire = original.fire.model_copy(deep=True)
+                    p.aim = original.aim.model_copy(deep=True)
+                    emergency.required_capabilities = list(plan.required_capabilities)
                 p.target.component = "target.finish_first"
                 p.target.params.update(min_hold_ticks=0, switch_margin=.05)
                 p.position.params.update(min_range_ratio=.6, max_range_ratio=.9)
-                p.fire.params.update(min_hit_score=.1)
+                if "min_hit_score" in p.fire.params: p.fire.params.update(min_hit_score=.1)
                 p.evade.params.update(extra_margin_px=8)
                 p.escape.params.update(horizon_ticks=45)
-                self.emergency_profile = compile_plan(emergency, plan.context_ref).profiles[emergency.default_profile]
+                self.emergency_profile = compile_plan(emergency, plan.context_ref, capabilities=(build.family,)).profiles[emergency.default_profile]
+                self.emergency_key = emergency_key
             if self.profile_name != "contract_emergency":
                 self.profile_name, self.profile_since = "contract_emergency", s.frame
                 self.positions.clear()
@@ -176,13 +183,17 @@ class JointActionSolver:
 
     def solve(self, s, plan, build, movement_only=False, navigation_goal=None, allowed_devices=()):
         started = time.perf_counter()
+        ref = plan.context_ref
+        if (ref.run_id, ref.room_visit_id, ref.build_revision) != (s.run_id, s.room_visit_id, build.revision):
+            raise ValueError("STALE_PLAN_CONTEXT")
         name, profile = self.select_profile(s, plan, build)
-        key = profile.model_dump_json()
+        key = (s.run_id, s.room_visit_id, build.family, build.revision, ref.catalog_revision, profile.model_dump_json())
         if key != self.module_key:
-            self.modules = {slot: resilient_component(getattr(profile, slot), slot, self.registry) for slot in type(profile).model_fields}
+            self.modules = {slot: resilient_component(getattr(profile, slot), slot, self.registry, build.family) for slot in type(profile).model_fields}
             self.module_key = key
         modules = self.modules
         for module in modules.values():
+            module.bind(s, build, ref)
             begin = getattr(module, "begin_frame", None)
             if begin: begin(s, build)
         target = None if movement_only else self.target(s, profile, build)
@@ -190,7 +201,7 @@ class JointActionSolver:
                                   if h.get("type") == "FIREPLACE" and not h.get("is_extinguished", False)))
         portals = tuple(sorted((slot, d['x'], d['y']) for slot, d in (s.layout['doors'] or {}).items()
                                if d['is_open'] and not d['is_locked']))
-        geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices), fire_cells, portals)
+        geometry_key = (s.room_visit_id, s.stats["can_fly"], s.player.collision_radius, str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices), fire_cells, portals)
         if geometry_key != self.geometry_key:
             self.geometry, self.geometry_key = GeometryService(s, allowed_devices), geometry_key
         g = self.geometry
