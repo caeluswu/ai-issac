@@ -8,11 +8,11 @@ V2 保留 V1 的 room、layout、player、stats、health、inventory、敌人及
 
 | 扩展 | 内容 | 限制 |
 |---|---|---|
-| `pickups` | 局内实体身份、当前 subtype、位置/速度/半径、价格、商店/选择组、等待与可见性依据 | 同一实体轮换时 ID 稳定而 subtype 可变；不是实际拾取确认 |
+| `pickups` | 局内实体身份、当前 subtype、位置/速度/半径、价格、商店/选择组、等待、`is_empty` 与可见性依据 | 空底座与隐藏身份分开；同一实体轮换时 ID 稳定而 subtype 可变；不是实际拾取确认 |
 | `weapons` | HasWeaponType 返回的有效类型集合，known/partial/unknown 与缺口 | 多类型不能压成普通泪弹；不等于已经有对应控制组件 |
 | `effects` | 临时效果 kind、item_id、count、cooldown；获取状态和缺口 | 不代表所有随机效果均可穷举；非空效果已做 Lua 合同测试，实机仅核验当前场景 |
 | `inventory_coverage` | 运行时静态目录边界、扫描状态、可读的动态主动 ID、不可读范围 | 原版动态物品完整库存/效果保留 unknown，不扩大固定扫描上限冒充完整支持 |
-| `health_observation` | 存活标志、红/魂/骨心、各容器与特殊心、额外生命 | 黑心字段是 API 位掩码；P3 再接健康账本与复活判定 |
+| `health_observation` | 存活标志、红/魂/骨心、各容器与特殊心、额外生命 | 黑心字段是 API 位掩码；健康账本处理空骨心和有界复活等待 |
 | `floor` | run 内地图生成实例、stage/type、当前房间 ListIndex、维度及缺口 | 原版通过当前房间描述符指针比较识别维度；不查询未探索房间敌人或奖励 |
 
 所有扩展由同一次同步 Lua 采集产生，不拼接不同传输帧的传感器缓存。V2 缺组、楼层进度不一致、健康副本不一致或武器兼容标志不一致会拒收并记录错误。
@@ -29,7 +29,9 @@ V2 保留 V1 的 room、layout、player、stats、health、inventory、敌人及
 
 `floor.instance_id` 由 run 和地图生成计数构成，`MC_POST_NEW_LEVEL` 更新地图实例并独立释放输入、回到 MANUAL。房间变化同时比较地图生成序号、当前房间 ListIndex 与入口索引，避免同索引的不同实例复用 room visit。
 
-计划 `ContextRef` 增加可空 floor_instance_id，目录修订可为正整数或非空版本字符串。运行器、规划器与求解器均绑定楼层身份；显式过期提案或缺少当前 V2 楼层身份的计划不可执行。当前构筑事务尚未由本观测版本自动完成。
+计划 `ContextRef` 增加可空 floor_instance_id，目录修订可为正整数或非空版本字符串。运行器、规划器与求解器均绑定楼层身份、构筑和经验修订；显式过期提案或缺少当前 V2 楼层身份的计划不可执行。BuildResolver 根据实际观测发布构筑修订，不依赖描述文字加算属性。
+
+`inventory.queued_collectible_id` 为原版 `player.QueuedItem.Item.ID` 的可选读数：0 表示无队列，缺失表示 API 不可用。收藏品接触后底座可能先清空，动画结束才入库；队列只证明待交付，不证明拥有。拾取执行器默认接近预算 90 更新，消费后确认预算 30 更新；明确观察到对应待入库项时确认预算为 90 更新，总循环不超过 180 次。等待期间释放移动射击，仍检查新威胁、失血、换房、断线及事务期限；成功必须有实际库存增量。依据见 [EntityPlayer 队列说明](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html#queueditem)，J835 验证见 [P3–P6 报告](phase-2a-preparation-validation.zh-CN.md)。
 
 ## 验证与复现
 

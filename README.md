@@ -4,7 +4,7 @@
 
 当前工程目标是：自动启动游戏，从初始房间正常出门，经 LLM 配置组件后清理一个实际战斗房，并保存调试信息。允许入房暂停；战斗中本地控制持续执行。整层和一至六层妈腿规划属于后续阶段。
 
-道具扩展采用固定版本 EID 说明与本地经验：结合当前构筑决定拾取，在符合条件的安全节点进行有界测试，再更新校准、策略或组件。LLM 自身知识作为待验证假设；默认不接入 Wiki 爬虫。该学习链路处于计划阶段，见下方文档。
+道具扩展采用固定版本 EID 说明与本地经验。M2-A 前置 P0–P6 已具备本地准入能力：构筑变化、健康资源账本、可复用房间执行器、EID 查询、有限拾取和被动经验持久化。实机已验证正常拾取简单属性道具后出门清房。主动实验保持关闭，DeepSeek 自主编写机制程序属于 M2-B；整层控制尚未实现。验收范围见下方报告。
 
 ## 验证与付费 API 原则
 
@@ -46,6 +46,18 @@
 .\.venv\Scripts\python.exe -m unittest discover -s SocketBridge/python/tests -t SocketBridge/python -q
 ```
 
+首次启用道具功能，先安装独立 SDK 并准备固定 EID 包。准备脚本只下载锁定提交的四个说明文件、校验哈希并生成本地 SQLite；运行中的查询不联网。
+
+```powershell
+uv pip install --python .venv/Scripts/python.exe -e knowledge_project
+.\.venv\Scripts\python.exe scripts/prepare_eid_knowledge.py
+.\.venv\Scripts\python.exe run_first_room.py --local-only --with-items
+```
+
+`--with-items` 启用本地说明、保守拾取、避让和被动记录。当前收藏品支持映射为 1/4/12 的简单属性、20 的飞行以及不使用主动效果的 105；未知机制、饰品、复杂武器和健康交易明确拒绝。它不是全道具策略，也不支持整层推进。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git；遭遇、决策前态、拾取确认、房间结果、测量、结论和反例可追溯。
+
+开发用实机核验入口为 `scripts/validate_m2_preparation_live.py`：会自动重开固定场景，并在记录的初始化环节生成道具，再正常拾取和战斗。其结果仅验证机制，不是正常随机对局胜率；不作为日常启动命令。
+
 确需验证 LLM 完整流程时，在不入库的 `.env.local` 配置 `DEEPSEEK_API_KEY` 和 `DEEPSEEK_MODEL`，再单次执行 `run_first_room.py`。原始运行数据保存在 `artifacts/runs/`；凭据、游戏文件和存档二进制不进入 Git。
 
 项目运行入口优先采用 `.env.local` 中显式填写的 DeepSeek 配置，覆盖继承的同名进程环境值；未填写的配置仍可来自环境。更换 key 后重新启动脚本即可，新建客户端读取新值；已存在的客户端不会自动换 key。无需为更新配置发送付费请求，实际 API 授权是否有效需在下一次必要调用中确认。
@@ -54,7 +66,7 @@
 
 ## 文档导航
 
-**当前工作入口：[M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md)。** P0–P2 已完成合同、组件边界和 V2 观测接入，验证范围见 [P0–P2 验证报告](docs/phase-2a-p0-p2-validation.zh-CN.md)；下一项为 P3 构筑事务与健康账本。M2-A 指首层连续通关，M2-B 指 DeepSeek 实际开发新机制组件；EID 计划内 A–F 是学习功能步骤。
+**当前工作入口：[M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md)。** P0–P6 的交付和限制见 [P3–P6 准入报告](docs/phase-2a-preparation-validation.zh-CN.md)；下一项为 M2-A 整层控制开发，尚未开始。P7 主动实验关闭，P8 仅保留扩展合同。M2-A 指首层连续通关，M2-B 指 DeepSeek 实际开发新机制组件；EID 计划内 A–F 是学习功能步骤。
 
 建议阅读顺序：任务契约 → 总体架构 → 二、三阶段路线 → M2-A 准备清单 → 对应专项设计。判断已实现能力时查验收与审查报告，计划文档不作为完成证据。
 
@@ -76,6 +88,7 @@
 | [V2 观测合同](docs/observation-v2.zh-CN.md) | 拾取物、武器集合、临时效果、库存覆盖、健康与楼层身份；旧协议兼容 |
 | [EID 与本地经验学习计划](docs/eid-local-learning-plan.zh-CN.md) | 来源接入、拾取决策、被动观测、有界实验、证据更新与经验复用 |
 | [独立知识库接口计划](docs/knowledge-project-interface-plan.zh-CN.md) | 跨项目所有权、分层、查询合同、版本化数据包与本项目 Gateway |
+| [知识库 SDK 使用说明](knowledge_project/README.md) | 独立可安装包、来源导入、查询示例和已实现接口范围 |
 | [道具知识与 DeepSeek 组件开发](docs/item-knowledge-and-skill-evolution.zh-CN.md) | 道具能力分类、程序生成物品、模型编程、验证发布与角色取舍 |
 
 ### 第一阶段设计与运行
@@ -91,6 +104,7 @@
 | 文档 | 职责与范围 |
 |---|---|
 | [M2-A P0–P2 验证](docs/phase-2a-p0-p2-validation.zh-CN.md) | 组件边界本地回归和 J835 只读 V2 实机证据；不代表拾取后控制已通过 |
+| [M2-A P3–P6 准入验证](docs/phase-2a-preparation-validation.zh-CN.md) | 构筑事务、房间复用、EID 拾取、被动经验本地闭环及开发场景实机证据 |
 | [第一阶段实机验收](docs/phase-1-live-validation.zh-CN.md) | 自动启动、出门、DeepSeek 配置和首个战斗房的闭环证据 |
 | [第一阶段优化验收](docs/phase-1-optimization-validation.zh-CN.md) | 优化后的清房、损失、耗时与保留失败；不代表整层胜率 |
 | [第一阶段扩展性审查](docs/phase-1-extensibility-review.zh-CN.md) | 当前源码的道具/长局扩展阻断及离线边界探针，作为准备工作的依据 |
