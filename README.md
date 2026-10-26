@@ -50,6 +50,9 @@
 
 ## 文档
 
+- [第一阶段扩展性审查](docs/phase-1-extensibility-review.zh-CN.md)
+- [第二、三阶段实施计划](docs/phase-2-3-roadmap.zh-CN.md)
+- [道具知识库与 DeepSeek 组件开发](docs/item-knowledge-and-skill-evolution.zh-CN.md)
 - [第一阶段优化验收](docs/phase-1-optimization-validation.zh-CN.md)
 - [第一阶段优化架构](docs/phase-1-optimization.zh-CN.md)
 - [战斗组件计划](docs/phase-1-combat-controller.zh-CN.md)

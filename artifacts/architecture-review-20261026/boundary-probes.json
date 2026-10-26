@@ -1,0 +1,41 @@
+{
+  "reviewed_commit": "0488fec",
+  "runtime_commit": "50eb92a",
+  "scope": "offline_extension_boundary_probes_not_live_game",
+  "local_tests": {
+    "passed": 207,
+    "seconds": 46.793
+  },
+  "cases": [
+    {
+      "case": "collectible_pickup",
+      "error": "ValueError: BUILD_CHANGED: stop before using incompatible plan"
+    },
+    {
+      "case": "empty_bone_container_alive",
+      "observation": {
+        "player_dead": false,
+        "bone_hearts": 1,
+        "judge_result": "DEAD"
+      }
+    },
+    {
+      "case": "component_returns_no_candidate",
+      "error": "ValueError: min() iterable argument is empty"
+    },
+    {
+      "case": "component_returns_invalid_direction",
+      "observation": {
+        "shoot": [
+          99,
+          0
+        ],
+        "component_failures": []
+      }
+    },
+    {
+      "case": "custom_weapon_emergency",
+      "error": "ValueError: UNSUPPORTED_EMERGENCY_PROFILE"
+    }
+  ]
+}
