@@ -23,6 +23,8 @@ from .environment import EnvironmentController
 from .navigation import DoorNavigator, RoomExplorer
 from .ledgers import ResourceLedger
 from .builds import observed_build
+from .room_execution import RoomExecutor, RoomState
+from .lifecycle import ReceiptWindow
 
 
 class RunLog:
@@ -267,13 +269,15 @@ class CombatSession:
         self.command_id = 0
         self.heartbeat = None
         self.heartbeat_at = 0.
+        self.room_executor = RoomExecutor(self)
+        self.opened = False
         self.judge = CombatJudge()
         self.judge_result = None
         self.target_room = None
         self.transitions = 0
         self.actions = 0
-        self.accepted = set()
-        self.applied = set()
+        self.accepted = ReceiptWindow()
+        self.applied = ReceiptWindow()
         self.rejected = None
         self.build_resolver = BuildResolver()
         self.solver = JointActionSolver()
@@ -282,7 +286,7 @@ class CombatSession:
         self.replan_requests = 0
         self.clear_started = None
         self.clear_safe_since = None
-        self.deadline_misses = []
+        self.deadline_misses = deque(maxlen=128)
         self.death_observed = False
         self.death_event_frame = None
         self.last_damage_frame = -1000
@@ -298,7 +302,7 @@ class CombatSession:
         self.fallbacks = 0
         self.pause_seconds = 0.
         self.pause_owned = False
-        self.timings = []
+        self.timings = deque(maxlen=4096)
         self.visited = set()
         self.latest_acted = None
         self.started_at = time.monotonic()
@@ -311,8 +315,8 @@ class CombatSession:
         self.combat_previous_hp = None
         self.combat_damage_recorded = 0
         self.environment_ticks = 0
-        self.navigation_timings = []
-        self.navigation_metrics = []
+        self.navigation_timings = deque(maxlen=4096)
+        self.navigation_metrics = deque(maxlen=128)
         self.navigation_replan_requests = 0
         self.navigation_devices = {}
         bridge.on_message(self.on_message)
@@ -328,8 +332,10 @@ class CombatSession:
             self.rpc_waiters[request].set_result(raw.get("result", {}))
         if raw.get("type") == "ACTION_RECEIPT":
             receipt = ActionReceipt.model_validate({k: raw[k] for k in ActionReceipt.model_fields})
-            if receipt.accepted: self.accepted.add(receipt.action_id)
-            else: self.rejected = receipt.model_dump()
+            current = self.observation.latest
+            if receipt.accepted and 0 < receipt.action_id <= self.actions: self.accepted.add(receipt.action_id)
+            elif not receipt.accepted and current and receipt.room_visit_id == current.room_visit_id:
+                self.rejected = receipt.model_dump()
         if raw.get("type") == "HEARTBEAT":
             self.heartbeat, self.heartbeat_at = raw, time.monotonic()
         s = self.observation.consume(raw)
@@ -346,7 +352,7 @@ class CombatSession:
                 if self.death_event_frame is not None and s.frame > self.death_event_frame and s.alive:
                     self.death_event_frame = None
                 if self.task_judge.health.state == "dead": self.death_observed = True
-            if s.applied_action_id is not None: self.applied.add(s.applied_action_id)
+            if s.applied_action_id is not None and s.applied_action_id <= self.actions: self.applied.add(s.applied_action_id)
             if s.room_visit_id == self.target_room and not s.paused:
                 if self.task_judge.health.state == "dead": self.death_observed = True
                 self.judge_result = self.judge.observe(s)
@@ -655,135 +661,61 @@ class CombatSession:
                 request.cancel(); await asyncio.gather(request, return_exceptions=True)
 
     async def engage(self, s):
-        self.target_room = s.room_visit_id
-        s = await self.configure_room(s)
-        while True:
-            if s.room_visit_id != self.target_room: raise RuntimeError("UNEXPECTED_ROOM_CHANGE")
-            if s.mode == "MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
-            if self.rejected:
-                self.log("rejected_action", receipt=self.rejected); self.rejected = None
-                await self.release()
-            if self.judge_result and self.judge_result != "CLEARED": return self.judge_result
-            if self.task_judge.health.state == "reviving":
-                await self.release(); s = await self.next_snapshot(after=s.snapshot_id); continue
-            build = self.build_resolver.update(s)
-            if self.plan.context_ref.build_revision != build.revision:
-                await self.release()
-                if self.pending:
-                    self.pending.cancel(); await asyncio.gather(self.pending, return_exceptions=True)
-                    self.pending = None
-                self.revision += 1
-                self.plan = default_plan(self.context_ref(s, build))
-                self.previous_action = None
-                self.log("build_transaction", revision=build.revision, signature=build.signature,
-                         changed_domains=build.changed_domains, plan=self.plan.model_dump())
-            failure = self.supervisor.observe(s, self.previous_action)
-            for event in self.supervisor.events:
-                self.log("boundary", boundary=event.__dict__, evidence=self.supervisor.evidence)
-                if event.kind in ("no_safe_candidate", "escape_margin"):
-                    self.solver.emergency_until = max(self.solver.emergency_until, s.frame+60)
-                if event.age_ticks >= 60 or event.kind in ("no_safe_candidate", "escape_margin"):
-                    self.event_reasons.add(event.kind)
-            if failure: return failure
-            self.solver.recovery_level = self.supervisor.recovery_level
-            if s.frame-self.last_damage_frame <= 60:
-                self.solver.emergency_until = max(self.solver.emergency_until, self.last_damage_frame+60)
-            if self.supervisor.recovery_level >= 2:
-                self.solver.emergency_until = max(self.solver.emergency_until, s.frame+30)
-            if self.pending and self.pending.done():
+        return await self.room_executor.execute(s)
+
+    async def execute_room(self, snapshot):
+        if not self.opened: raise RuntimeError("SESSION_NOT_OPEN")
+        return await self.engage(snapshot)
+
+    async def open(self, bootstrap=None, on_ready=None):
+        if self.opened: raise RuntimeError("SESSION_ALREADY_OPEN")
+        self.opened = True
+        await self.bridge.start()
+        if bootstrap: await bootstrap(self)
+        deadline = time.monotonic()+self.ready_timeout
+        while not self.bridge.connected:
+            if time.monotonic() > deadline: raise TimeoutError("GAME_CONNECTION_TIMEOUT")
+            await asyncio.sleep(.05)
+        await self.bridge.subscribe(["COMBAT_FRAME"], {"COMBAT_FRAME": {"enabled": True}})
+        await self.rpc("GET_FULL_STATE", timeout=10)
+        initial = await self.next_snapshot()
+        if self.new_run or self.seed:
+            # Setup commands are deliberately restricted and run before the
+            # measured task. No console authority is exposed to the planner.
+            old_run = initial.run_id
+            self.log("initialization_command", command="PREPARE_RUN", seed=self.seed, character=0)
+            await self.rpc("PREPARE_RUN", {"seed": self.seed or ""})
+            deadline = time.monotonic()+10
+            while initial.run_id == old_run:
+                if time.monotonic() > deadline: raise TimeoutError("NEW_RUN_NOT_CONFIRMED")
+                initial = await self.next_snapshot(after=initial.snapshot_id)
+            for _ in range(3): initial = await self.next_snapshot(after=initial.snapshot_id)
+            if self.seed and initial.seed != self.seed: raise RuntimeError("SEED_NOT_CONFIRMED")
+        self.log("run_start", seed=initial.seed, snapshot_id=initial.snapshot_id)
+        self.task_started, self.task_start_frame = True, initial.frame
+        self.task_judge.observe(initial)
+        if on_ready: await on_ready(self)
+        return initial
+
+    async def close(self):
+        if self.pending:
+            self.pending.cancel(); await asyncio.gather(self.pending, return_exceptions=True)
+        if self.bridge.connected:
+            if self.pause_owned and self.heartbeat and time.monotonic()-self.heartbeat_at < 1 and self.heartbeat.get("paused"):
                 try:
-                    value = self.pending.result()
-                    if self.pending_reasons <= {"idle", "blocked", "stall", "no_progress", "oscillation"} and self.supervisor.last_progress > self.pending_started_frame:
-                        raise ValueError("REPLAN_EVENT_RESOLVED: local recovery already made progress")
-                    self.plan = compile_plan(value, self.context_ref(s, build))
-                    self.revision += 1
-                    self.solver.profile_name = None
-                    self.log("plan_installed", source="deepseek_replan", plan=self.plan.model_dump())
-                except Exception as exc:
-                    self.log("replan_rejected", error=type(exc).__name__+": "+str(exc))
-                self.pending = None
-            recent = [f for f in self.solver.recoveries if s.frame-f <= 150]
-            if len(recent) >= 2: self.event_reasons.add("repeated_recovery")
-            # Mandatory supervision is not policy-controlled by replan_on.
-            reasons = sorted(self.event_reasons)
-            severe = bool(set(reasons) & {"idle", "blocked", "stall", "no_safe_candidate", "escape_margin"})
-            budget = 6 if severe else 4
-            if reasons and self.planner and not self.pending and self.replan_requests < budget and (severe or s.frame-self.last_replan >= 90):
-                self.last_replan = s.frame; self.event_reasons.clear()
-                self.replan_requests += 1
-                self.pending_started_frame, self.pending_reasons = s.frame, set(reasons)
-                feedback = {"reasons": reasons, "damage_half_hearts": self.judge.damage, "current_plan": self.plan.model_dump(),
-                            "progress": self.supervisor.feedback(), "failed_stances": list(self.solver.failed_goals),
-                            "last_action": self.previous_action.model_dump() if self.previous_action else None}
-                self.pending = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 20))
-                self.log("replan_started", frame=s.frame, reasons=reasons)
-            solve_started = time.perf_counter()
-            action = await asyncio.to_thread(self.solver.solve, s, self.plan, build.model_copy(deep=True))
-            decision_wall_ms = (time.perf_counter()-solve_started)*1000
-            action.diagnostics["decision_wall_ms"] = decision_wall_ms
-            if self.judge_result == "CLEARED":
-                if self.clear_started is None: self.clear_started = s.frame
-                if not action.diagnostics["no_safe_candidate"] and action.score["escape_slack"] >= 6:
-                    if self.clear_safe_since is None: self.clear_safe_since = s.frame
-                    if s.frame-self.clear_safe_since >= 15:
-                        self.log("safe_clear_confirmed", frame=s.frame, started=self.clear_started, safe_since=self.clear_safe_since)
-                        return "CLEARED"
-                else: self.clear_safe_since = None
-                if s.frame-self.clear_started >= 90: return "CLEAR_UNSAFE"
-            else:
-                self.clear_started = self.clear_safe_since = None
-            if action.diagnostics.get("component_failures"):
-                self.fallbacks += len(action.diagnostics["component_failures"])
-                self.event_reasons.add("invalid_profile")
-                self.log("component_fallback", frame=s.frame, failures=action.diagnostics["component_failures"])
-            self.timings.append(decision_wall_ms)
-            self.log.candidates(s.frame, self.solver.last_candidates)
+                    await self.pause.toggle()
+                    self.pause_owned = False
+                except Exception as exc: self.log("cleanup_error", error="resume: "+str(exc))
             try:
-                await self.send_action(s, action.move, action.shoot, action.model_dump())
-            except TimeoutError as exc:
-                if "STALE_ACTION" not in str(exc): raise
-                self.deadline_misses.append(s.frame)
-                self.log("stale_decision_discarded", frame=s.frame)
-                if sum(s.frame-f <= 30 for f in self.deadline_misses) >= 3:
-                    raise RuntimeError("CONTROL_DEADLINE_MISSES") from exc
-                s = await self.next_snapshot(after=s.snapshot_id)
-                continue
-            if action.profile == "contract_emergency" and (self.previous_action is None or self.previous_action.profile != action.profile):
-                self.contract_overrides += 1
-                self.log("contract_override", frame=s.frame, last_damage_frame=self.last_damage_frame,
-                         recovery_level=self.supervisor.recovery_level, until=self.solver.emergency_until,
-                         profile=self.solver.emergency_profile.model_dump())
-            self.previous_action = action
-            s = await self.next_snapshot(after=s.snapshot_id)
+                await self.release(); await self.set_mode("MANUAL")
+            except Exception as exc: self.log("cleanup_error", error=str(exc))
+        await self.bridge.stop()
+        self.opened = False
 
     async def run(self, bootstrap=None, startup_only=False, on_ready=None):
         result, error = "ABORTED", None
         try:
-            await self.bridge.start()
-            if bootstrap: await bootstrap(self)
-            deadline = time.monotonic()+self.ready_timeout
-            while not self.bridge.connected:
-                if time.monotonic() > deadline: raise TimeoutError("GAME_CONNECTION_TIMEOUT")
-                await asyncio.sleep(.05)
-            await self.bridge.subscribe(["COMBAT_FRAME"], {"COMBAT_FRAME": {"enabled": True}})
-            await self.rpc("GET_FULL_STATE", timeout=10)
-            initial = await self.next_snapshot()
-            if self.new_run or self.seed:
-                # Setup commands are deliberately restricted and run before the
-                # measured task. No console authority is exposed to the planner.
-                old_run = initial.run_id
-                self.log("initialization_command", command="PREPARE_RUN", seed=self.seed, character=0)
-                await self.rpc("PREPARE_RUN", {"seed": self.seed or ""})
-                deadline = time.monotonic()+10
-                while initial.run_id == old_run:
-                    if time.monotonic() > deadline: raise TimeoutError("NEW_RUN_NOT_CONFIRMED")
-                    initial = await self.next_snapshot(after=initial.snapshot_id)
-                for _ in range(3): initial = await self.next_snapshot(after=initial.snapshot_id)
-                if self.seed and initial.seed != self.seed: raise RuntimeError("SEED_NOT_CONFIRMED")
-            self.log("run_start", seed=initial.seed, snapshot_id=initial.snapshot_id)
-            self.task_started, self.task_start_frame = True, initial.frame
-            self.task_judge.observe(initial)
-            if on_ready: await on_ready(self)
+            initial = await self.open(bootstrap=bootstrap, on_ready=on_ready)
             if startup_only:
                 if not initial.room.get("is_starting_room") or initial.room["stage"] != 1 or initial.room["difficulty"] != 0:
                     raise RuntimeError("START_CONTRACT")
@@ -802,18 +734,7 @@ class CombatSession:
             error = type(exc).__name__+": "+str(exc)
             self.log("fault", error=error)
         finally:
-            if self.pending:
-                self.pending.cancel(); await asyncio.gather(self.pending, return_exceptions=True)
-            if self.bridge.connected:
-                if self.pause_owned and self.heartbeat and time.monotonic()-self.heartbeat_at < 1 and self.heartbeat.get("paused"):
-                    try:
-                        await self.pause.toggle()
-                        self.pause_owned = False
-                    except Exception as exc: self.log("cleanup_error", error="resume: "+str(exc))
-                try:
-                    await self.release(); await self.set_mode("MANUAL")
-                except Exception as exc: self.log("cleanup_error", error=str(exc))
-            await self.bridge.stop()
+            await self.close()
         s = self.observation.latest
         if self.death_observed: result = "DEAD"
         elif self.death_event_frame is not None:
@@ -823,7 +744,7 @@ class CombatSession:
             damage_half_hearts=self.task_judge.damage, lost_bone_hearts=self.task_judge.bones_lost,
             combat_damage_half_hearts=self.combat_damage_recorded, task_ticks=max(0, s.frame-self.task_start_frame) if s and self.task_start_frame is not None else 0,
             environment_ticks=self.environment_ticks,
-            navigation_replan_requests=self.navigation_replan_requests, navigation_metrics=self.navigation_metrics,
+            navigation_replan_requests=self.navigation_replan_requests, navigation_metrics=list(self.navigation_metrics),
             navigation_decision_p95_ms=sorted(self.navigation_timings)[min(len(self.navigation_timings)-1, int(.95*len(self.navigation_timings)))] if self.navigation_timings else None,
             navigation_decision_p99_ms=sorted(self.navigation_timings)[min(len(self.navigation_timings)-1, int(.99*len(self.navigation_timings)))] if self.navigation_timings else None,
             remaining_half_hearts=s.hp if s else None,
@@ -842,3 +763,13 @@ class CombatSession:
             discarded_decisions=len(self.deadline_misses), contract_override_count=self.contract_overrides)
         self.log.finish(report)
         return report
+
+
+# Compatibility properties keep the first-room API while RoomExecutor owns
+# per-room state. New campaign code uses execute_room/open/close explicitly.
+def _room_property(name):
+    return property(lambda self: getattr(self.room_executor.state, name),
+                    lambda self, value: setattr(self.room_executor.state, name, value))
+
+for _name in RoomState.__dataclass_fields__:
+    setattr(CombatSession, _name, _room_property(_name))
