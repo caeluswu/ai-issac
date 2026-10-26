@@ -6,11 +6,13 @@
 
 独立项目暂称 `isaac-knowledge`，负责来源接入、身份映射、机制整理、版本适用性、冲突与溯源、知识包发布和查询。爬虫是可替换的数据入口，也可以接入授权导出、资料仓库或人工整理。
 
+**当前启用档位为 `eid_local_learning`：外部道具说明只使用固定 EID 数据，运行时查本地包；机制缺口通过本地观测、受限测试与 LLM 假设处理。** 通用爬虫、远程服务和其他 Wiki 适配器为未启用扩展，不作为首版交付条件。学习过程见 [EID 与本地经验计划](eid-local-learning-plan.zh-CN.md)。独立项目首版只需 EID 导入器、说明包和查询 SDK。
+
 本项目简称 `isaac-agent`，负责实际遭遇、信息可见性、能力编译、组件开发、战斗与路线、实测经验和独立判定。知识服务不决定按键、不安装技能、不替代真实游戏观测。
 
 **首版选择：独立仓库＋不可变 SQLite 数据包＋本地 Python SDK。** HTTP 服务是后续可选传输层，复用同一套 DTO；首版游戏运行不依赖另一个常驻服务器。SQLite 的表布局属于知识库实现细节，消费者只调用 SDK，不自行拼 SQL。
 
-首版交付包括：JSON Schema 合同、Python DTO/客户端协议、查询 SDK、发布包格式、异步需求导入/结果导出、合同测试夹具及接入示例。覆盖道具、敌人、机制和已收录协同；全文检索、向量搜索、用户系统与大型网络服务不作为首版前置条件。
+首版交付包括：JSON Schema 合同、Python DTO/客户端协议、查询 SDK、发布包格式、合同测试夹具及接入示例。先覆盖 EID 道具说明、机制线索和已收录协同；敌人接口可返回明确未知。异步需求导入/结果导出仅服务 EID 导入缺口，学习任务由本项目执行；全文检索、向量搜索、用户系统与大型网络服务不作为首版前置条件。
 
 ## 2. 分层与依赖方向
 
@@ -311,13 +313,15 @@ HTTP 200 可承载 ok/partial/unknown；输入错误用 400、缺数据包 404�
   "facets": ["effects", "activation", "hazards"],
   "reason": "first_identified_encounter",
   "priority": "normal",
-  "allowed_provider_ids": ["configured-reference-source"],
-  "budget": {"max_fetch_attempts": 2, "max_wall_seconds": 30},
+  "allowed_provider_ids": ["eid_snapshot"],
+  "budget": {"max_fetch_attempts": 0, "max_wall_seconds": 30},
   "consumer_ref": "local-encounter-demo-001"
 }
 ```
 
 priority 是建议值 `normal/high`，不允许客户端覆盖站点限流或任务总预算。provider ID 必须已由知识库运营者配置；不接收任意 URL、爬虫脚本、密钥或付费 LLM 参数。max_fetch_attempts 包含重试，零表示只用已存来源；外部提取若要使用付费模型，需知识库自身明确配置预算，不能借用游戏项目凭据。
+
+当前档位只允许 eid_snapshot 和 max_fetch_attempts=0，任务用于重新解析已固定的 EID 数据。无法从 EID 回答的机制问题返回 unknown，由本项目建立 hypothesis/experiment；此接口没有执行游戏测试的权限。
 
 同一客户端作用域下，幂等键相同、规范化请求体相同返回原 job；相同键不同内容返回 `IDEMPOTENCY_CONFLICT`。任务可按 subject/build/facets 合并，但保留每个请求的关联，不丢需求。
 
@@ -395,10 +399,11 @@ class KnowledgeGateway(Protocol):
 
 ```json
 {
-  "bundle_schema_version": 1,
+  "bundle_schema_version": 2,
   "bundle_id": "bundle-demo-001",
   "dataset_id": "kb-demo-0001",
   "knowledge_revision": 1,
+  "experience_revision": 1,
   "context_ref": {
     "run_id": "run-demo",
     "floor_instance_id": "floor-demo-1",
@@ -411,6 +416,10 @@ class KnowledgeGateway(Protocol):
   "resolved_subjects": [{"kind": "collectible", "id": 481}],
   "records": [],
   "interactions": [],
+  "local_claims": [],
+  "hypotheses": [],
+  "counterexamples": [],
+  "support_limits": [],
   "unknowns": [
     {
       "subject": {"kind": "collectible", "id": 481},
@@ -430,6 +439,8 @@ context_ref 属于本项目，**不随普通查询传给独立知识服务**。�
 
 records/interactions 复用合同 DTO；不再把结构化结果扁平化为只有 `text` 的网页摘要。`usable_for_build_compilation` 由本地策略计算，要求相关声明版本匹配、已审核、条件可解释、无未解决冲突、数据完整且所需能力可实现；它不是知识服务的“保证可用”标志。
 
+Bundle v2 的经验字段属于本项目，不改变外部 API 1.0；外部 EID dataset 固定，本地经验独立增量发布。校准输入可采用当前构筑内通过检查的测量，不能当作普遍 EID 事实。局部经验、反例与模型假设的结构见 EID 学习计划；异步结果也必须核对 experience_revision。
+
 ### 8.3 消费者分流
 
 | 消费者 | 接收内容 | 决策限制 |
@@ -447,9 +458,9 @@ DeepSeek 工具名称可保留 `lookup_enemy_mechanics` 和 `lookup_player_mecha
 
 1. 观测得到拾取实体，生成 encounter_id；先核对可见性和静态身份，错误道具走局内实例分支。
 2. 以 target、dataset、subject、facets、purpose、语言和策略为键查本地缓存；同一请求去重。
-3. 命中适用知识则构建 Bundle；缺失则立即返回 unknown/partial，同时将需求写入 outbox。
+3. 命中适用知识则构建 Bundle，并结合本地经验；缺失则立即返回 unknown/partial。EID 解析缺口写入 outbox，机制未知建立本地学习任务。
 4. 当前房间使用已有组件与明确未知策略；可选道具可延后或拒绝，不能无限等采集器。
-5. 新包发布后默认下局使用；当前局显式边界切换才可消费，计划和技能开发上下文随之失效。
+5. 新 EID 包发布后默认下局使用；本局实验可产生新的 experience_revision，在安全边界检查后采用。相关计划和技能开发上下文随之失效。
 6. 遭遇、查询、资料缺口、技能开发需求和最终操作建立关联，保证能追查一次拾取用了哪版资料。
 
 只读 lookup 的未知缓存可保持到 dataset 改变；来源任务的 blocked/限流状态则按工作队列的退避规则恢复。两种缓存不能混为一谈。没有配置数据包时 Gateway 返回 `KNOWLEDGE_UNAVAILABLE`，首房普通泪弹可继续本地规则；需要新机制的动作不能假装已获得知识。

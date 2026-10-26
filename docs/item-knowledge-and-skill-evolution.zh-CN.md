@@ -4,32 +4,27 @@
 
 独立知识库的数据所有权、分层、查询 DTO、数据包与本项目 Gateway 接口见 [知识库项目接口计划](knowledge-project-interface-plan.zh-CN.md)。本文件负责道具决策与技能演进；跨项目数据交换采用该接口合同。
 
+当前外部道具来源为 EID，学习过程与安全节点测试采用 [EID 与本地经验学习计划](eid-local-learning-plan.zh-CN.md)。固定说明包与本地经验分开管理，LLM 自身知识作为有来源标记的推断；不默认启用 Wiki 抓取。
+
 ## 1. 决策摘要
 
-1. 第一次**可识别地遇见**物品时查询固定版本的本地知识包；缺少证据时异步向独立知识库提交补充请求，保存来源与结果。采集不进入游戏查询路径，网络不可用或资料被限制时记录未知，不能无限暂停。
+1. 第一次**可识别地遇见**物品时查询固定 EID 说明包及相关本地经验；缺少证据时记录 EID 导入缺口或本地学习任务。允许条件明确的安全节点测试，采集不进入游戏控制路径，未知效果不能靠无限等待解决。
 2. 将“道具事实”“当前构筑的有效能力”“控制算法实现”“实机经验”分开存储。拥有 Wiki 描述不代表拥有可执行策略。
 3. DeepSeek 分为战术规划与组件开发两个角色。开发 Agent 提供内核、协议、通用原语和独立验证；DeepSeek 应承担新增机制的候选程序与修复。
 4. 普通属性变化优先用数据映射和现有通用组件；确实缺算法时才生成代码。无需为每个道具编写一个独立状态机。
 5. 不承诺模型开发永不出错。目标是让错误可检测、可隔离、可撤回，并限制在未发布候选或有明确能力边界的模块中。
 
-## 2. 可用资料源与访问情况
+## 2. EID 数据来源与适用边界
 
-以下为 2026-10-26 的公开资料核查。搜索索引可读不代表运行时客户端能访问，网页可读也不代表提供稳定批量 API。
+外部道具说明固定使用 [External Item Descriptions](https://github.com/wofsauge/External-Item-Descriptions)。导入包记录 commit、文件哈希、语言、游戏构建与配置；不在运行时跟随 master 更新。官方发布页列有 Repentance 1.7.9b 支持，具体 J835 接入仍需本地验证。[发布记录](https://github.com/wofsauge/External-Item-Descriptions/releases)
 
-| 来源 | 价值 | 已确认的边界 | 推荐用途 |
-|---|---|---|---|
-| [Isaac Wiki（wiki.gg）](https://bindingofisaacrebirth.wiki.gg/) | 道具、协同、敌人和版本注记较详细 | 本次 TMTRAINER、Eden 正文直访得到 403；[robots.txt](https://bindingofisaacrebirth.wiki.gg/robots.txt) 对 API 等路径列有自动访问限制及 AI 使用信号 | 按站点规则使用的补充查询；不能把 MediaWiki API 当作已获准且可用的数据源 |
-| [灰机中文 Wiki](https://isaac.huijiwiki.com/) | 中文名称与别名、机制说明；检索可见 [Data:Item.tabx](https://isaac.huijiwiki.com/wiki/Data%3AItem.tabx) | 本次首页直访 403，robots 与稳定接口未核实；存在结构化页面不等于批量读取许可 | 中文别名和人工核对候选，不依赖其在线可用性 |
-| [External Item Descriptions（EID）](https://github.com/wofsauge/External-Item-Descriptions) | 道具 ID 对应说明，多语言；仓库可固定提交 | 本次默认分支为 master，查询到提交 `8b59d00c6828e333294639ad2b2b6875eae821cb`；目录分 `ab+`、`rep`、`rep+`、`rgon`；仓库 API 的 license 为 null，根目录未见 LICENSE | 很适合做候选离线说明源，但先明确内容复用条件；不能擅称 MIT 或直接整体打包分发 |
-| [IsaacGuru 原版入口](https://isaacguru.com/wiki/isaac_repentance/c481) | 提供原版与 Repentance+ 分开的物品说明 | 本次原版 Dataminer/TMTRAINER 页面可读；robots 读取未成功，未验证公开 API/导出许可 | 在线交叉核验候选；不能从页面能读推断允许全站抓取 |
-| [Platinum God](https://platinumgod.co.uk/repentance) | 道具速查候选 | 本次工具无法获取页面，未确认 API、授权或实时可用性 | 备用人工查询，不作为首版依赖 |
-| [原版 Lua API 文档](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html)与本地游戏配置 | 实际 ID、物品类型、充能与玩家属性，帮助建立版本映射 | 配置/短描述并不完整解释机制、协同和时序；原版 API 与扩展 API 必须区分 | 本地身份与观测能力的事实基础，游戏资源不提交仓库 |
+EID 的 `rep` 目录不能直接当作完整数据库：旧条目可能继承基础目录，版本覆盖与条件描述受加载逻辑影响。导入器还原适用的基础/覆盖关系，保留原始标记与说明；不混入 `rep+`/`rgon` 的专属效果，不在宿主执行外部 Lua。无法解析的条件明确标为未知。
 
-EID 的 `rep` 目录也不能直接等同于“精确匹配 J835 的完整数据库”：旧条目可能继承基础目录，版本覆盖由项目加载逻辑决定，后续修订也可能修正旧版说明。导入器必须固定提交、还原适用的基础与覆盖层、保留语言/版本证据，忽略 `rep+`/`rgon` 的专属效果，不能直接执行外部 Lua 文件。
+首版优先离线说明包；需要当前构筑条件描述时再评估游戏内 EID 导出，增加模组后核对输入、性能与信息可见性。EID 可提供道具说明，不等于完整的敌人模型或精确物理引擎；动态错误道具也不能仅靠静态条目确定。
 
-**确实涉及反爬与访问政策问题。** 对 403、验证码、禁止访问路径，适配器返回 `blocked` 并停止，不换代理、伪装浏览器或反复冲击。可采用站点提供的授权接口/导出、符合条件的离线资料，或人工导入允许保存的页面。来源授权与版本确认是接入条件，不应把绕过反爬当作项目模块。
+本地经验来自结构化观测、有限测试和实际战斗，LLM 自身知识只作为推断来源。原始 EID、局部观测和模型推断分开保留；冲突不得由最后一次写入覆盖。学习更新经验和技能库，不代表训练模型权重。
 
-本项目的经验与技能更新不是对 DeepSeek 权重训练；Wiki 缓存用于检索和程序开发上下文。仍应分别遵循来源对检索、AI 输入、训练和内容分发的要求，不能把这些用途混为一谈。正式数据导入前记录具体许可、署名方式和可保存范围；授权未明时只记录链接、查询状态和自己的观察事实。
+EID 内容的复用/分发条件需明确，原始说明不默认进入本项目 Git。当前档位不启用 Wiki 网页抓取或反爬处理，资料缺失进入 EID 导入检查或本地学习任务。具体流程见 [EID 与本地学习计划](eid-local-learning-plan.zh-CN.md)。
 
 ## 3. 首次遇见与本地数据库
 
@@ -48,11 +43,11 @@ encounter
   -> choose pickup / defer / skip / request new module
 
 missing facts
-  -> enqueue enrichment request asynchronously
-  -> independent knowledge project fetches permitted sources
-  -> versioned facts + evidence -> publish a new package
-  -> explicit package adoption at an allowed boundary
-  -> future queries use the adopted package
+  -> classify as EID import gap or local learning question
+  -> reprocess pinned EID data, or design a bounded experiment
+  -> preserve evidence, uncertainty and applicability
+  -> adopt a new EID package or local experience revision at an allowed boundary
+  -> future decisions retrieve both description and local evidence
 ```
 
 首版使用 Python 自带 SQLite，不需要额外数据库服务或向量数据库。独立知识库管理可写工作库，并发布不可变只读包；本项目另存遭遇、构筑、技能与经验库。工作库使用单写入队列、WAL、唯一键与事务；发布前完成 checkpoint。实时控制线程只读内存快照；联网、解析和数据库写入不进入逐帧路径。
@@ -74,7 +69,7 @@ missing facts
 
 允许保存的正文另存为按内容哈希寻址的本地文件，数据库保存指针；默认不入 Git。保留自己的结构化总结、来源指针与许可允许的必要摘录，不把缓存当可随意公开的内容集。
 
-初始网络策略：同源并发一；最多一次短重试，遵循 Retry-After，禁止对 403 重试；暂时失败设置负缓存，避免每次看到道具都触发请求。时间和次数均配置化；建议单次十秒内结束。源状态有 `verified`、`retrieved_unverified`、`version_ambiguous`、`conflicting`、`blocked`、`unavailable`、`unknown`，禁止把检索失败写成“无效果”。
+运行时仅查本地 EID 包与经验，不发起网页请求。资料包获取在独立导入流程完成；缺失、未解析、版本不明或冲突都有显式状态，禁止把检索失败写成“无效果”。高风险问题进入独立实验待办，不自动调用其他网站补齐。
 
 缓存键包含游戏构建、来源修订/内容哈希和解析器版本。新资料与旧资料冲突时保留双方，触发离线核查或实测；版本变更不覆盖已有运行引用的旧知识。
 

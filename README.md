@@ -4,6 +4,8 @@
 
 当前工程目标是：自动启动游戏，从初始房间正常出门，经 LLM 配置组件后清理一个实际战斗房，并保存调试信息。允许入房暂停；战斗中本地控制持续执行。整层和一至六层妈腿规划属于后续阶段。
 
+道具扩展采用固定版本 EID 说明与本地经验：结合当前构筑决定拾取，在符合条件的安全节点进行有界测试，再更新校准、策略或组件。LLM 自身知识作为待验证假设；默认不接入 Wiki 爬虫。该学习链路处于计划阶段，见下方文档。
+
 ## 验证与付费 API 原则
 
 **现阶段以证明目标的端到端可行性为验收目标，避免为过度严谨的实验消耗 DeepSeek 付费 API。**
@@ -50,6 +52,7 @@
 
 ## 文档
 
+- [EID 与本地经验学习计划](docs/eid-local-learning-plan.zh-CN.md)
 - [独立知识库分层与接口计划](docs/knowledge-project-interface-plan.zh-CN.md)
 - [第一阶段扩展性审查](docs/phase-1-extensibility-review.zh-CN.md)
 - [第二、三阶段实施计划](docs/phase-2-3-roadmap.zh-CN.md)
