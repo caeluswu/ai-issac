@@ -37,6 +37,7 @@ class ProposalContext:
     observed_frame: int
     valid_until_frame: int
     floor_instance_id: str | None = None
+    experience_revision: int = 0
 
 
 @dataclass(frozen=True)

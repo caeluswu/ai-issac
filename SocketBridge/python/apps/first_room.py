@@ -18,10 +18,16 @@ async def main(args):
     log = RunLog(ROOT/"artifacts/runs"/run_id)
     log.manifest(ROOT, client.model if client else None)
     planner = Planner(client, KnowledgeStore(ROOT/"configs/knowledge"), log) if client else None
+    learning = None
+    if getattr(args,"with_items",False):
+        from combat.item_knowledge import KnowledgeGateway
+        from combat.item_learning import ItemLearning
+        learning = ItemLearning(KnowledgeGateway.from_config(ROOT))
+        log("knowledge_pinned",dataset_id=learning.gateway.package.dataset_id,active_experiments=False)
     session = CombatSession(SocketBridge(port=args.port), planner,
                             NativePause(game_executable=ROOT/"The Binding of Isaac Rebirth Repentance"/"isaac-ng.exe"),
                             log, ready_timeout=args.ready_timeout,
-                            new_run=args.new_run, seed=args.seed)
+                            new_run=args.new_run, seed=args.seed,learning=learning)
     print(f"Waiting for a fresh Isaac Normal run; the game window may stay in the background. Trace: {log.directory}", flush=True)
     try: report = await session.run()
     finally:
@@ -33,6 +39,7 @@ async def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--local-only", action="store_true", help="diagnostic run without DeepSeek; not full phase acceptance")
+    parser.add_argument("--with-items",action="store_true",help="enable EID decisions and passive local experience")
     parser.add_argument("--port", type=int, default=9527)
     parser.add_argument("--ready-timeout", type=float, default=120)
     parser.add_argument("--new-run", action="store_true", help="before measurement, restart an existing run as Isaac")

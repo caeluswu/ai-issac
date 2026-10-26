@@ -141,8 +141,9 @@ class JointActionSolver:
         floor_id = s.floor.instance_id if s.floor else None
         if (ref.run_id, ref.room_visit_id, ref.build_revision, ref.floor_instance_id) != (s.run_id, s.room_visit_id, build.revision, floor_id):
             raise ValueError("STALE_PLAN_CONTEXT")
+        if ref.experience_revision != build.experience_revision: raise ValueError("STALE_EXPERIENCE_CONTEXT")
         name, profile = self.select_profile(s, plan, build)
-        key = (s.run_id, floor_id, s.room_visit_id, build.family, build.revision, ref.catalog_revision, profile.model_dump_json())
+        key = (s.run_id, floor_id, s.room_visit_id, build.family, build.revision, ref.catalog_revision, ref.experience_revision, profile.model_dump_json())
         if key != self.module_key:
             self.modules = {slot: resilient_component(getattr(profile, slot), slot, self.registry, build.family) for slot in type(profile).model_fields}
             self.module_key = key
@@ -156,7 +157,8 @@ class JointActionSolver:
                                   if h.get("type") == "FIREPLACE" and not h.get("is_extinguished", False)))
         portals = tuple(sorted((slot, d['x'], d['y']) for slot, d in (s.layout['doors'] or {}).items()
                                if d['is_open'] and not d['is_locked']))
-        geometry_key = (s.room_visit_id, s.stats["can_fly"], s.player.collision_radius, str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices), fire_cells, portals)
+        pickup_key = tuple((p["id"],p["x"],p["y"],p["radius"]) for p in getattr(s,"pickup_exclusions",[]))
+        geometry_key = (s.room_visit_id, s.stats["can_fly"], s.player.collision_radius, str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices), fire_cells, portals, pickup_key)
         if geometry_key != self.geometry_key:
             self.geometry, self.geometry_key = GeometryService(s, allowed_devices), geometry_key
         g = self.geometry

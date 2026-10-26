@@ -52,6 +52,17 @@ class NormalTearsBuild:
         self.previous = None
         self.run_id = None
         self.calibration_scope = None
+        self.experience_revision = 0
+        self.seed_speed = None
+
+    def restore_calibration(self, key, value, revision):
+        if key != self.profile.calibration_key or type(value) not in (float,int) or not math.isfinite(value) or not .1 <= value <= 1000:
+            raise ValueError("INVALID_SCOPED_CALIBRATION")
+        self.seed_speed = (key,float(value))
+        self.experience_revision = revision
+
+    def clear_restored_calibration(self):
+        self.seed_speed = None
 
     def update(self, s):
         if s.stats["weapon_type"] != 1 or s.stats["player_type"] != 0:
@@ -72,12 +83,16 @@ class NormalTearsBuild:
         changes = [k for k in state if self.previous is None or state[k] != self.previous[k]]
         if changes: self.revision += 1
         # Old in-flight tears must not calibrate a newly changed attack model.
-        calibration = digest({k: state[k] for k in ("attack", "inventory", "effects")})
+        attack_items = {k:v for k,v in collectibles(s).items() if ITEM_SUPPORT.get(int(k)) == "attributes"}
+        calibration = digest({"attack":state["attack"],"attack_items":attack_items,"effects":state["effects"],
+                              "family":"normal_tears","game_build":"1.7.9b.J835","model_version":"normal-tears-launch-1"})
         scope = (s.run_id, calibration)
         if self.calibration_scope != scope:
+            self.seed_speed = None
             self.speeds.clear(); self.seen.clear(); self.seen_order.clear()
-            for tear in s.projectiles["player_tears"] or []:
-                self.seen.add((s.room_visit_id, tear.get("instance_id", tear.get("id"))))
+            for tear in (s.projectiles["player_tears"] or [])[-2048:]:
+                key = (s.room_visit_id, tear.get("instance_id", tear.get("id")))
+                self.seen.add(key); self.seen_order.append(key)
             self.calibration_scope = scope
         p = self.profile.model_copy(deep=True)
         p.revision = self.revision
@@ -102,7 +117,11 @@ class NormalTearsBuild:
                 if math.isfinite(speed) and 0 < speed < 1000: self.speeds.append(speed)
         p.calibration_samples = len(self.speeds)
         p.calibrated = len(self.speeds) >= 3
+        p.calibration_source = "observed" if p.calibrated else "prior"
         p.tear_speed = statistics.median(self.speeds) if self.speeds else 10*float(s.stats["shot_speed"])
+        if not p.calibrated and self.seed_speed and self.seed_speed[0] == calibration:
+            p.tear_speed, p.calibrated, p.calibration_source = self.seed_speed[1], True, "experience"
+        p.experience_revision = self.experience_revision
         self.previous = state
         # Revalidate values read through flexible legacy dictionaries.
         self.profile = BuildProfile.model_validate(p.model_dump())

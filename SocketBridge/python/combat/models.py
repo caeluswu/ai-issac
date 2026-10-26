@@ -104,6 +104,7 @@ class PickupObservation(Observed):
     options_pickup_index: int | None = None
     identity_visibility: Literal["visible", "hidden", "unknown"]
     identity_reason: str
+    is_empty: bool | None = None
 
     @model_validator(mode="after")
     def no_hidden_collectible_identity(self):
@@ -218,6 +219,7 @@ class ContextRef(Strict):
     catalog_revision: int | str = 2
     plan_revision: int = 0
     floor_instance_id: str | None = None
+    experience_revision: int = Field(default=0, ge=0)
 
     @field_validator("catalog_revision", mode="before")
     @classmethod
@@ -321,6 +323,8 @@ class BuildProfile(Strict):
     changed_domains: list[str] = Field(default_factory=list)
     damage_per_hit: float = Field(default=3.5, ge=0, le=1000000)
     prediction_horizon_frames: int = Field(default=30, ge=1, le=120)
+    experience_revision: int = Field(default=0, ge=0)
+    calibration_source: Literal["prior", "observed", "experience"] = "prior"
 
 
 class ActionFrame(Strict):

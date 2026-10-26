@@ -90,6 +90,18 @@ class RoomExecutor:
             row = {"room_visit_id": s.room_visit_id, "result": result, "first_clear": first,
                    "ticks": max(0, current.frame-started), "damage": self.state.judge.damage,
                    "bones_lost": self.state.judge.bones_lost}
+            if self.session.learning:
+                try:
+                    build = self.session.build_resolver.update(current)
+                    if result == "CLEARED": await self.session.learning.collect(self.session,current)
+                    await self.session.learning.record_room(current,build,row)
+                except Exception as exc:
+                    result = row["result"] = "ITEM_BOUNDARY_FAILED"
+                    row["error"] = type(exc).__name__+": "+str(exc)
+                    try:
+                        await self.session.learning.record_room(current,build,row)
+                    except Exception as storage_error:
+                        self.session.log("experience_write_failed",error=type(storage_error).__name__+": "+str(storage_error))
             self.results.append(row)
             self.session.log("room_finished", **row)
         return result

@@ -18,6 +18,7 @@ class GeometryService:
         self.fly = snapshot.stats["can_fly"]
         self.radius = snapshot.player.collision_radius+2
         self.physical_radius = snapshot.player.collision_radius
+        self.pickup_obstacles = tuple((Vec(x=p["x"],y=p["y"]),p["radius"]) for p in getattr(snapshot,"pickup_exclusions",[]))
         self.origin = Vec(x=min(c["x"] for c in self.cells.values()), y=min(c["y"] for c in self.cells.values()))
         self.positions = {int(i): Vec(x=c["x"], y=c["y"]) for i, c in self.cells.items()}
         self.walkable, self.shootable = set(), set()
@@ -35,6 +36,8 @@ class GeometryService:
         self.dangerous.update(self.cell(Vec(**h["pos"])) for h in snapshot.hazards
                               if h.get("type") == "FIREPLACE" and not h.get("is_extinguished", False))
         self.walkable -= self.dangerous
+        self.motion_cells = set(self.walkable)
+        self.walkable = {i for i in self.walkable if all(self.positions[i].distance(p)>r+self.radius for p,r in self.pickup_obstacles)}
         self.neighbors = {i: [j for j in (i-1, i+1, i-self.width, i+self.width)
                               if j in self.walkable and self.positions[i].distance(self.positions[j]) <= 41]
                           for i in self.walkable}
@@ -53,8 +56,9 @@ class GeometryService:
         return round((y-self.origin.y)/40)*self.width + round((x-self.origin.x)/40)
 
     def clear(self, p: Vec, *, shot=False, radius=None):
-        allowed = self.shootable if shot else self.walkable
+        allowed = self.shootable if shot else self.motion_cells
         r = (0 if shot else self.radius) if radius is None else radius
+        if not shot and any(p.distance(center)<=r+size for center,size in self.pickup_obstacles): return False
         return all(self.cell_xy(p.x+dx, p.y+dy) in allowed
                    for dx, dy in ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
                                   (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707)))
@@ -64,8 +68,9 @@ class GeometryService:
         key = (a.x, a.y, b.x, b.y, shot, r)
         cached = self.line_cache.get(key)
         if cached is not None: return cached
+        if not shot and not self.pickup_path_clear(a,b,r): return False
         n = max(1, math.ceil(math.hypot(b.x-a.x, b.y-a.y)/8))
-        allowed = self.shootable if shot else self.walkable
+        allowed = self.shootable if shot else self.motion_cells
         offsets = ((0, 0),) if shot else ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
                                         (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707))
         dx, dy = b.x-a.x, b.y-a.y
@@ -74,6 +79,17 @@ class GeometryService:
         if len(self.line_cache) >= 4096: self.line_cache.clear()
         self.line_cache[key] = result
         return result
+
+    def pickup_path_clear(self, start, end, radius=None):
+        radius = self.physical_radius if radius is None else radius
+        for point, size in self.pickup_obstacles:
+            margin = radius+size+2
+            if segment_distance(point,start,end) > margin: continue
+            # A newly spawned item may already overlap the player. Only allow
+            # monotonic withdrawal, never use wall/portal repair to enter it.
+            if start.distance(point) < margin and (end-start).dot(start-point) >= 0 and end.distance(point)>start.distance(point): continue
+            return False
+        return True
 
     def touches_danger(self, point):
         if not self.dangerous: return False
@@ -98,6 +114,7 @@ class GeometryService:
         return y, adjusted, True, False
 
     def motion_clear(self, start, end):
+        if not self.pickup_path_clear(start,end): return False
         if self.line_clear(start, end, radius=self.physical_radius): return True
         if self.retreat_from_portal(start, end): return True
         # Entity.Size is the NPC contact radius, not an exact grid footprint.

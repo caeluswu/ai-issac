@@ -35,6 +35,9 @@ desktop.ini
 artifacts/runs/
 artifacts/save-baselines/
 configs/knowledge/cache/
+artifacts/sources/
+artifacts/knowledge/
+artifacts/agent-state/
 
 # agent
 .dsh/

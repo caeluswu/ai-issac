@@ -972,6 +972,7 @@ function Helpers.pickupObservation(entity, player)
     end
     return {id=entity.Index, instance_id=State.runId..":"..tostring(entity.InitSeed)..":"..entity.Index,
         variant=entity.Variant, sub_type=subtype, pos=Helpers.vectorToTable(entity.Position),
+        is_empty=entity.Variant == 100 and entity.SubType == 0,
         vel=Helpers.vectorToTable(entity.Velocity), collision_radius=entity.Size,
         price=pickup and pickup.Price, shop_item_id=pickup and pickup.ShopItemId,
         wait=pickup and pickup.Wait, options_pickup_index=pickup and pickup.OptionsPickupIndex,
@@ -1062,6 +1063,11 @@ function CustomCollectors.PLAYER_INVENTORY()
             end
         end
         playerData.collectibles = items
+        -- Ownership is granted after the pickup animation, not on contact.
+        playerData.queued_collectible_id = Helpers.optional(function()
+            local queued = player.QueuedItem.Item
+            return queued and queued.ID or 0
+        end)
         playerData.inventory_coverage = coverage
         -- Active items
         local activeSlots = {}

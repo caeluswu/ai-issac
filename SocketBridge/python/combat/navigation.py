@@ -1,7 +1,7 @@
 """Pure door navigation with the same local movement safety as combat."""
 import time
 from collections import deque
-from .geometry import door_route
+from .geometry import door_route, GeometryService
 from .models import Vec, ActionFrame
 from .controller import JointActionSolver
 from .motion import PlayerMotion
@@ -67,7 +67,7 @@ class DoorNavigator:
             end = s.player.pos+velocity*build.player_displacement_scale
             field = ThreatField(s, self.solver.enemy_adapters)
             gap = field.gap((s.player.pos.x, s.player.pos.y), (end.x, end.y), 1, s.player.collision_radius+8)
-            if gap > 0:
+            if gap > 0 and GeometryService(s).pickup_path_clear(s.player.pos,end):
                 return ActionFrame(frame=s.frame, room_visit_id=s.room_visit_id, move=move, shoot=(0, 0),
                     profile=plan.default_profile, target=None, state="NAVIGATE_PORTAL",
                     score={"clearance": gap, "risk": 0, "escape": 0, "escape_slack": 0, "hit": 0, "utility": 0},

@@ -259,8 +259,9 @@ class NativePause:
 
 
 class CombatSession:
-    def __init__(self, bridge, planner, pause, log, *, ready_timeout=120, new_run=False, seed=None):
+    def __init__(self, bridge, planner, pause, log, *, ready_timeout=120, new_run=False, seed=None, learning=None):
         self.bridge, self.planner, self.pause, self.log = bridge, planner, pause, log
+        self.learning = learning
         self.ready_timeout = ready_timeout
         self.new_run, self.seed = new_run, seed
         self.observation = SnapshotAssembler()
@@ -340,15 +341,17 @@ class CombatSession:
             self.heartbeat, self.heartbeat_at = raw, time.monotonic()
         s = self.observation.consume(raw)
         if s:
+            if self.learning: self.learning.mask(s)
             if self.task_started and not s.paused:
                 self.resources.observe(s)
                 if self.combat_room is None and s.blocking_combat:
                     self.combat_room, self.combat_start_frame = s.room_visit_id, s.frame
                     self.combat_previous_hp = self.task_judge.previous.hp if self.task_judge.previous else s.hp
-                if s.room_visit_id == self.combat_room:
-                    self.combat_damage_recorded += max(0, self.combat_previous_hp-s.hp)
-                    self.combat_previous_hp, self.combat_last_frame = s.hp, s.frame
+                previous_damage = self.task_judge.health.damage
                 self.task_judge.observe(s)
+                if s.room_visit_id == self.combat_room:
+                    self.combat_damage_recorded += self.task_judge.health.damage-previous_damage
+                    self.combat_last_frame = s.frame
                 if self.death_event_frame is not None and s.frame > self.death_event_frame and s.alive:
                     self.death_event_frame = None
                 if self.task_judge.health.state == "dead": self.death_observed = True
@@ -451,6 +454,7 @@ class CombatSession:
     def context_ref(self, s, build):
         return ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id,
                           build_revision=build.revision, plan_revision=self.revision,
+                          experience_revision=build.experience_revision,
                           floor_instance_id=s.floor.instance_id if s.floor else None)
 
     async def resume_owned_pause(self, frozen):
@@ -481,6 +485,9 @@ class CombatSession:
         try:
             frozen, began = await self.pause_for_plan(s)
             build = self.build_resolver.update(frozen)
+            if self.learning:
+                build = await self.learning.apply(frozen,self.build_resolver,build)
+                await self.learning.prepare_room(frozen,build)
             if self.planner is None: raise ValueError("Local-only run requested")
             self.plan = await asyncio.wait_for(self.planner.plan(frozen, build, self.revision), 180)
             self.llm_configured = True
@@ -694,7 +701,9 @@ class CombatSession:
         self.log("run_start", seed=initial.seed, snapshot_id=initial.snapshot_id)
         self.task_started, self.task_start_frame = True, initial.frame
         self.task_judge.observe(initial)
-        if on_ready: await on_ready(self)
+        if on_ready:
+            await on_ready(self)
+            initial = await self.next_snapshot(after=initial.snapshot_id)
         return initial
 
     async def close(self):

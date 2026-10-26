@@ -1,0 +1,15 @@
+{
+  "provider": "eid_snapshot",
+  "path": "artifacts/knowledge/eid-8b59d00-package-v1",
+  "dataset_id": "eid-16b584b65a6e506666e0cf71",
+  "commit": "8b59d00c6828e333294639ad2b2b6875eae821cb",
+  "build": "1.7.9b.J835",
+  "parser_version": "eid-literals-1",
+  "active_experiments": false,
+  "source_hashes": {
+    "descriptions/ab+/en_us.lua": "e3d1dc30ba86c25b27897fb3d5951502c6fa8c52baad140260b97e263b010210",
+    "descriptions/rep/en_us.lua": "df13f66960ae30004834e52efbf729d17a3cf2607c167e0170ea89dc3c114906",
+    "descriptions/ab+/zh_cn.lua": "80b492cd830d327fd857f1d8b907c885091f7f8b515c8f83151433775e3809ea",
+    "descriptions/rep/zh_cn.lua": "2350e36fba7eb856282438ee2bcbbf02ffb15adbfc6d82aead0b5bb7ad638551"
+  }
+}

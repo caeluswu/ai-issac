@@ -11,7 +11,7 @@ environment:
   build: "1.7.9b.J835"
   platform: windows
   executable_sha256: BB9FDA2535D94AE72E7FD4CD7D4A87DC9BFC27417E86F8F9190BFEEB8C9F10C2
-  mod_main_lua_sha256: 7B3311A44CC2A498E148191FA5555A9C4CB10EC023D8CB6C09A34C0C12818530
+  mod_main_lua_sha256: FA62F8CFBDCD5B8F6570CDC06448D01A87466013C5B8B4746379B5425D0E6D7B
   launch_args: ["--luadebug"]
   verify_hashes_before_evaluation: true
   # 初始化时备份并配置；正式动作开始前核对，计时期间保持不变。

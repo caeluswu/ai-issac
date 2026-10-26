@@ -33,7 +33,7 @@ M1 的建议门槛是封存随机样本中 100 次有效启动至少 90 次成�
 
 ## 3. 环境、存档和种子
 
-已核对的 isaac-ng.exe SHA256 为 BB9FDA2535D94AE72E7FD4CD7D4A87DC9BFC27417E86F8F9190BFEEB8C9F10C2；当前开发模组 main.lua SHA256 为 7B3311A44CC2A498E148191FA5555A9C4CB10EC023D8CB6C09A34C0C12818530。运行需 --luadebug。正式评测前重记游戏、模组与任务配置哈希，不假定这些值永久有效。
+已核对的 isaac-ng.exe SHA256 为 BB9FDA2535D94AE72E7FD4CD7D4A87DC9BFC27417E86F8F9190BFEEB8C9F10C2；当前开发模组 main.lua SHA256 为 FA62F8CFBDCD5B8F6570CDC06448D01A87466013C5B8B4746379B5425D0E6D7B。运行需 --luadebug。正式评测前重记游戏、模组与任务配置哈希，不假定这些值永久有效。
 
 全解锁基线为项目方确认的槽 1。持久存档 SHA-256 为 `0477CE1F84B1C127E440B2B1FFE2E23D580D7D30C4F208AED79966EEBFC8A3A1`；受保护副本与元数据由 configs/task/save-baseline.slot-1.json 定位。初始化前备份当前存档，再从受保护副本恢复并验证哈希，运行后记录变化。全解锁状态依据项目方声明，哈希只能验证副本一致性，不能证明成就内容。
 

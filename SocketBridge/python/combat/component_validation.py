@@ -52,7 +52,7 @@ def validate_result(method, value, context, snapshot, max_wait_frames):
                 finite(attack.footprint[4], 0, HOST_LIMITS.max_footprint_width)
             actual = attack.context or context
             if not isinstance(actual, ProposalContext): raise ValueError("invalid proposal context")
-            for field in ("run_id", "room_visit_id", "build_revision", "catalog_revision", "floor_instance_id"):
+            for field in ("run_id", "room_visit_id", "build_revision", "catalog_revision", "floor_instance_id", "experience_revision"):
                 if getattr(actual, field) != getattr(context, field): raise ValueError("stale proposal context")
             if (type(actual.observed_frame) is not int or type(actual.valid_until_frame) is not int or
                     actual.observed_frame != snapshot.frame or not snapshot.frame <= actual.valid_until_frame <= snapshot.frame+3):
