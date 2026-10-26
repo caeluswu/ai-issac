@@ -153,6 +153,16 @@ Ticking Spider 参数来自固定构建的已有轨迹：无遮挡、无近期�
 
 `ActionFrame.decision_ms` 是求解器内部耗时，`diagnostics.decision_wall_ms` 与房间报告延迟包含线程调度和等待，使用高分辨率 `perf_counter` 测量。正式回归、开发与留出链可执行 `.\.venv\Scripts\python.exe scripts/qualify_phase1.py`：先要求规则与 LLM 各十例通过，再执行三十例开发，最后冻结五十个新种子配对评测。任一前置门槛未通过时停止并写 `qualification.json`；不会消耗留出样本掩盖开发失败。`--through regression` 或 `--through development` 可限定一次验证的终点。
 
+## 导航与遮挡
+
+导航与遮挡处理使用同一组安全服务。`DoorNavigator` 通过原子观测跟随路径、避让火堆和敌方弹幕；预测包含后续转向及终点制动，同时奖励本帧真实进展。接近已确认开放、对齐的目标门时，检查下一次位移后穿门，并从新的实际房间快照重新分类。进入迟到生成敌人的房间后立即交接战斗。
+
+导航在房间已清空时仍需要进展：一秒触发本地恢复、两秒无进展请求异步诊断，八秒未恢复或二十五游戏秒导航总时限均失败。每个导航房间最多两次请求，同时最多一个在途。`navigation_metrics`、`navigation_replan_requests` 和导航决策 p95/p99 单列保存，并纳入延迟门槛。刚完成的已授权压力板在当前房间实例内保留离开所需的通行权限。
+
+观测中的零接触伤害用于区分身体阻挡和伤害威胁：Stoney 仍保留在实体观测中，其无伤接触不会生成伤害排斥场。接近自爆与已登记落地机制继续独立预测。没有有效射击站位时，先检查普通可破坏障碍，再由位置组件选择可达换位目标，引导会跟随的敌人离开遮挡；目标在到达或被拒绝前保持稳定，所有换位受相同进展时限约束。
+
+已暴露的失败集位于 `configs/task/phase1-adversarial-seeds.json`。完整验证可附加 `--adversarial-seeds configs/task/phase1-adversarial-seeds.json`，在新留出评测前分别检查规则与 LLM 两组的失败回归。开发批次也检查原始轨迹、实际战斗、手动控制恢复、版本和导航延迟。所有已用于诊断的种子归入开发数据；新代码的留出评测使用另行预提交的随机种子。
+
 ## 回归测试
 
 从 `SocketBridge/python` 执行：

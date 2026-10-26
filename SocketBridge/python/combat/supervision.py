@@ -44,7 +44,7 @@ class ProgressSupervisor:
         self.last_wait_frame = None
         self.recent_evidence = deque(maxlen=60)
 
-    def observe(self, s, action=None):
+    def observe(self, s, action=None, *, require_progress=False):
         self.events, self.evidence = [], []
         if s.paused or (self.previous and s.frame <= self.previous.frame): return None
         if self.last_progress is None: self.last_progress = self.last_damage = s.frame
@@ -142,7 +142,7 @@ class ProgressSupervisor:
         self.recovery_level = max(self.recovery_level, new_level)
         self.previous = s
         # Cleared rooms are handled by the independent clear-and-safety judge.
-        if not s.room["is_clear"] and age >= 240: return "STALL_UNRECOVERED"
+        if (require_progress or not s.room["is_clear"]) and age >= 240: return "STALL_UNRECOVERED"
         return None
 
     def metrics(self):

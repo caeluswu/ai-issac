@@ -52,3 +52,14 @@ class TestAudit(unittest.TestCase):
             report = json.loads((p/"report.json").read_text()); report["safe_clear_ticks"] = 15
             (p/"report.json").write_text(json.dumps(report))
             self.assertIn("MISSING_SAFE_CLEAR_SETTLING", audit.audit_run(p)["issues"])
+
+    def test_task_scope_retains_damage_in_environment_before_combat(self):
+        with tempfile.TemporaryDirectory() as name:
+            p = Path(name)
+            self.fixture(p, [("start", True, 6), ("puzzle", False, 5), ("fight", False, 5)]+[("fight", True, 5)]*3, damage=1)
+            report = json.loads((p/"report.json").read_text()); report["damage_scope"] = "task"
+            (p/"report.json").write_text(json.dumps(report))
+            self.assertEqual(audit.audit_run(p)["audited_damage_half_hearts"], 1)
+            report["damage_half_hearts"] = 0
+            (p/"report.json").write_text(json.dumps(report))
+            self.assertIn("DAMAGE_REPORT_MISMATCH", audit.audit_run(p)["issues"])

@@ -32,6 +32,8 @@ class GeometryService:
         for i, c in grid.items():
             if c["type"] in (8, 9, 17, 20, 23, 25) and not (c["type"] == 20 and int(i) in allowed_devices):
                 self.dangerous.add(int(i))
+        self.dangerous.update(self.cell(Vec(**h["pos"])) for h in snapshot.hazards
+                              if h.get("type") == "FIREPLACE" and not h.get("is_extinguished", False))
         self.walkable -= self.dangerous
         self.neighbors = {i: [j for j in (i-1, i+1, i-self.width, i+self.width)
                               if j in self.walkable and self.positions[i].distance(self.positions[j]) <= 41]
@@ -178,6 +180,22 @@ class GeometryService:
             if i not in parents: break
             i = parents[i]
         return list(reversed(path))
+
+    def reposition_route(self, start, target, excluded=()):
+        """Change lane when every current shot is occluded; never shoot rocks.
+
+        A following enemy can then leave its occluded band. The goal remains
+        fixed until reached/rejected, so motion earns normal bounded progress.
+        """
+        center_x = sum(self.positions[i].x for i in self.walkable)/len(self.walkable)
+        center_y = sum(self.positions[i].y for i in self.walkable)/len(self.walkable)
+        choices = sorted(self.walkable, key=lambda i: (self.positions[i].x-center_x)**2+(self.positions[i].y-center_y)**2)
+        for i in choices:
+            point = self.positions[i]
+            if point.distance(start) < 80 or point.distance(target) < 60 or (round(point.x), round(point.y)) in excluded: continue
+            route = self.path(start, point)
+            if route: return route
+        return []
 
     def reachable_fraction(self, position, safe, max_steps):
         origin = self.cell(position)

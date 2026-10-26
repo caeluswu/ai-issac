@@ -186,7 +186,9 @@ class JointActionSolver:
             begin = getattr(module, "begin_frame", None)
             if begin: begin(s, build)
         target = None if movement_only else self.target(s, profile, build)
-        geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices))
+        fire_cells = tuple(sorted((h["id"], h["pos"]["x"], h["pos"]["y"]) for h in s.hazards
+                                  if h.get("type") == "FIREPLACE" and not h.get("is_extinguished", False)))
+        geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices), fire_cells)
         if geometry_key != self.geometry_key:
             self.geometry, self.geometry_key = GeometryService(s, allowed_devices), geometry_key
         g = self.geometry
@@ -214,6 +216,12 @@ class JointActionSolver:
                 _, index, position, route = min(blockers, key=lambda x: (x[0], x[1]))
                 target = Enemy(instance_id="terrain:"+index, type=0, variant=0, pos=position, vel=ZERO,
                                hp=1, max_hp=1, collision_radius=18, vulnerable=True, friendly=False, dead=False, collision_class=0)
+        repositioning = False
+        if target and not route and not movement_only:
+            relocate = getattr(modules["position"], "reposition", None)
+            if relocate:
+                route = list(relocate(g, s, target.pos, build, self.failed_goals).waypoints)
+                repositioning = bool(route)
         # Route following supplies long-horizon progress to the short local
         # rollout. Without it a safe local optimum can strand the controller.
         route_goal = route[-1] if route else None
@@ -239,12 +247,24 @@ class JointActionSolver:
             desired = PlayerMotion.desired(move, build)
             position, velocity = s.player.pos, s.player.vel
             trajectory = [position]
+            future_route = list(route)
             firing_velocity = velocity
             closest_waypoint = s.player.pos.distance(waypoint) if waypoint else 0
             clearance, wall = 1000., False
             early_clearance, first_contact, blocked_steps = 1000., 13, 0
             for tick in range(1, 13):
-                new_position, velocity, blocked, unsafe = PlayerMotion.step(position, velocity, desired, g, build)
+                rollout_desired = desired
+                if movement_only and navigation_goal is not None and tick > 1:
+                    while future_route and position.distance(future_route[0]) < (18 if len(future_route) > 1 else 5): future_route.pop(0)
+                    if future_route:
+                        offset = future_route[0]-position
+                        direction = (0 if abs(offset.x) < 7 else (1 if offset.x > 0 else -1),
+                                     0 if abs(offset.y) < 7 else (1 if offset.y > 0 else -1))
+                        rollout_desired = PlayerMotion.desired(direction, build)
+                        if len(future_route) == 1:
+                            rollout_desired = rollout_desired*min(1., offset.length()/max(1., 3*build.move_speed))
+                    else: rollout_desired = ZERO
+                new_position, velocity, blocked, unsafe = PlayerMotion.step(position, velocity, rollout_desired, g, build)
                 blocked_steps += blocked
                 if unsafe: wall = True; break
                 if tick == 1: firing_velocity = velocity
@@ -281,6 +301,11 @@ class JointActionSolver:
                 if movement_only: utility = min(100, clearance)/20+escape+max(0, slack)/45-blocked_steps*.05
                 if movement_only and waypoint:
                     utility += (s.player.pos.distance(waypoint)-closest_waypoint)*.25
+                    if len(trajectory) > 1:
+                        # Future route following cannot earn today's progress
+                        # for free: otherwise "wait, move next update" wins at
+                        # every receding-horizon solve and the player never moves.
+                        utility += (s.player.pos.distance(waypoint)-trajectory[1].distance(waypoint))*.4
                 if not s.hostiles and move != (0, 0): utility -= .08
                 if wall: utility -= 100
                 candidates.append({"move": move, "shoot": shot, "safe": safety.safe,
@@ -313,5 +338,6 @@ class JointActionSolver:
                                "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),
                                "blocked_steps": best["blocked_steps"],
                                "near_risk_tolerance_px": 8,
+                               "occlusion_reposition": repositioning,
                                "component_failures": component_failures},
                            decision_ms=(time.perf_counter()-started)*1000)

@@ -120,13 +120,23 @@ class WeightedTarget(Target):
 
 
 class KeepRange:
-    def __init__(self, params): self.params = params
+    def __init__(self, params): self.params, self.relocation_goal = params, None
     def route(self, geometry, s, target, build, weapon, excluded=(), terrain=False):
         provider = getattr(weapon, "firing_route", None)
-        return MotionProposal(tuple(provider(geometry, s.player.pos, target, build, excluded, terrain))) if provider else MotionProposal((), "no_weapon_route_provider")
+        result = MotionProposal(tuple(provider(geometry, s.player.pos, target, build, excluded, terrain))) if provider else MotionProposal((), "no_weapon_route_provider")
+        if result.waypoints: self.relocation_goal = None
+        return result
     def score(self, delta, desired, s, build):
         low, high = (self.params[x]*build.effective_range for x in ("min_range_ratio", "max_range_ratio"))
         return -max(low-delta.length(), 0, delta.length()-high)/50-min(abs(delta.x), abs(delta.y))/90
+    def reposition(self, geometry, s, target, build, excluded=()):
+        goal = self.relocation_goal
+        if goal and s.player.pos.distance(goal) > 20 and (round(goal.x), round(goal.y)) not in excluded:
+            route = geometry.path(s.player.pos, goal)
+        else:
+            route = geometry.reposition_route(s.player.pos, target, excluded)
+            self.relocation_goal = route[-1] if route else None
+        return MotionProposal(tuple(route), "occlusion_reposition")
 
 
 class Kite(KeepRange):

@@ -1,0 +1,1527 @@
+{
+  "paused": false,
+  "applied_action_id": 360,
+  "bombs": [],
+  "enemies": [
+    {
+      "projectile_cooldown": 0,
+      "pos": {
+        "x": 65.0,
+        "y": 400.0
+      },
+      "vulnerable": true,
+      "subtype": 0,
+      "instance_id": "3949279151:2",
+      "dead": false,
+      "v2": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "is_boss": false,
+      "friendly": false,
+      "vel": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "variant": 0,
+      "distance": 148.80055236816,
+      "projectile_delay": -1,
+      "state_frame": 11,
+      "collision_radius": 13.0,
+      "is_champion": false,
+      "contact_damage": 1.0,
+      "champion_color": -1,
+      "max_hp": 10.0,
+      "state": 4,
+      "hp": 6.5,
+      "v1": {
+        "x": 0.0,
+        "y": -5.0
+      },
+      "target_pos": {
+        "x": 213.35224914551,
+        "y": 388.45816040039
+      },
+      "type": 240,
+      "can_shut_doors": true,
+      "collision_class": 4,
+      "id": 2
+    }
+  ],
+  "health": {
+    "eternal_hearts": 0,
+    "black_hearts": 0,
+    "rotten_hearts": 0,
+    "max_hearts": 6,
+    "red_hearts": 6,
+    "golden_hearts": 0,
+    "soul_hearts": 0,
+    "bone_hearts": 0,
+    "broken_hearts": 0,
+    "extra_lives": 0
+  },
+  "movement_inheritance": {
+    "0.0,-1.0": {
+      "x": -3.9846487660642e-23,
+      "y": 0.0
+    },
+    "1.0,0.0": {
+      "x": 0.0,
+      "y": 8.0293812807468e-25
+    },
+    "0.0,1.0": {
+      "x": -3.9846487660642e-23,
+      "y": 8.0293812807468e-25
+    },
+    "-1.0,0.0": {
+      "x": -3.9846487660642e-23,
+      "y": 8.0293812807468e-25
+    }
+  },
+  "seed": "JG7S V7DN",
+  "room_visit_id": "1314157065:46026492:2",
+  "schema_version": 1,
+  "inventory": {
+    "trinket_0": 0,
+    "pill_0": 0,
+    "card_0": 0,
+    "trinket_1": 0,
+    "keys": 0,
+    "active_items": {
+      "0": {
+        "battery_charge": 0,
+        "max_charge": 6,
+        "charge": 6,
+        "item": 105
+      }
+    },
+    "coins": 0,
+    "collectibles": {
+      "105": 1
+    },
+    "bombs": 1,
+    "collectible_count": 1
+  },
+  "applied_frame": 374,
+  "hazards": [],
+  "recent_deaths": [],
+  "frame": 375,
+  "layout": {
+    "grid_size": 135,
+    "height": 9,
+    "doors": {
+      "3": {
+        "x": 320.0,
+        "is_open": false,
+        "target_room_type": 1,
+        "is_locked": false,
+        "y": 440.0,
+        "target_room": 84
+      },
+      "1": {
+        "x": 320.0,
+        "is_open": false,
+        "target_room_type": 1,
+        "is_locked": false,
+        "y": 120.0,
+        "target_room": 58
+      }
+    },
+    "grid": {
+      "44": {
+        "grid_index": 44,
+        "y": 200.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "16": {
+        "grid_index": 16,
+        "y": 160.0,
+        "x": 80.0,
+        "collision": 3,
+        "type": 6,
+        "state": 1,
+        "variant": 2
+      },
+      "12": {
+        "grid_index": 12,
+        "y": 120.0,
+        "x": 520.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "48": {
+        "grid_index": 48,
+        "y": 240.0,
+        "x": 160.0,
+        "collision": 0,
+        "type": 10,
+        "state": 0,
+        "variant": 0
+      },
+      "32": {
+        "grid_index": 32,
+        "y": 200.0,
+        "x": 120.0,
+        "collision": 0,
+        "type": 10,
+        "state": 0,
+        "variant": 0
+      },
+      "104": {
+        "grid_index": 104,
+        "y": 360.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "30": {
+        "grid_index": 30,
+        "y": 200.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "0": {
+        "grid_index": 0,
+        "y": 120.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "1": {
+        "grid_index": 1,
+        "y": 120.0,
+        "x": 80.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "2": {
+        "grid_index": 2,
+        "y": 120.0,
+        "x": 120.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "3": {
+        "grid_index": 3,
+        "y": 120.0,
+        "x": 160.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "4": {
+        "grid_index": 4,
+        "y": 120.0,
+        "x": 200.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "5": {
+        "grid_index": 5,
+        "y": 120.0,
+        "x": 240.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "6": {
+        "grid_index": 6,
+        "y": 120.0,
+        "x": 280.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "7": {
+        "grid_index": 7,
+        "y": 120.0,
+        "x": 320.0,
+        "collision": 4,
+        "type": 16,
+        "state": 1,
+        "variant": 8
+      },
+      "8": {
+        "grid_index": 8,
+        "y": 120.0,
+        "x": 360.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "9": {
+        "grid_index": 9,
+        "y": 120.0,
+        "x": 400.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "122": {
+        "grid_index": 122,
+        "y": 440.0,
+        "x": 120.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "128": {
+        "grid_index": 128,
+        "y": 440.0,
+        "x": 360.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "106": {
+        "grid_index": 106,
+        "y": 400.0,
+        "x": 80.0,
+        "collision": 3,
+        "type": 6,
+        "state": 1,
+        "variant": 1
+      },
+      "90": {
+        "grid_index": 90,
+        "y": 360.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "92": {
+        "grid_index": 92,
+        "y": 360.0,
+        "x": 120.0,
+        "collision": 0,
+        "type": 10,
+        "state": 0,
+        "variant": 0
+      },
+      "60": {
+        "grid_index": 60,
+        "y": 280.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "74": {
+        "grid_index": 74,
+        "y": 280.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "64": {
+        "grid_index": 64,
+        "y": 280.0,
+        "x": 200.0,
+        "collision": 0,
+        "type": 10,
+        "state": 0,
+        "variant": 0
+      },
+      "54": {
+        "grid_index": 54,
+        "y": 240.0,
+        "x": 400.0,
+        "collision": 0,
+        "type": 1,
+        "state": 0,
+        "variant": 0
+      },
+      "45": {
+        "grid_index": 45,
+        "y": 240.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "37": {
+        "grid_index": 37,
+        "y": 200.0,
+        "x": 320.0,
+        "collision": 0,
+        "type": 1,
+        "state": 0,
+        "variant": 0
+      },
+      "13": {
+        "grid_index": 13,
+        "y": 120.0,
+        "x": 560.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "123": {
+        "grid_index": 123,
+        "y": 440.0,
+        "x": 160.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "126": {
+        "grid_index": 126,
+        "y": 440.0,
+        "x": 280.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "89": {
+        "grid_index": 89,
+        "y": 320.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "130": {
+        "grid_index": 130,
+        "y": 440.0,
+        "x": 440.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "87": {
+        "grid_index": 87,
+        "y": 320.0,
+        "x": 520.0,
+        "collision": 0,
+        "type": 1,
+        "state": 0,
+        "variant": 0
+      },
+      "131": {
+        "grid_index": 131,
+        "y": 440.0,
+        "x": 480.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "129": {
+        "grid_index": 129,
+        "y": 440.0,
+        "x": 400.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "127": {
+        "grid_index": 127,
+        "y": 440.0,
+        "x": 320.0,
+        "collision": 4,
+        "type": 16,
+        "state": 1,
+        "variant": 8
+      },
+      "133": {
+        "grid_index": 133,
+        "y": 440.0,
+        "x": 560.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "125": {
+        "grid_index": 125,
+        "y": 440.0,
+        "x": 240.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "124": {
+        "grid_index": 124,
+        "y": 440.0,
+        "x": 200.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "134": {
+        "grid_index": 134,
+        "y": 440.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "121": {
+        "grid_index": 121,
+        "y": 440.0,
+        "x": 80.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "120": {
+        "grid_index": 120,
+        "y": 440.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "119": {
+        "grid_index": 119,
+        "y": 400.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "105": {
+        "grid_index": 105,
+        "y": 400.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "94": {
+        "grid_index": 94,
+        "y": 360.0,
+        "x": 200.0,
+        "collision": 0,
+        "type": 1,
+        "state": 0,
+        "variant": 0
+      },
+      "132": {
+        "grid_index": 132,
+        "y": 440.0,
+        "x": 520.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "78": {
+        "grid_index": 78,
+        "y": 320.0,
+        "x": 160.0,
+        "collision": 0,
+        "type": 10,
+        "state": 0,
+        "variant": 0
+      },
+      "10": {
+        "grid_index": 10,
+        "y": 120.0,
+        "x": 440.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "11": {
+        "grid_index": 11,
+        "y": 120.0,
+        "x": 480.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "15": {
+        "grid_index": 15,
+        "y": 160.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "14": {
+        "grid_index": 14,
+        "y": 120.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "75": {
+        "grid_index": 75,
+        "y": 320.0,
+        "x": 40.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "29": {
+        "grid_index": 29,
+        "y": 160.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "59": {
+        "grid_index": 59,
+        "y": 240.0,
+        "x": 600.0,
+        "collision": 4,
+        "type": 15,
+        "state": 0,
+        "variant": 0
+      },
+      "25": {
+        "grid_index": 25,
+        "y": 160.0,
+        "x": 440.0,
+        "collision": 0,
+        "type": 1,
+        "state": 0,
+        "variant": 0
+      },
+      "65": {
+        "grid_index": 65,
+        "y": 280.0,
+        "x": 240.0,
+        "collision": 0,
+        "type": 1,
+        "state": 0,
+        "variant": 0
+      }
+    },
+    "cells": {
+      "26": {
+        "x": 480.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "16": {
+        "x": 80.0,
+        "y": 160.0,
+        "collision": 3,
+        "inside": true
+      },
+      "46": {
+        "x": 80.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "36": {
+        "x": 280.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "120": {
+        "x": 40.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "124": {
+        "x": 200.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "128": {
+        "x": 360.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "106": {
+        "x": 80.0,
+        "y": 400.0,
+        "collision": 3,
+        "inside": true
+      },
+      "96": {
+        "x": 280.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "66": {
+        "x": 280.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "56": {
+        "x": 480.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "86": {
+        "x": 480.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "76": {
+        "x": 80.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "17": {
+        "x": 120.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "27": {
+        "x": 520.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "37": {
+        "x": 320.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "47": {
+        "x": 120.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "115": {
+        "x": 440.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "130": {
+        "x": 440.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "97": {
+        "x": 320.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "57": {
+        "x": 520.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "67": {
+        "x": 320.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "77": {
+        "x": 120.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "87": {
+        "x": 520.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "78": {
+        "x": 160.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "68": {
+        "x": 360.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "58": {
+        "x": 560.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "48": {
+        "x": 160.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "50": {
+        "x": 240.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "40": {
+        "x": 440.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "30": {
+        "x": 40.0,
+        "y": 200.0,
+        "collision": 4,
+        "inside": false
+      },
+      "88": {
+        "x": 560.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "123": {
+        "x": 160.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "107": {
+        "x": 120.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "100": {
+        "x": 440.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "108": {
+        "x": 160.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "90": {
+        "x": 40.0,
+        "y": 360.0,
+        "collision": 4,
+        "inside": false
+      },
+      "80": {
+        "x": 240.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "70": {
+        "x": 440.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "60": {
+        "x": 40.0,
+        "y": 280.0,
+        "collision": 4,
+        "inside": false
+      },
+      "38": {
+        "x": 360.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "28": {
+        "x": 560.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "18": {
+        "x": 160.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "69": {
+        "x": 400.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "79": {
+        "x": 200.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "49": {
+        "x": 200.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "59": {
+        "x": 600.0,
+        "y": 240.0,
+        "collision": 4,
+        "inside": false
+      },
+      "41": {
+        "x": 480.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "51": {
+        "x": 280.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "21": {
+        "x": 280.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "31": {
+        "x": 80.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "133": {
+        "x": 560.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "110": {
+        "x": 240.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "118": {
+        "x": 560.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "81": {
+        "x": 280.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "91": {
+        "x": 80.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "61": {
+        "x": 80.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "71": {
+        "x": 480.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "29": {
+        "x": 600.0,
+        "y": 160.0,
+        "collision": 4,
+        "inside": false
+      },
+      "39": {
+        "x": 400.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "19": {
+        "x": 200.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "12": {
+        "x": 520.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "32": {
+        "x": 120.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "22": {
+        "x": 320.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "52": {
+        "x": 320.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "42": {
+        "x": 520.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "103": {
+        "x": 560.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "72": {
+        "x": 520.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "62": {
+        "x": 120.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "92": {
+        "x": 120.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "82": {
+        "x": 320.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "102": {
+        "x": 520.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "13": {
+        "x": 560.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "23": {
+        "x": 360.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "33": {
+        "x": 160.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "43": {
+        "x": 560.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "53": {
+        "x": 360.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "134": {
+        "x": 600.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "113": {
+        "x": 360.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "63": {
+        "x": 160.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "73": {
+        "x": 560.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "83": {
+        "x": 360.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "93": {
+        "x": 160.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "112": {
+        "x": 320.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "44": {
+        "x": 600.0,
+        "y": 200.0,
+        "collision": 4,
+        "inside": false
+      },
+      "34": {
+        "x": 200.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "24": {
+        "x": 400.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "14": {
+        "x": 600.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "125": {
+        "x": 240.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "0": {
+        "x": 40.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "1": {
+        "x": 80.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "2": {
+        "x": 120.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "3": {
+        "x": 160.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "4": {
+        "x": 200.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "5": {
+        "x": 240.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "6": {
+        "x": 280.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "7": {
+        "x": 320.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "8": {
+        "x": 360.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "9": {
+        "x": 400.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "94": {
+        "x": 200.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "84": {
+        "x": 400.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "74": {
+        "x": 600.0,
+        "y": 280.0,
+        "collision": 4,
+        "inside": false
+      },
+      "64": {
+        "x": 200.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      },
+      "54": {
+        "x": 400.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "35": {
+        "x": 240.0,
+        "y": 200.0,
+        "collision": 0,
+        "inside": true
+      },
+      "45": {
+        "x": 40.0,
+        "y": 240.0,
+        "collision": 4,
+        "inside": false
+      },
+      "15": {
+        "x": 40.0,
+        "y": 160.0,
+        "collision": 4,
+        "inside": false
+      },
+      "25": {
+        "x": 440.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "132": {
+        "x": 520.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "131": {
+        "x": 480.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "129": {
+        "x": 400.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "127": {
+        "x": 320.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "126": {
+        "x": 280.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "122": {
+        "x": 120.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "121": {
+        "x": 80.0,
+        "y": 440.0,
+        "collision": 4,
+        "inside": false
+      },
+      "119": {
+        "x": 600.0,
+        "y": 400.0,
+        "collision": 4,
+        "inside": false
+      },
+      "114": {
+        "x": 400.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "10": {
+        "x": 440.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "116": {
+        "x": 480.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "98": {
+        "x": 360.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "111": {
+        "x": 280.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "109": {
+        "x": 200.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "105": {
+        "x": 40.0,
+        "y": 400.0,
+        "collision": 4,
+        "inside": false
+      },
+      "104": {
+        "x": 600.0,
+        "y": 360.0,
+        "collision": 4,
+        "inside": false
+      },
+      "101": {
+        "x": 480.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "117": {
+        "x": 520.0,
+        "y": 400.0,
+        "collision": 0,
+        "inside": true
+      },
+      "99": {
+        "x": 400.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "20": {
+        "x": 240.0,
+        "y": 160.0,
+        "collision": 0,
+        "inside": true
+      },
+      "11": {
+        "x": 480.0,
+        "y": 120.0,
+        "collision": 4,
+        "inside": false
+      },
+      "95": {
+        "x": 240.0,
+        "y": 360.0,
+        "collision": 0,
+        "inside": true
+      },
+      "89": {
+        "x": 600.0,
+        "y": 320.0,
+        "collision": 4,
+        "inside": false
+      },
+      "75": {
+        "x": 40.0,
+        "y": 320.0,
+        "collision": 4,
+        "inside": false
+      },
+      "85": {
+        "x": 440.0,
+        "y": 320.0,
+        "collision": 0,
+        "inside": true
+      },
+      "55": {
+        "x": 440.0,
+        "y": 240.0,
+        "collision": 0,
+        "inside": true
+      },
+      "65": {
+        "x": 240.0,
+        "y": 280.0,
+        "collision": 0,
+        "inside": true
+      }
+    },
+    "width": 15
+  },
+  "stats": {
+    "can_fly": false,
+    "sprite_scale": 1.0,
+    "tear_falling_speed": -0.18337345123291,
+    "speed": 1.0,
+    "luck": 0.0,
+    "size": 10.0,
+    "weapon_type": 1,
+    "tears": 10.0,
+    "range": 260.0,
+    "damage": 3.5,
+    "max_fire_delay": 10.0,
+    "tear_range": 260.0,
+    "player_type": 0,
+    "shot_speed": 1.0,
+    "tear_height": -23.75
+  },
+  "mode": "FORCE_AI",
+  "player": {
+    "collision_radius": 10.0,
+    "dead": false,
+    "pos": {
+      "x": 213.35224914551,
+      "y": 388.45816040039
+    },
+    "move_dir": -1,
+    "head_dir": 3,
+    "aim_dir": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "fire_dir": -1,
+    "vel": {
+      "x": -2.9232073880081e-23,
+      "y": 5.8904929115764e-25
+    }
+  },
+  "room": {
+    "is_first_visit": true,
+    "bottom_right": {
+      "x": 580.0,
+      "y": 420.0
+    },
+    "has_boss": false,
+    "room_shape": 1,
+    "grid_width": 15,
+    "stage_type": 1,
+    "top_left": {
+      "x": 60.0,
+      "y": 140.0
+    },
+    "is_starting_room": false,
+    "is_clear": false,
+    "grid_height": 9,
+    "room_variant": 234,
+    "room_idx": 71,
+    "room_type": 1,
+    "enemy_count": 1,
+    "difficulty": 0,
+    "stage": 1
+  },
+  "projectiles": {
+    "friendly_tears": [],
+    "player_tears": [],
+    "lasers": [],
+    "enemy_projectiles": []
+  },
+  "run_id": "1314157065:46026492"
+}

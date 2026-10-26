@@ -71,7 +71,7 @@ class GenericEnemy:
     death_effect_radius = 0
     def attack_allowed(self, enemy, snapshot): return True
     def forecast(self, enemy, snapshot):
-        if enemy.collision_class == 0: return []
+        if enemy.collision_class == 0 or getattr(enemy, "contact_damage", 1) == 0: return []
         return [ThreatForecast(enemy.instance_id, enemy.pos.x, enemy.pos.y, enemy.vel.x, enemy.vel.y,
                                enemy.collision_radius, uncertainty=4+min(8, enemy.vel.length()*2),
                                source="observed_motion_approximation")]
@@ -86,7 +86,7 @@ class ExplosiveDeath(GenericEnemy):
 class Pursuer(GenericEnemy):
     def forecast(self, enemy, snapshot):
         predictions = super().forecast(enemy, snapshot)
-        if enemy.collision_class == 0: return predictions
+        if not predictions: return predictions
         direction = (snapshot.player.pos-enemy.pos).unit()
         speed = max(1.5, enemy.vel.length())
         predictions.append(ThreatForecast(enemy.instance_id+":turn", enemy.pos.x, enemy.pos.y,
@@ -99,7 +99,7 @@ class ContactExplosive(ExplosiveDeath):
     def forecast(self, enemy, snapshot):
         # Captured full-health Mullibooms self-destructed without our firing.
         # Post-kill checks alone cannot protect a route from proximity blasts.
-        motion = Pursuer().forecast(enemy, snapshot)
+        motion = Pursuer().forecast(enemy.model_copy(update={"contact_damage": 1}), snapshot)
         return motion+[ThreatForecast(t.identity+":contact_blast", t.x, t.y, t.vx, t.vy, 100,
             uncertainty=max(8, t.uncertainty), source="possible_contact_triggered_explosion") for t in motion]
 

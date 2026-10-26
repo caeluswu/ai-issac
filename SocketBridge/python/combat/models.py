@@ -248,3 +248,7 @@ class RoomReport(Strict):
     combat_damage_half_hearts: int = 0
     task_ticks: int = 0
     environment_ticks: int = 0
+    navigation_replan_requests: int = 0
+    navigation_decision_p95_ms: float | None = None
+    navigation_decision_p99_ms: float | None = None
+    navigation_metrics: list[dict[str, Any]] = Field(default_factory=list)

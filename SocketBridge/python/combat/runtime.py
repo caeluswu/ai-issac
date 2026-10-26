@@ -20,6 +20,7 @@ from .geometry import door_route, GeometryService
 from .observation import SnapshotAssembler, CombatJudge
 from .supervision import ProgressSupervisor
 from .environment import EnvironmentController
+from .navigation import DoorNavigator
 
 
 class RunLog:
@@ -302,6 +303,10 @@ class CombatSession:
         self.task_started = False
         self.task_start_frame = None
         self.environment_ticks = 0
+        self.navigation_timings = []
+        self.navigation_metrics = []
+        self.navigation_replan_requests = 0
+        self.navigation_devices = {}
         bridge.on_message(self.on_message)
 
     def on_message(self, raw):
@@ -483,26 +488,9 @@ class CombatSession:
             _, slot, door, path = route
             self.log("door_selected", slot=slot, target_room=door["target_room"], path=[p.model_dump() for p in path])
             await self.set_mode("FORCE_AI")
-            room, deadline = s.room_visit_id, time.monotonic()+25
-            goal = Vec(x=door["x"], y=door["y"])
-            while s.room_visit_id == room:
-                if time.monotonic() > deadline: raise TimeoutError("DOOR_NAVIGATION_TIMEOUT")
-                if s.run_id != initial_run: raise RuntimeError("RUN_CHANGED")
-                while path and s.player.pos.distance(path[0]) < 22: path.pop(0)
-                point = path[0] if path else goal
-                delta = point-s.player.pos
-                # Continue beyond the door center so that game collision triggers
-                # the transition, including when a frame lands exactly at center.
-                if not path and delta.length() < 20:
-                    direction = slot % 4
-                    move = ((-1, 0), (0, -1), (1, 0), (0, 1))[direction]
-                else:
-                    move = (0 if abs(delta.x) < 7 else (1 if delta.x > 0 else -1),
-                            0 if abs(delta.y) < 7 else (1 if delta.y > 0 else -1))
-                await self.send_action(s, move, (0, 0), {"state": "EXIT_START"})
-                prior = s
-                s = await self.next_snapshot(after=s.snapshot_id)
-                if s.player.dead: raise RuntimeError("DEAD_DURING_NAVIGATION")
+            room = s.room_visit_id
+            s, prior = await self.navigate_door(s, slot, door, initial_run)
+            if s.room_visit_id == room: return s  # Delayed hostile spawn in this room.
             await self.release()
             self.transitions += 1
             # Account for damage on entry and during the enemy-spawn grace
@@ -520,12 +508,63 @@ class CombatSession:
                 if s.blocking_combat: return s
         raise RuntimeError("NO_COMBAT_ROOM_FOUND")
 
+    async def navigate_door(self, s, slot, door, initial_run):
+        navigator = DoorNavigator(slot, door, self.navigation_devices.get(s.room_visit_id, ()))
+        watcher = ProgressSupervisor()
+        began, room, previous = s.frame, s.room_visit_id, None
+        request, requests, plan = None, 0, None
+        prior = s
+        try:
+            while s.room_visit_id == room:
+                if s.player.dead or s.hp <= 0: raise RuntimeError("DEAD_DURING_NAVIGATION")
+                if s.run_id != initial_run: raise RuntimeError("RUN_CHANGED")
+                if s.blocking_combat and not s.room.get("is_starting_room"): return s, prior
+                if s.frame-began >= 750: raise TimeoutError("DOOR_NAVIGATION_TIMEOUT")
+                failure = watcher.observe(s, previous, require_progress=True)
+                if failure: raise TimeoutError("NAVIGATION_"+failure)
+                build = self.build_resolver.update(s)
+                if plan is None: plan = default_plan(self.context_ref(s, build))
+                navigator.solver.recovery_level = watcher.recovery_level
+                for event in watcher.events:
+                    self.log("navigation_boundary", boundary=event.__dict__, progress=watcher.feedback())
+                if request and request.done():
+                    try:
+                        plan = compile_plan(request.result(), self.context_ref(s, build))
+                        self.log("navigation_plan_installed", frame=s.frame, plan=plan.model_dump())
+                    except Exception as exc: self.log("navigation_replan_rejected", error=type(exc).__name__+": "+str(exc))
+                    request = None
+                reasons = [e.kind for e in watcher.events if e.age_ticks >= 60 or e.kind in ("no_safe_candidate", "escape_margin")]
+                if reasons and self.planner and request is None and requests < 2:
+                    requests += 1; self.navigation_replan_requests += 1
+                    feedback = {"reasons": reasons, "scope": "navigation", "objective": "exit_selected_open_ordinary_door",
+                                "progress": watcher.feedback(), "last_action": previous.model_dump() if previous else None}
+                    request = asyncio.create_task(asyncio.wait_for(self.planner.plan(s, build.model_copy(deep=True), self.revision, feedback), 20))
+                    self.log("navigation_replan_started", frame=s.frame, feedback=feedback)
+                started = time.perf_counter()
+                action = await asyncio.to_thread(navigator.step, s, plan, build.model_copy(deep=True))
+                elapsed = (time.perf_counter()-started)*1000
+                self.navigation_timings.append(elapsed)
+                action.diagnostics["decision_wall_ms"] = elapsed
+                try: await self.send_action(s, action.move, (0, 0), action.model_dump())
+                except TimeoutError as exc:
+                    if "STALE_ACTION" not in str(exc): raise
+                    self.log("navigation_stale_decision", frame=s.frame)
+                previous, prior = action, s
+                s = await self.next_snapshot(after=s.snapshot_id)
+            if s.player.dead or s.hp <= 0: raise RuntimeError("DEAD_DURING_NAVIGATION")
+            return s, prior
+        finally:
+            self.navigation_metrics.append({"room_visit_id": room, **watcher.metrics()})
+            if request:
+                request.cancel(); await asyncio.gather(request, return_exceptions=True)
+
     async def resolve_environment(self, s):
         controller, solver = EnvironmentController(), JointActionSolver()
         began = progress = s.frame
         signature = controller.signature(s)
         goal_key, best_distance = None, float("inf")
         request, requests, last_request = None, 0, -1000
+        authorized_devices = set()
         await self.set_mode("FORCE_AI")
         self.log("environment_entered", frame=s.frame, room_visit_id=s.room_visit_id)
         try:
@@ -534,6 +573,7 @@ class CombatSession:
                 if s.frame-began >= 600: raise TimeoutError("ENVIRONMENT_TIMEOUT")
                 if s.frame-progress >= 240: raise TimeoutError("ENVIRONMENT_STALL_UNRECOVERED")
                 objective = controller.objective(s)
+                authorized_devices.update(objective.allowed_devices)
                 current_signature = controller.signature(s)
                 if signature != current_signature:
                     progress, signature = s.frame, current_signature
@@ -571,6 +611,8 @@ class CombatSession:
                 if s.room_visit_id != prior.room_visit_id: raise RuntimeError("UNEXPECTED_ENVIRONMENT_ROOM_CHANGE")
                 self.environment_ticks += s.frame-prior.frame
             self.log("environment_resolved", frame=s.frame, is_clear=s.room["is_clear"], blocking_combat=s.blocking_combat)
+            if s.room["is_clear"]:
+                self.navigation_devices[s.room_visit_id] = tuple(sorted(authorized_devices))
             await self.release()
             # Environmental damage is in the whole-task ledger. The combat
             # clock begins at actual combat, not at an empty pressure-plate room.
@@ -731,12 +773,15 @@ class CombatSession:
                 except Exception as exc: self.log("cleanup_error", error=str(exc))
             await self.bridge.stop()
         s = self.observation.latest
-        if result == "CLEARED" and self.death_observed: result = "DEAD"
+        if self.death_observed: result = "DEAD"
         report = RoomReport(result=result, success=result == "CLEARED" and self.transitions > 0,
             llm_configured=self.llm_configured, completed_door_transition=self.transitions > 0,
             damage_half_hearts=self.task_judge.damage, lost_bone_hearts=self.task_judge.bones_lost,
             combat_damage_half_hearts=self.judge.damage, task_ticks=max(0, s.frame-self.task_start_frame) if s and self.task_start_frame is not None else 0,
             environment_ticks=self.environment_ticks,
+            navigation_replan_requests=self.navigation_replan_requests, navigation_metrics=self.navigation_metrics,
+            navigation_decision_p95_ms=sorted(self.navigation_timings)[min(len(self.navigation_timings)-1, int(.95*len(self.navigation_timings)))] if self.navigation_timings else None,
+            navigation_decision_p99_ms=sorted(self.navigation_timings)[min(len(self.navigation_timings)-1, int(.99*len(self.navigation_timings)))] if self.navigation_timings else None,
             remaining_half_hearts=s.hp if s else None,
             combat_ticks=max(0, (self.judge.previous.frame-self.judge.started)) if self.judge.previous else 0,
             wall_seconds=time.monotonic()-self.started_at, pause_seconds=self.pause_seconds,
