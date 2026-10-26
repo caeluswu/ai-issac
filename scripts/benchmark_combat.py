@@ -14,11 +14,12 @@ sys.path.insert(0, str(ROOT/"SocketBridge/python"))
 from tests.combat_fixtures import snapshot, context
 from combat.controller import JointActionSolver, BuildResolver
 from combat.catalog import default_plan
-from combat.models import WorldSnapshot
+from combat.models import WorldSnapshot, BattlePlan
 
 
-def measure(s, repeats, step=None):
-    build, solver, plan = BuildResolver().update(s), JointActionSolver(), default_plan(context(s))
+def measure(s, repeats, step=None, plan=None):
+    build, solver = BuildResolver().update(s), JointActionSolver()
+    plan = plan or default_plan(context(s))
     timings, exhausted = [], 0
     for _ in range(repeats):
         s.frame += 1
@@ -66,6 +67,9 @@ def main():
     s.player.pos = Vec(x=320, y=400); s.player.vel = Vec(x=0, y=0)
     navigator = DoorNavigator(1, s.layout["doors"]["1"])
     result["cases"].append({"case": "captured_fire_navigation", **measure(s, args.repeats, navigator.step)})
+    raw = json.loads((ROOT/"SocketBridge/python/tests/fixtures/latency_joint.json").read_text(encoding="utf8"))
+    result["cases"].append({"case": "captured_llm_joint_tail", **measure(WorldSnapshot.model_validate(raw["snapshot"]),
+                            args.repeats, plan=BattlePlan.model_validate(raw["plan"]))})
     args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
     return int(any(c["p95_ms"] > 20 or c["p99_ms"] > 30 for c in result["cases"]))

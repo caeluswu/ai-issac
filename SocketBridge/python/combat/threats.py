@@ -261,6 +261,10 @@ class ThreatField:
             for y in range(math.floor((min(ys)-r)/64), math.floor((max(ys)+r)/64)+1): self.buckets[step, x, y].add(i)
 
     def query(self, a, b, radius, tick, begin=None):
+        # A broad-phase index costs more than checking a handful of forecasts.
+        # Return every threat here; the exact narrow phase still checks its
+        # timing and geometry, including distant future explosions.
+        if len(self.threats) <= 4: return iter(self.threats)
         indices = set()
         if not self.static_ready:
             for i in self.static: self.index_threat(i, -1)

@@ -39,6 +39,9 @@ class GeometryService:
                               if j in self.walkable and self.positions[i].distance(self.positions[j]) <= 41]
                           for i in self.walkable}
         self.nearest_candidates = {}
+        # GeometryService is replaced when terrain/fire/flight permissions
+        # change. Cache exact queries only, with bounded per-room memory.
+        self.line_cache = {}
 
     def cell(self, p):
         return self.cell_xy(p.x, p.y)
@@ -54,14 +57,20 @@ class GeometryService:
                                   (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707)))
 
     def line_clear(self, a, b, *, shot=False, radius=None):
+        r = 0 if shot else self.radius if radius is None else radius
+        key = (a.x, a.y, b.x, b.y, shot, r)
+        cached = self.line_cache.get(key)
+        if cached is not None: return cached
         n = max(1, math.ceil(math.hypot(b.x-a.x, b.y-a.y)/8))
         allowed = self.shootable if shot else self.walkable
-        r = 0 if shot else self.radius if radius is None else radius
         offsets = ((0, 0),) if shot else ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
                                         (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707))
         dx, dy = b.x-a.x, b.y-a.y
-        return all(self.cell_xy(a.x+dx*i/n+ox, a.y+dy*i/n+oy) in allowed
-                   for i in range(n+1) for ox, oy in offsets)
+        result = all(self.cell_xy(a.x+dx*i/n+ox, a.y+dy*i/n+oy) in allowed
+                     for i in range(n+1) for ox, oy in offsets)
+        if len(self.line_cache) >= 4096: self.line_cache.clear()
+        self.line_cache[key] = result
+        return result
 
     def touches_danger(self, point):
         if not self.dangerous: return False
@@ -160,6 +169,10 @@ class GeometryService:
         best = None
         while queue:
             i = queue.popleft(); p = self.positions[i]
+            # BFS depth is nondecreasing; the remaining score terms are
+            # nonnegative. No deeper stance can improve the current minimum.
+            # Keep equal-depth candidates so deterministic tie order survives.
+            if best is not None and depth[i]*40 > best[0]: break
             # Project into exact cardinal alignment inside each walkable cell.
             # A grid center within 14px is not necessarily a hittable stance.
             for candidate in (Vec(x=p.x, y=target.y), Vec(x=target.x, y=p.y)):
