@@ -167,10 +167,10 @@ class TestGeometryAndControl(unittest.TestCase):
         self.assertGreater(action.score["clearance"], 0)
         self.assertGreaterEqual(action.score["escape_slack"], 6)
 
-    def test_build_change_rejected(self):
+    def test_unsupported_mechanism_is_rejected_after_inventory_change(self):
         resolver = BuildResolver(); resolver.update(self.s)
         self.s.inventory["collectibles"]["118"] = 1
-        with self.assertRaisesRegex(ValueError, "BUILD_CHANGED"): resolver.update(self.s)
+        with self.assertRaisesRegex(ValueError, "UNSUPPORTED_BUILD"): resolver.update(self.s)
 
     def test_sealed_enemy_requires_breaking_plain_poop(self):
         for y in range(1, 8): self.s.layout["cells"][str(y*15+8)]["collision"] = 3

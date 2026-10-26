@@ -4,7 +4,7 @@ import unittest
 from lupa.lua53 import lua_type
 from combat.catalog import compile_plan, default_plan
 from combat.controller import BuildResolver, JointActionSolver
-from combat.models import ContextRef, WorldSnapshot
+from combat.models import BuildProfile, ContextRef, WorldSnapshot
 from combat.observation import SnapshotAssembler
 from tests import test_combat_lua as harness
 from tests.combat_fixtures import context, snapshot
@@ -83,7 +83,9 @@ class TestObservationV2(unittest.TestCase):
         self.assertEqual(s.floor.dimension, 0)
         self.assertEqual(s.health_observation.max_hearts, 6)
         self.assertFalse(s.health_observation.dead)
-        action = JointActionSolver().solve(s, default_plan(context(s)), BuildResolver().update(s), True)
+        # Synthetic ID 799 tests observation coverage, not item compatibility.
+        with self.assertRaisesRegex(ValueError, "UNSUPPORTED_BUILD"): BuildResolver().update(s)
+        action = JointActionSolver().solve(s, default_plan(context(s)), BuildProfile(), True)
         self.assertEqual(action.shoot, (0, 0))
 
     def test_compound_weapon_does_not_masquerade_as_normal_tears(self):
@@ -151,7 +153,7 @@ class TestObservationV2(unittest.TestCase):
         self.assertEqual(self.api.State.controlMode, "MANUAL")
         old_plan = default_plan(context(before))
         with self.assertRaisesRegex(ValueError, "STALE_PLAN"):
-            JointActionSolver().solve(after, old_plan, BuildResolver().update(after))
+            JointActionSolver().solve(after, old_plan, BuildProfile())
 
     def test_v1_missing_groups_stay_unknown_and_v2_requires_them(self):
         old = snapshot()

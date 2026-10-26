@@ -2,13 +2,13 @@
 from collections import deque
 from dataclasses import dataclass
 import math
-import statistics
 import time
 from .models import Vec, ZERO, BuildProfile, ActionFrame, Enemy
 from .geometry import GeometryService, segment_distance
 from .components import EXECUTABLES, resilient_component, AttackProposal
 from .threats import ThreatField, EnemyAdapters, SafetyAssessment
 from .motion import PlayerMotion
+from .builds import BuildResolver, NormalTearsBuild
 
 MOVES = tuple((x, y) for y in (-1, 0, 1) for x in (-1, 0, 1))
 SHOTS = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
@@ -27,52 +27,6 @@ def select_joint_action(candidates, uncertainty_px=8):
         c["safe"], not c["wall"], c["early_risk"] == 0,
         c["early_risk"] <= minimum+uncertainty_px,
         c["escape_directions"] > 0, -c["risk"], -c["exposure"], c["first_contact"], c["utility"]))
-
-
-class NormalTearsBuild:
-    def __init__(self):
-        self.profile = BuildProfile()
-        self.seen = set()
-        self.speeds = deque(maxlen=60)
-        self.initial_inventory = None
-        self.previous = None
-
-    def update(self, s):
-        if s.stats["weapon_type"] != 1 or s.stats["player_type"] != 0:
-            raise ValueError("UNSUPPORTED_BUILD: phase one requires Isaac with normal tears")
-        fingerprint = sorted((s.inventory.get("collectibles") or {}).items())
-        if self.initial_inventory is None: self.initial_inventory = fingerprint
-        if fingerprint != self.initial_inventory: raise ValueError("BUILD_CHANGED: stop before using incompatible plan")
-        p = self.profile
-        p.player_displacement_scale = 2.
-        p.move_speed = max(1, float(s.stats["speed"])*4.4)*p.player_displacement_scale
-        p.effective_range = max(40, float(s.stats["tear_range"])*.75)
-        p.fire_interval = max(1, float(s.stats.get("max_fire_delay", 10))+1)
-        p.inheritance_available = bool(s.movement_inheritance)
-        for tear in s.projectiles["player_tears"] or []:
-            key = (s.room_visit_id, tear.get("instance_id", tear["id"]))
-            if key in self.seen: continue
-            self.seen.add(key)
-            # Only near-origin shots can be used to estimate base launch speed.
-            if s.player.pos.distance(Vec(**tear["pos"])) < 35 and s.player.vel.length() < .5:
-                self.speeds.append(Vec(**tear["vel"]).length())
-        p.calibration_samples = len(self.speeds)
-        p.calibrated = len(self.speeds) >= 3
-        p.tear_speed = statistics.median(self.speeds) if self.speeds else 10*float(s.stats["shot_speed"])
-        return p
-
-
-class BuildResolver:
-    """Dispatch observation calibration to a registered weapon build adapter."""
-    def __init__(self, adapters=None):
-        self.adapters = {1: NormalTearsBuild()} if adapters is None else adapters
-        self.weapon_type = None
-    def update(self, s):
-        weapon = s.stats["weapon_type"]
-        if weapon not in self.adapters: raise ValueError("UNSUPPORTED_BUILD: unregistered weapon adapter")
-        if self.weapon_type is not None and weapon != self.weapon_type: raise ValueError("BUILD_CHANGED: weapon adapter changed")
-        self.weapon_type = weapon
-        return self.adapters[weapon].update(s)
 
 
 @dataclass(frozen=True)
@@ -333,7 +287,8 @@ class JointActionSolver:
                 postkill_safe = threats.attack_safe(attack_target, build, trajectory, hit, attack.footprint)
                 safety = SafetyAssessment(clearance, slack, exit_directions, wall, postkill_safe)
                 damage_risk = max(0, -clearance)
-                utility = hit*6+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)-blocked_steps*.02
+                offense = min(100., attack.expected_damage*30/attack.prediction_horizon_frames)*(6/(3.5*30/11))
+                utility = offense+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)-blocked_steps*.02
                 if movement_only: utility = min(100, clearance)/20+escape+max(0, slack)/45-blocked_steps*.05
                 if movement_only and waypoint:
                     # Score the complete path, with earlier progress worth more.
@@ -355,7 +310,7 @@ class JointActionSolver:
                 if not postkill_safe:
                     candidates.append({**candidates[-1], "shoot": (0, 0), "hit": 0.,
                                        "safe": not wall and clearance > 0 and slack >= 6,
-                                       "utility": utility-hit*6, "risk": damage_risk, "fire_reason": "attack_safety_withdrawal"})
+                                       "utility": utility-offense, "risk": damage_risk, "fire_reason": "attack_safety_withdrawal"})
         # Safety is lexicographic. If every option is unsafe, minimize modelled
         # penetration before considering output; this is not a guarantee of life.
         best = select_joint_action(candidates)

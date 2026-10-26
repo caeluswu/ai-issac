@@ -57,14 +57,15 @@ class WaitEvidence:
 class AttackProposal:
     shoot: tuple[int, int]
     hit_score: float
-    # Legacy v1 heuristic damage/game_update; not a calibrated probability.
-    # Common prediction-window rewards will be implemented with P3.
+    # Heuristic cumulative damage over prediction_horizon_frames, not DPS
+    # or a calibrated probability. The host normalizes candidate horizons.
     expected_damage: float
     reason: str
     wait: WaitEvidence | None = None
     target_id: str | None = None
     footprint: tuple[float, float, float, float, float] | None = None
     context: ProposalContext | None = None
+    prediction_horizon_frames: int = 30
 
 
 class WeaponAdapter(Protocol):

@@ -244,8 +244,10 @@ class NormalTears:
                 hit, enemy, primary = max(choices, key=lambda item: (item[0], item[1].instance_id))
                 end = s.player.pos+self.launch_velocity(s, build, aim, direction, velocity).unit()*build.effective_range
                 footprint = (s.player.pos.x, s.player.pos.y, end.x, end.y, 16.)
-                proposals.append(AttackProposal(direction, hit, hit*float(s.stats.get("damage", 3.5))/build.fire_interval,
-                    "attack_window" if primary else "opportunistic_secondary", target_id=enemy.instance_id, footprint=footprint))
+                reward = hit*build.damage_per_hit*build.prediction_horizon_frames/build.fire_interval
+                proposals.append(AttackProposal(direction, hit, reward,
+                    "attack_window" if primary else "opportunistic_secondary", target_id=enemy.instance_id, footprint=footprint,
+                    prediction_horizon_frames=build.prediction_horizon_frames))
         # Ordinary tears have no resource cost: never withhold a valid shot.
         return proposals or [AttackProposal((0, 0), 0, 0, "no_valid_firing_lane")]
 

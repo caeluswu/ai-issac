@@ -21,6 +21,8 @@ from .observation import SnapshotAssembler, CombatJudge
 from .supervision import ProgressSupervisor
 from .environment import EnvironmentController
 from .navigation import DoorNavigator, RoomExplorer
+from .ledgers import ResourceLedger
+from .builds import observed_build
 
 
 class RunLog:
@@ -282,6 +284,7 @@ class CombatSession:
         self.clear_safe_since = None
         self.deadline_misses = []
         self.death_observed = False
+        self.death_event_frame = None
         self.last_damage_frame = -1000
         self.contract_overrides = 0
         self.plan = None
@@ -300,6 +303,7 @@ class CombatSession:
         self.latest_acted = None
         self.started_at = time.monotonic()
         self.task_judge = CombatJudge()
+        self.resources = ResourceLedger()
         self.task_started = False
         self.task_start_frame = None
         self.combat_room = None
@@ -315,7 +319,10 @@ class CombatSession:
 
     def on_message(self, raw):
         self.log("game_message", message=raw)
-        if self.task_started and raw.get("event") == "PLAYER_DEATH": self.death_observed = True
+        if self.task_started and raw.get("event") == "PLAYER_DEATH":
+            self.death_event_frame = raw.get("frame", 0)
+        if self.task_started and raw.get("event") == "PLAYER_DAMAGE_ATTEMPT":
+            for judge in (self.task_judge, self.judge): judge.health.damage_attempt(raw.get("frame", 0))
         request = raw.get("request_id")
         if request in self.rpc_waiters and not self.rpc_waiters[request].done():
             self.rpc_waiters[request].set_result(raw.get("result", {}))
@@ -328,6 +335,7 @@ class CombatSession:
         s = self.observation.consume(raw)
         if s:
             if self.task_started and not s.paused:
+                self.resources.observe(s)
                 if self.combat_room is None and s.blocking_combat:
                     self.combat_room, self.combat_start_frame = s.room_visit_id, s.frame
                     self.combat_previous_hp = self.task_judge.previous.hp if self.task_judge.previous else s.hp
@@ -335,10 +343,12 @@ class CombatSession:
                     self.combat_damage_recorded += max(0, self.combat_previous_hp-s.hp)
                     self.combat_previous_hp, self.combat_last_frame = s.hp, s.frame
                 self.task_judge.observe(s)
-                if s.player.dead or s.hp <= 0: self.death_observed = True
+                if self.death_event_frame is not None and s.frame > self.death_event_frame and s.alive:
+                    self.death_event_frame = None
+                if self.task_judge.health.state == "dead": self.death_observed = True
             if s.applied_action_id is not None: self.applied.add(s.applied_action_id)
             if s.room_visit_id == self.target_room and not s.paused:
-                if s.player.dead or s.hp <= 0: self.death_observed = True
+                if self.task_judge.health.state == "dead": self.death_observed = True
                 self.judge_result = self.judge.observe(s)
                 if "confirmed_damage" in self.judge.events: self.last_damage_frame = s.frame
                 self.event_reasons.update(self.judge.events)
@@ -383,6 +393,8 @@ class CombatSession:
         latest = self.observation.latest
         if not self.observation.fresh() or latest.room_visit_id != s.room_visit_id or latest.frame-s.frame > 2:
             await self.release(); raise TimeoutError("STALE_ACTION")
+        if observed_build(latest) != observed_build(s):
+            await self.release(); raise TimeoutError("STALE_ACTION: build changed")
         if self.latest_acted == s.snapshot_id: raise RuntimeError("DUPLICATE_ACTION_FRAME")
         self.latest_acted = s.snapshot_id
         self.actions += 1
@@ -530,14 +542,18 @@ class CombatSession:
         prior = s
         try:
             while s.room_visit_id == room:
-                if s.player.dead or s.hp <= 0: raise RuntimeError("DEAD_DURING_NAVIGATION")
+                if self.task_judge.health.state == "dead": raise RuntimeError("DEAD_DURING_NAVIGATION")
+                if self.task_judge.health.state == "reviving":
+                    await self.release(); s = await self.next_snapshot(after=s.snapshot_id); continue
                 if s.run_id != initial_run: raise RuntimeError("RUN_CHANGED")
                 if s.blocking_combat and not s.room.get("is_starting_room"): return s, prior
                 if s.frame-began >= 750: raise TimeoutError("DOOR_NAVIGATION_TIMEOUT")
                 failure = watcher.observe(s, previous, require_progress=True)
                 if failure: raise TimeoutError("NAVIGATION_"+failure)
                 build = self.build_resolver.update(s)
-                if plan is None: plan = default_plan(self.context_ref(s, build))
+                if plan is None or plan.context_ref.build_revision != build.revision:
+                    await self.release()
+                    plan = default_plan(self.context_ref(s, build))
                 navigator.solver.recovery_level = watcher.recovery_level
                 for event in watcher.events:
                     self.log("navigation_boundary", boundary=event.__dict__, progress=watcher.feedback())
@@ -565,7 +581,7 @@ class CombatSession:
                     self.log("navigation_stale_decision", frame=s.frame)
                 previous, prior = action, s
                 s = await self.next_snapshot(after=s.snapshot_id)
-            if s.player.dead or s.hp <= 0: raise RuntimeError("DEAD_DURING_NAVIGATION")
+            if self.task_judge.health.state == "dead": raise RuntimeError("DEAD_DURING_NAVIGATION")
             return s, prior
         finally:
             self.navigation_metrics.append({"room_visit_id": room, **watcher.metrics()})
@@ -583,7 +599,7 @@ class CombatSession:
         self.log("environment_entered", frame=s.frame, room_visit_id=s.room_visit_id)
         try:
             while not s.blocking_combat and not s.room["is_clear"]:
-                if s.player.dead or s.hp <= 0: raise RuntimeError("DEAD_DURING_ENVIRONMENT")
+                if self.task_judge.health.state == "dead": raise RuntimeError("DEAD_DURING_ENVIRONMENT")
                 if s.frame-began >= 600: raise TimeoutError("ENVIRONMENT_TIMEOUT")
                 if s.frame-progress >= 240: raise TimeoutError("ENVIRONMENT_STALL_UNRECOVERED")
                 objective = controller.objective(s)
@@ -648,7 +664,19 @@ class CombatSession:
                 self.log("rejected_action", receipt=self.rejected); self.rejected = None
                 await self.release()
             if self.judge_result and self.judge_result != "CLEARED": return self.judge_result
+            if self.task_judge.health.state == "reviving":
+                await self.release(); s = await self.next_snapshot(after=s.snapshot_id); continue
             build = self.build_resolver.update(s)
+            if self.plan.context_ref.build_revision != build.revision:
+                await self.release()
+                if self.pending:
+                    self.pending.cancel(); await asyncio.gather(self.pending, return_exceptions=True)
+                    self.pending = None
+                self.revision += 1
+                self.plan = default_plan(self.context_ref(s, build))
+                self.previous_action = None
+                self.log("build_transaction", revision=build.revision, signature=build.signature,
+                         changed_domains=build.changed_domains, plan=self.plan.model_dump())
             failure = self.supervisor.observe(s, self.previous_action)
             for event in self.supervisor.events:
                 self.log("boundary", boundary=event.__dict__, evidence=self.supervisor.evidence)
@@ -788,6 +816,8 @@ class CombatSession:
             await self.bridge.stop()
         s = self.observation.latest
         if self.death_observed: result = "DEAD"
+        elif self.death_event_frame is not None:
+            result = "REVIVAL_UNCONFIRMED" if s and s.health.get("extra_lives", 0) else "DEAD"
         report = RoomReport(result=result, success=result == "CLEARED" and self.transitions > 0,
             llm_configured=self.llm_configured, completed_door_transition=self.transitions > 0,
             damage_half_hearts=self.task_judge.damage, lost_bone_hearts=self.task_judge.bones_lost,
@@ -797,6 +827,9 @@ class CombatSession:
             navigation_decision_p95_ms=sorted(self.navigation_timings)[min(len(self.navigation_timings)-1, int(.95*len(self.navigation_timings)))] if self.navigation_timings else None,
             navigation_decision_p99_ms=sorted(self.navigation_timings)[min(len(self.navigation_timings)-1, int(.99*len(self.navigation_timings)))] if self.navigation_timings else None,
             remaining_half_hearts=s.hp if s else None,
+            voluntary_health_spend=self.task_judge.health.voluntary_spend,
+            health_container_loss=self.task_judge.health.container_loss,
+            resources_spent=self.resources.spent,
             combat_ticks=max(0, self.combat_last_frame-self.combat_start_frame) if self.combat_start_frame is not None else 0,
             wall_seconds=time.monotonic()-self.started_at, pause_seconds=self.pause_seconds,
             sent_actions=self.actions, accepted_actions=len(self.accepted), observed_applied_actions=len(self.applied),

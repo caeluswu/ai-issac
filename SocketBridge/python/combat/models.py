@@ -205,6 +205,8 @@ class WorldSnapshot(Observed):
     @property
     def hp(self): return int(self.health["red_hearts"])+int(self.health["soul_hearts"])
     @property
+    def alive(self): return not self.player.dead
+    @property
     def snapshot_id(self): return f"{self.room_visit_id}:{self.frame}"
 
 
@@ -314,6 +316,11 @@ class BuildProfile(Strict):
     calibrated: bool = False
     calibration_samples: int = 0
     inheritance_available: bool = False
+    signature: str = ""
+    calibration_key: str = ""
+    changed_domains: list[str] = Field(default_factory=list)
+    damage_per_hit: float = Field(default=3.5, ge=0, le=1000000)
+    prediction_horizon_frames: int = Field(default=30, ge=1, le=120)
 
 
 class ActionFrame(Strict):
@@ -370,3 +377,6 @@ class RoomReport(Strict):
     navigation_decision_p95_ms: float | None = None
     navigation_decision_p99_ms: float | None = None
     navigation_metrics: list[dict[str, Any]] = Field(default_factory=list)
+    voluntary_health_spend: int = 0
+    health_container_loss: int = 0
+    resources_spent: dict[str, int] = Field(default_factory=dict)

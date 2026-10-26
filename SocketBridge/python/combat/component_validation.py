@@ -37,6 +37,8 @@ def validate_result(method, value, context, snapshot, max_wait_frames):
                 raise ValueError("invalid cardinal shoot direction")
             finite(attack.hit_score, 0, 1)
             finite(attack.expected_damage, 0)
+            if type(attack.prediction_horizon_frames) is not int or not 1 <= attack.prediction_horizon_frames <= 120:
+                raise ValueError("invalid prediction horizon")
             if not isinstance(attack.reason, str) or not 1 <= len(attack.reason) <= 2000:
                 raise ValueError("invalid attack reason")
             if attack.target_id is not None and attack.target_id not in {e.instance_id for e in snapshot.hostiles}:

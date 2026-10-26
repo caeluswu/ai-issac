@@ -1,6 +1,7 @@
 """Atomic snapshots and an outcome judge independent of policy decisions."""
 import time
 from .models import WorldSnapshot
+from .ledgers import HealthLedger
 
 
 class SnapshotAssembler:
@@ -46,21 +47,22 @@ class CombatJudge:
         self.last_progress = None
         self.enemy_hp = {}
         self.events = []
+        self.health = HealthLedger()
 
     def observe(self, s):
         self.events = []
         if self.started is None: self.started = self.last_progress = s.frame
-        if self.previous:
-            lost = max(0, self.previous.hp-s.hp)
-            bones = max(0, self.previous.health["bone_hearts"]-s.health["bone_hearts"])
-            self.damage += lost; self.bones_lost += bones
-            if lost or bones: self.events.append("confirmed_damage")
+        if self.previous and self.health.previous is None: self.health.observe(self.previous)
+        delta = self.health.observe(s)
+        self.damage, self.bones_lost = self.health.damage, self.health.bones_lost
+        if delta.damage or delta.bones_lost: self.events.append("confirmed_damage")
         current = {e.instance_id: e.hp for e in s.hostiles}
         if any(i in current and current[i] < hp for i, hp in self.enemy_hp.items()): self.last_progress = s.frame
         if set(current)-set(self.enemy_hp) and self.previous: self.events.append("new_enemy_mechanism")
         self.enemy_hp = current
         self.previous = s
-        if s.player.dead or s.hp <= 0: return "DEAD"
+        if delta.state == "dead": return "DEAD"
+        if delta.state == "reviving": return None
         if s.room["is_clear"] and s.room["enemy_count"] == 0 and not any(e.can_shut_doors for e in s.hostiles):
             self.clear_frames += 1
         else: self.clear_frames = 0
