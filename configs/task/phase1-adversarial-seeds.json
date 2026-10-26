@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "purpose": "exposed_failure_regression_not_holdout",
+  "seeds": [
+    "DEFT NB32",
+    "JG7S V7DN",
+    "36ET 1X4K"
+  ],
+  "seeds_sha256": "5792fa831f04ac2a22eb914eac5ec9a5baf7a381d3cd3e86295f6e85beb6827f",
+  "source_batch": "artifacts/runs/batch-20261025T224345031446Z",
+  "source_samples": [
+    3,
+    16,
+    44
+  ]
+}

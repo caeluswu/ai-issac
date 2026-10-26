@@ -17,12 +17,12 @@ from combat.catalog import default_plan
 from combat.models import WorldSnapshot
 
 
-def measure(s, repeats):
+def measure(s, repeats, step=None):
     build, solver, plan = BuildResolver().update(s), JointActionSolver(), default_plan(context(s))
     timings, exhausted = [], 0
     for _ in range(repeats):
         s.frame += 1
-        action = solver.solve(s, plan, build)
+        action = step(s, plan, build) if step else solver.solve(s, plan, build)
         timings.append(action.decision_ms)
         exhausted += action.diagnostics["budget_exhausted"]
     ordered = sorted(timings)
@@ -59,6 +59,13 @@ def main():
         result["cases"].append({"case": "captured_large_wall", "source_frame": raw["frame"],
                                 **measure(WorldSnapshot.model_validate(raw), args.repeats)})
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    from combat.navigation import DoorNavigator
+    from combat.models import Vec
+    s = WorldSnapshot.model_validate(json.loads((ROOT/"SocketBridge/python/tests/fixtures/holdout_failure_44.json").read_text(encoding="utf8")))
+    s.player.dead = False; s.health["red_hearts"] = 6
+    s.player.pos = Vec(x=320, y=400); s.player.vel = Vec(x=0, y=0)
+    navigator = DoorNavigator(1, s.layout["doors"]["1"])
+    result["cases"].append({"case": "captured_fire_navigation", **measure(s, args.repeats, navigator.step)})
     args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
     return int(any(c["p95_ms"] > 20 or c["p99_ms"] > 30 for c in result["cases"]))

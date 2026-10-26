@@ -41,7 +41,10 @@ def assess(directory, role, holdout=False):
         if statistics.mean(times) > 15.85: issues.append("MEAN_COMBAT_TIME_GATE")
         if max(times) > 45: issues.append("MAX_COMBAT_TIME_GATE")
         if sum(r["success"] and r.get("damage_half_hearts") == 0 for r in reports) < 8: issues.append("NO_DAMAGE_GATE")
-    if any((r.get("decision_p95_ms") or 0) > 20 or (r.get("decision_p99_ms") or 0) > 30 for r in reports): issues.append("DECISION_LATENCY_GATE")
+    if any(any((r.get(key) or 0) > limit for key, limit in (
+            ("decision_p95_ms", 20), ("decision_p99_ms", 30),
+            ("navigation_decision_p95_ms", 20), ("navigation_decision_p99_ms", 30))) for r in reports):
+        issues.append("DECISION_LATENCY_GATE")
     if holdout and summary["planned"] != 50: issues.append("HOLDOUT_SIZE_GATE")
     return {"directory": str(directory), "role": role, "holdout": holdout, "planned": summary["planned"],
         "clears": wins, "mean_loss_half_hearts": loss, "mean_combat_seconds": statistics.mean(times) if times else None,
