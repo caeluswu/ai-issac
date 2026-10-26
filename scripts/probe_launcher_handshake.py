@@ -20,7 +20,7 @@ def main():
     parser.add_argument('--phase', choices=('save', 'intro'), default='save')
     options = parser.parse_args()
     destination = options.output_dir or ROOT/'artifacts/runs'/('launcher-miss-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'))
-    state = {'scope': 'prestart_fault_injection_not_combat_evaluation', 'dropped': False, 'phase': options.phase,
+    state = {'scope': 'prestart_fault_injection_not_combat_evaluation', 'dropped': False, 'fault_phase': options.phase,
              'probe_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
     method = 'confirm_save_slot' if options.phase == 'save' else 'skip_intro'
     original = getattr(GameLauncher, method)
