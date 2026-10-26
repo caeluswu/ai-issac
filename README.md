@@ -50,6 +50,7 @@
 
 ## 文档
 
+- [独立知识库分层与接口计划](docs/knowledge-project-interface-plan.zh-CN.md)
 - [第一阶段扩展性审查](docs/phase-1-extensibility-review.zh-CN.md)
 - [第二、三阶段实施计划](docs/phase-2-3-roadmap.zh-CN.md)
 - [道具知识库与 DeepSeek 组件开发](docs/item-knowledge-and-skill-evolution.zh-CN.md)

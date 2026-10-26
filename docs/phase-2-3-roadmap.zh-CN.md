@@ -80,7 +80,7 @@ flowchart TD
 | `HealthLedger` / `ResourceLedger` | 伤害尝试、后续生命结构、交易和库存事件 → 事实账本 | 不把回血抵扣先前伤害、不事后改称主动扣血 |
 | `SkillDeveloper` / `Publisher` | 能力缺口 + 来源证据 + 契约 → 候选/可试用/已发布模块 | 不修改安全、评分、验收或宿主权限 |
 
-建议代码布局：保留 `combat/` 的实时算法；新增 `campaign/` 放整层/整局编排，`knowledge/` 放来源和数据库，`skills/` 放开发与发布工具，`interaction/` 放物品/门/出口动作协议。目录名称不是强制，依赖方向是强制：实时控制不依赖外部知识服务。
+建议代码布局：保留 `combat/` 的实时算法；新增 `campaign/` 放整层/整局编排，`knowledge/` 仅放知识客户端、Gateway 和本地遭遇/需求记录，`skills/` 放开发与发布工具，`interaction/` 放物品/门/出口动作协议。来源采集与知识包发布归独立知识库项目，合同见 [知识库接口计划](knowledge-project-interface-plan.zh-CN.md)。目录名称不是强制，依赖方向是强制：实时控制不依赖外部知识服务。
 
 ### 状态与版本
 
@@ -139,7 +139,7 @@ Boss 死亡与房间安全是两个事件。捡奖励、穿门和踩陷阱门前
 | 1 `fix: validate component results and compatible recovery` | 修复 R3/R4；统一提案输出与默认回退，非法输出/空候选/低血量测试 | 本地故障注入；不需要 API |
 | 2 `feat: version world and build observations` | 快照 V2、拾取物、武器能力、动态未知库存、构筑事务、健康结构；旧协议兼容 | Lua + Python 快照契约、库存/临时效果/骨心/复活用例 |
 | 3 `refactor: separate room execution from run lifecycle` | 提取 RoomExecutor，连接持续，作用域重置，有界记录缓存 | 模拟连续三房、回房、断线、迟到计划 |
-| 4 `feat: cache sourced item knowledge` | SQLite、来源适配、首次遇见、负缓存、版本和来源状态 | 固定资料样本、403/429、离线、冲突与重复查询；不爬全站 |
+| 4 `feat: integrate versioned knowledge packages` | 本地包客户端、Gateway、首次遇见、需求 outbox、版本和来源状态；采集由独立项目实现 | 固定资料包、未知/阻塞状态、离线、冲突与重复查询；不爬全站 |
 | 5 `feat: compile item capabilities and execute interactions` | 简单成长/飞行、拾取与主动边沿事务、资源账本、无法支持时拒绝 | 针对性本地模拟和必要实机机制验证 |
 | 6 `feat: navigate and finish the first floor` | 已探索图、Boss 门与合法出口、Boss 适配器、FloorJudge、首层报告 | 先本地规则打通，再必要的一次 DeepSeek 完整流程 |
 | 7 `feat: validate and publish DeepSeek skill candidates` | 技能开发器、受限代码/程序、外部验证、隔离、试用与回滚、作者证据 | 非平凡模块生成→验证→实机试用→下一次复用；有问题才追加调用 |

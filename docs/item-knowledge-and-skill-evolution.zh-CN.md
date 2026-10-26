@@ -2,9 +2,11 @@
 
 日期：2026-10-26。适用构建：忏悔原版 `1.7.9b.J835`。状态：第二、三阶段实施设计；本文件不表示知识数据库、自动编码或 REPENTOGON 已接入。
 
+独立知识库的数据所有权、分层、查询 DTO、数据包与本项目 Gateway 接口见 [知识库项目接口计划](knowledge-project-interface-plan.zh-CN.md)。本文件负责道具决策与技能演进；跨项目数据交换采用该接口合同。
+
 ## 1. 决策摘要
 
-1. 第一次**可识别地遇见**物品时查询版本化本地库；缺少证据时尝试可用 Wiki/说明源，保存来源与结果。网络不可用或资料被限制时记录未知，不能无限暂停。
+1. 第一次**可识别地遇见**物品时查询固定版本的本地知识包；缺少证据时异步向独立知识库提交补充请求，保存来源与结果。采集不进入游戏查询路径，网络不可用或资料被限制时记录未知，不能无限暂停。
 2. 将“道具事实”“当前构筑的有效能力”“控制算法实现”“实机经验”分开存储。拥有 Wiki 描述不代表拥有可执行策略。
 3. DeepSeek 分为战术规划与组件开发两个角色。开发 Agent 提供内核、协议、通用原语和独立验证；DeepSeek 应承担新增机制的候选程序与修复。
 4. 普通属性变化优先用数据映射和现有通用组件；确实缺算法时才生成代码。无需为每个道具编写一个独立状态机。
@@ -40,30 +42,35 @@ EID 的 `rep` 目录也不能直接等同于“精确匹配 J835 的完整数据
 ```text
 encounter
   -> identity/visibility check
-  -> local verified knowledge hit? return it
-  -> lookup job deduplicated by item/build/provider
-  -> allowed provider fetch or authorized offline source
-  -> version extraction + structured facts + uncertainty
-  -> SQLite transaction + source hash/reference
+  -> query pinned local knowledge package
+  -> return knowledge bundle (including unknowns)
   -> capability mapping
   -> choose pickup / defer / skip / request new module
+
+missing facts
+  -> enqueue enrichment request asynchronously
+  -> independent knowledge project fetches permitted sources
+  -> versioned facts + evidence -> publish a new package
+  -> explicit package adoption at an allowed boundary
+  -> future queries use the adopted package
 ```
 
-首版使用 Python 自带 SQLite，不需要额外数据库服务或向量数据库。单写入队列、WAL、唯一键与事务保证重复查询和进程中断可恢复。实时控制线程只读内存快照；联网、解析和数据库写入不进入逐帧路径。
+首版使用 Python 自带 SQLite，不需要额外数据库服务或向量数据库。独立知识库管理可写工作库，并发布不可变只读包；本项目另存遭遇、构筑、技能与经验库。工作库使用单写入队列、WAL、唯一键与事务；发布前完成 checkpoint。实时控制线程只读内存快照；联网、解析和数据库写入不进入逐帧路径。
 
 ### 3.2 建议表结构
 
-| 表 | 核心字段 |
-|---|---|
-| `item_identity` | kind、id、game_build、名称/别名、静态/程序生成标记 |
-| `knowledge_source` | URL/仓库路径、provider、revision/commit、正文哈希、抓取时间、许可、访问状态、适用版本 |
-| `mechanic_fact` | item key、作用域、触发、效果、前提、冲突/优先级、置信度、source refs、验证状态 |
-| `encounter` | run/floor/room/visit、帧、物品实体身份、可见性、价格/轮换、查询/决策/实际拾取结果 |
-| `build_snapshot` | 实际库存与临时效果、能力图、build_revision、证据帧、未知效果列表 |
-| `skill_version` | 组件 ID/版本、接口版本、能力前提、作者/model、源码/程序哈希、来源 refs、状态、父版本 |
-| `validation` | 模块哈希、输入夹具哈希、独立检查结果、性能、实机适用范围、失败反例 |
-| `experience` | 机制签名、房间/构筑特征、行动摘要、损失、结果和原始轨迹路径；区分相关与因果证据 |
-| `lookup_attempt` | 请求 key、时间、HTTP/解析结果、重试时间、失效/负缓存原因 |
+| 表 | 所属项目 | 核心字段 |
+|---|---|---|
+| `item_identity` | 知识库 | kind、id、game_build、名称/别名；静态身份 |
+| `knowledge_source` | 知识库 | URL/仓库路径、provider、revision/commit、正文哈希、抓取时间、许可、访问状态、适用版本 |
+| `mechanic_fact` | 知识库 | item key、作用域、触发、效果、前提、冲突/优先级、证据等级、source refs、审核状态 |
+| `lookup_attempt` | 知识库 | 来源请求 key、时间、HTTP/解析结果、重试时间、失效/负缓存原因 |
+| `encounter` | 智能体 | run/floor/room/visit、帧、物品实体身份、可见性、价格/轮换、查询/决策/实际拾取结果；错误道具为局内实例 |
+| `build_snapshot` | 智能体 | 实际库存与临时效果、能力图、build_revision、证据帧、未知效果列表 |
+| `skill_version` | 智能体 | 组件 ID/版本、接口版本、能力前提、作者/model、源码/程序哈希、来源 refs、状态、父版本 |
+| `validation` | 智能体 | 模块哈希、输入夹具哈希、独立检查结果、性能、实机适用范围、失败反例 |
+| `experience` | 智能体 | 机制签名、房间/构筑特征、行动摘要、损失、结果和原始轨迹路径；区分相关与因果证据 |
+| `enrichment_outbox` | 智能体 | 幂等需求、遭遇引用、任务状态和待采用 dataset |
 
 允许保存的正文另存为按内容哈希寻址的本地文件，数据库保存指针；默认不入 Git。保留自己的结构化总结、来源指针与许可允许的必要摘录，不把缓存当可随意公开的内容集。
 
