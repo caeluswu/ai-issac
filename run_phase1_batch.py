@@ -24,8 +24,11 @@ def main():
     parser.add_argument("--slot", type=int, choices=(1, 2, 3), default=1)
     parser.add_argument("--seeds", type=Path, help="replay an existing frozen list instead of generating one")
     parser.add_argument("--local-only", action="store_true", help="paired rule baseline")
+    parser.add_argument("--stop-after-failures", type=int, help="stop unstarted samples once this failure budget is reached")
+    parser.add_argument("--stop-file", type=Path, help="finish the active sample, then stop when this file exists")
     args = parser.parse_args()
     if not 1 <= args.count <= 100: parser.error("count must be 1..100")
+    if args.stop_after_failures is not None and args.stop_after_failures < 1: parser.error("failure budget must be positive")
     destination = ROOT/"artifacts/runs"/("batch-"+datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ"))
     destination.mkdir(parents=True)
     base = [sys.executable, str(ROOT/"run_first_room.py"), "--slot", str(args.slot)]
@@ -40,7 +43,19 @@ def main():
         if result.returncode: return result.returncode
         manifest = checked_seeds(seed_file)
     reports = []
+    stop_reason = None
+    def save():
+        (destination/"summary.json").write_text(json.dumps({"seed_manifest": manifest,
+            "local_only": args.local_only, "completed": len(reports), "planned": len(manifest["seeds"]),
+            "status": "stopped" if stop_reason else "complete" if len(reports) == len(manifest["seeds"]) else "running",
+            "stop_reason": stop_reason, "unstarted": len(manifest["seeds"])-len(reports),
+            "reports": reports}, ensure_ascii=False, indent=2), encoding="utf-8")
+    save()
     for index, seed in enumerate(manifest["seeds"], 1):
+        if args.stop_file and args.stop_file.exists():
+            stop_reason = "ADMINISTRATIVE_STOP_FILE"
+            save()
+            break
         run_dir = destination/f"sample-{index:02d}"
         print(f"[{index}/{len(manifest['seeds'])}] {seed}", flush=True)
         with (destination/f"sample-{index:02d}-console.txt").open("w", encoding="utf-8") as output:
@@ -58,12 +73,14 @@ def main():
         if exit_code == 124: report = {**report, "result": "PROCESS_TIMEOUT", "success": False, "error": "Child process exceeded 300 seconds"}
         reports.append({"index": index, "planned_seed": seed, "exit_code": exit_code,
                         "run_directory": str(run_dir), "process_wall_seconds": process_wall, **report})
-        (destination/"summary.json").write_text(json.dumps({"seed_manifest": manifest,
-            "local_only": args.local_only, "completed": len(reports), "planned": len(manifest["seeds"]),
-            "reports": reports}, ensure_ascii=False, indent=2), encoding="utf-8")
+        failures = sum(not r["success"] or r["exit_code"] != 0 for r in reports)
+        if args.stop_after_failures and failures >= args.stop_after_failures and index < len(manifest["seeds"]):
+            stop_reason = "FAILURE_BUDGET_REACHED"
+        save()
         print(f"  {report['result']}; damage={report.get('damage_half_hearts')}; error={report.get('error')}", flush=True)
+        if stop_reason: break
     print(f"Batch artifacts: {destination}", flush=True)
-    return 0 if all(r["exit_code"] == 0 for r in reports) else 1
+    return 0 if not stop_reason and all(r["exit_code"] == 0 for r in reports) else 1
 
 
 if __name__ == "__main__": raise SystemExit(main())
