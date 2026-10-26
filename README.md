@@ -70,6 +70,7 @@
 | 文档 | 职责 |
 |---|---|
 | [M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md) | 当前执行队列 P0–P8、组件职责、支持矩阵、依赖和准入用例；统一准备顺序 |
+| [战斗组件合同](docs/component-contract.zh-CN.md) | 可信组件 DTO、能力、宿主限额、上下文与生命周期边界 |
 | [EID 与本地经验学习计划](docs/eid-local-learning-plan.zh-CN.md) | 来源接入、拾取决策、被动观测、有界实验、证据更新与经验复用 |
 | [独立知识库接口计划](docs/knowledge-project-interface-plan.zh-CN.md) | 跨项目所有权、分层、查询合同、版本化数据包与本项目 Gateway |
 | [道具知识与 DeepSeek 组件开发](docs/item-knowledge-and-skill-evolution.zh-CN.md) | 道具能力分类、程序生成物品、模型编程、验证发布与角色取舍 |

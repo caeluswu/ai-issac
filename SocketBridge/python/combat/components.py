@@ -1,44 +1,8 @@
 """Replaceable pure policy and weapon modules; no IO or controller references."""
-from dataclasses import dataclass
-from typing import Protocol
 from .models import Vec, ZERO
-
-
-@dataclass(frozen=True)
-class CapabilitySet:
-    family: str
-    moving_attack: bool = True
-    break_plain_poop: bool = True
-
-
-@dataclass(frozen=True)
-class MotionProposal:
-    waypoints: tuple[Vec, ...]
-    reason: str = "weapon_attack_geometry"
-
-
-@dataclass(frozen=True)
-class AttackProposal:
-    shoot: tuple[int, int]
-    hit_score: float
-    expected_damage: float
-    reason: str
-    wait: "WaitEvidence | None" = None
-    target_id: str | None = None
-    footprint: tuple[float, float, float, float, float] | None = None
-
-
-@dataclass(frozen=True)
-class WaitEvidence:
-    token: str
-    reason: str
-    deadline_frame: int
-    evidence: str
-
-
-class WeaponAdapter(Protocol):
-    capabilities: CapabilitySet
-    def propose(self, s, build, profile, target, velocity, geometry) -> list[AttackProposal]: ...
+from .component_contracts import (
+    CapabilitySet, MotionProposal, AttackProposal, WaitEvidence, WeaponAdapter,
+)
 
 
 class Registry:
@@ -183,7 +147,7 @@ class LocalRepath:
 
 
 class NormalTears:
-    capabilities = CapabilitySet("normal_tears")
+    capabilities = CapabilitySet("normal_tears", moving_attack=True, break_plain_poop=True)
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
     def __init__(self, params): self.params = params
     def firing_route(self, geometry, start, target, build, excluded=(), terrain=False):
