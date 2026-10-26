@@ -50,17 +50,51 @@
 
 批次入口 `run_phase1_batch.py` 未加 `--local-only` 时会调用付费模型，当前不将其列为常规验收步骤。
 
-## 文档
+## 文档导航
 
-- [M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md)
-- [EID 与本地经验学习计划](docs/eid-local-learning-plan.zh-CN.md)
-- [独立知识库分层与接口计划](docs/knowledge-project-interface-plan.zh-CN.md)
-- [第一阶段扩展性审查](docs/phase-1-extensibility-review.zh-CN.md)
-- [第二、三阶段实施计划](docs/phase-2-3-roadmap.zh-CN.md)
-- [道具知识库与 DeepSeek 组件开发](docs/item-knowledge-and-skill-evolution.zh-CN.md)
-- [第一阶段优化验收](docs/phase-1-optimization-validation.zh-CN.md)
-- [第一阶段优化架构](docs/phase-1-optimization.zh-CN.md)
-- [战斗组件计划](docs/phase-1-combat-controller.zh-CN.md)
-- [总体架构](docs/architecture-plan.zh-CN.md)
-- [运行手册](docs/phase-1-runbook.zh-CN.md)
-- [SocketBridge 文档](SocketBridge/README.md)
+**当前工作入口：[M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md)。** 当前已完成准备方案与结构评估，P1–P6 工程准备待实现；下一项为 P1 组件输出校验与兼容回退。M2-A 指首层连续通关，M2-B 指 DeepSeek 实际开发新机制组件；EID 计划内 A–F 是学习功能步骤。
+
+建议阅读顺序：任务契约 → 总体架构 → 二、三阶段路线 → M2-A 准备清单 → 对应专项设计。判断已实现能力时查验收与审查报告，计划文档不作为完成证据。
+
+### 目标与总体设计
+
+| 文档 | 职责 |
+|---|---|
+| [任务契约](docs/task-contract.zh-CN.md) | 游戏、存档、辅助边界、阶段目标、成功事件和记录要求 |
+| [总体架构](docs/architecture-plan.zh-CN.md) | 分层控制、系统模块及长期设计边界 |
+| [第二、三阶段路线](docs/phase-2-3-roadmap.zh-CN.md) | 首层、模型扩展与连续推进至 Mom 的里程碑和交付顺序 |
+| [协作约定](AGENTS.md) | 开发、验证、主动讨论设计与文档交付原则 |
+
+### 第二阶段准备与道具扩展
+
+| 文档 | 职责 |
+|---|---|
+| [M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md) | 当前执行队列 P0–P8、组件职责、支持矩阵、依赖和准入用例；统一准备顺序 |
+| [EID 与本地经验学习计划](docs/eid-local-learning-plan.zh-CN.md) | 来源接入、拾取决策、被动观测、有界实验、证据更新与经验复用 |
+| [独立知识库接口计划](docs/knowledge-project-interface-plan.zh-CN.md) | 跨项目所有权、分层、查询合同、版本化数据包与本项目 Gateway |
+| [道具知识与 DeepSeek 组件开发](docs/item-knowledge-and-skill-evolution.zh-CN.md) | 道具能力分类、程序生成物品、模型编程、验证发布与角色取舍 |
+
+### 第一阶段设计与运行
+
+| 文档 | 职责 |
+|---|---|
+| [战斗组件计划](docs/phase-1-combat-controller.zh-CN.md) | 单房间的观测、LLM 配置、组件接口与初始实现目标 |
+| [第一阶段优化架构](docs/phase-1-optimization.zh-CN.md) | 安全与进攻、危险边界、进展监督和组件替换设计 |
+| [运行手册](docs/phase-1-runbook.zh-CN.md) | 自动启动、连接、配置、单次运行与排错 |
+
+### 验收证据与扩展审查
+
+| 文档 | 职责与范围 |
+|---|---|
+| [第一阶段实机验收](docs/phase-1-live-validation.zh-CN.md) | 自动启动、出门、DeepSeek 配置和首个战斗房的闭环证据 |
+| [第一阶段优化验收](docs/phase-1-optimization-validation.zh-CN.md) | 优化后的清房、损失、耗时与保留失败；不代表整层胜率 |
+| [第一阶段扩展性审查](docs/phase-1-extensibility-review.zh-CN.md) | 当前源码的道具/长局扩展阻断及离线边界探针，作为准备工作的依据 |
+| [控制 MVP 实机记录](docs/control-mvp-live-validation.zh-CN.md) | 状态读取、移动、射击、停发、过门与断线释放的早期实机证据 |
+
+### SocketBridge 接口与工具
+
+| 文档 | 职责与范围 |
+|---|---|
+| [SocketBridge 文档](SocketBridge/README.md) | 桥接模组与 Python 端的安装、接口和使用 |
+| [SocketBridge 源码导读](docs/socketbridge-code-overview.zh-CN.md) | 固定上游基线的架构与源码说明；实机能力另查验收记录 |
+| [控制 MVP 探针指南](docs/control-mvp-guide.zh-CN.md) | 底层控制探针的准备、运行与判据 |
