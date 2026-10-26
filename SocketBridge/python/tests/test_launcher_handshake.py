@@ -71,3 +71,25 @@ class TestMenuHandshake(unittest.IsolatedAsyncioTestCase):
             await launcher.boot_menus(session)
         self.assertEqual(launcher.pause.key.await_count, 3)
 
+    async def test_lost_intro_key_retries_until_menu_ack(self):
+        launcher = self.launcher(); launcher.text = 'playing cutscene 1 (Intro).\n'
+        async def key(_):
+            if launcher.pause.key.await_count == 2: launcher.text += BOOT
+        launcher.pause.key.side_effect = key
+        with patch('combat.launcher.time') as clock, patch('combat.launcher.asyncio.sleep', new=AsyncMock()):
+            clock.monotonic.side_effect = itertools.count(0, .5)
+            self.assertEqual(await launcher.skip_intro(), 2)
+        self.assertEqual(launcher.pause.key.await_count, 2)
+
+    async def test_intro_retries_are_bounded_without_menu_ack(self):
+        launcher = self.launcher(); launcher.text = 'playing cutscene 1 (Intro).\n'
+        with patch('combat.launcher.time') as clock, patch('combat.launcher.asyncio.sleep', new=AsyncMock()):
+            clock.monotonic.side_effect = itertools.count(0, .5)
+            with self.assertRaisesRegex(RuntimeError, 'INTRO_SKIP_NOT_CONFIRMED'): await launcher.skip_intro()
+        self.assertEqual(launcher.pause.key.await_count, 3)
+
+    async def test_initialized_menu_does_not_receive_an_intro_key(self):
+        launcher = self.launcher()
+        self.assertEqual(await launcher.skip_intro(), 0)
+        launcher.pause.key.assert_not_awaited()
+

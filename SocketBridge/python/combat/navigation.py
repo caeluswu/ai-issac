@@ -1,9 +1,49 @@
 """Pure door navigation with the same local movement safety as combat."""
 import time
+from collections import deque
+from .geometry import door_route
 from .models import Vec, ActionFrame
 from .controller import JointActionSolver
 from .motion import PlayerMotion
 from .threats import ThreatField
+
+
+class RoomExplorer:
+    """Find a first combat room through observed open ordinary doors only.
+
+    Empty dead ends must return to an observed frontier rather than terminate
+    just because their remaining exit has already been visited. Room indices
+    identify map nodes; a new room visit still gets a fresh movement controller.
+    """
+    def __init__(self, visited=None):
+        self.visited = visited if visited is not None else set()
+        self.links = {}
+        self.reason = None
+
+    def choose(self, snapshot):
+        room = snapshot.room['room_idx']
+        self.visited.add(room)
+        self.links[room] = {d['target_room'] for d in (snapshot.layout['doors'] or {}).values()
+                            if d['is_open'] and not d['is_locked'] and d['target_room_type'] == 1}
+        route = door_route(snapshot, self.visited)
+        if route is not None:
+            self.reason = 'unvisited_exit'
+            return route
+        queue, seen = deque([(room, None)]), {room}
+        while queue:
+            node, first = queue.popleft()
+            if node != room and self.links.get(node, set())-self.visited:
+                route = door_route(snapshot, self.visited, target_room=first)
+                if route is not None:
+                    self.reason = 'return_to_observed_frontier'
+                    return route
+            for neighbor in sorted(self.links.get(node, ())):
+                if neighbor in self.visited and neighbor not in seen:
+                    if node == room and door_route(snapshot, self.visited, target_room=neighbor) is None: continue
+                    seen.add(neighbor)
+                    queue.append((neighbor, neighbor if first is None else first))
+        self.reason = 'observed_frontier_exhausted'
+        return None
 
 
 class DoorNavigator:

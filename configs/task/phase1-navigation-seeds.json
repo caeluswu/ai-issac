@@ -1,0 +1,14 @@
+{
+  "purpose": "exposed_empty_branch_navigation_regression_not_holdout",
+  "source_manifest": "artifacts\\runs\\batch-20261026T024154786183Z\\seeds.json",
+  "source_seeds_sha256": "2bd9ba190c4e20c8bc3c2ff0e4a40bae5a0e35aa8ebae36f374d605a4b024a0f",
+  "source_indices": [
+    5,
+    26
+  ],
+  "seeds": [
+    "YDJB MB87",
+    "4W4G ZELW"
+  ],
+  "seeds_sha256": "7c7f81391a8c6840514dff47e28d8c8cf1541658d258a554dbff7ec113deb552"
+}

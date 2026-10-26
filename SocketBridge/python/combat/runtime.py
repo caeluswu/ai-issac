@@ -16,11 +16,11 @@ import importlib.metadata
 from .models import ContextRef, RoomReport, ActionReceipt, Vec
 from .catalog import compile_plan, default_plan
 from .controller import BuildResolver, JointActionSolver
-from .geometry import door_route, GeometryService
+from .geometry import GeometryService
 from .observation import SnapshotAssembler, CombatJudge
 from .supervision import ProgressSupervisor
 from .environment import EnvironmentController
-from .navigation import DoorNavigator
+from .navigation import DoorNavigator, RoomExplorer
 
 
 class RunLog:
@@ -490,13 +490,14 @@ class CombatSession:
         initial_run = s.run_id
         if not s.room.get("is_starting_room") or s.room["stage"] != 1 or s.room["difficulty"] != 0 or s.hostiles:
             raise RuntimeError("START_CONTRACT: begin a fresh Isaac Normal run in its starting room")
+        explorer = RoomExplorer(self.visited)
         for _ in range(8):
             self.build_resolver.update(s)
-            self.visited.add(s.room["room_idx"])
-            route = door_route(s, self.visited)
+            route = explorer.choose(s)
             if route is None: raise RuntimeError("NO_REACHABLE_ORDINARY_DOOR")
             _, slot, door, path = route
-            self.log("door_selected", slot=slot, target_room=door["target_room"], path=[p.model_dump() for p in path])
+            self.log("door_selected", slot=slot, target_room=door["target_room"], search_reason=explorer.reason,
+                     path=[p.model_dump() for p in path])
             await self.set_mode("FORCE_AI")
             room = s.room_visit_id
             s, prior = await self.navigate_door(s, slot, door, initial_run)

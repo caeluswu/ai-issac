@@ -230,12 +230,14 @@ class GeometryService:
         return len(found)/max(1, len(total))
 
 
-def door_route(s, visited):
+def door_route(s, visited, *, target_room=None):
     g = GeometryService(s)
     routes = []
     for slot, door in (s.layout["doors"] or {}).items():
-        if not door["is_open"] or door["is_locked"] or door["target_room_type"] != 1 or door["target_room"] in visited:
+        if not door["is_open"] or door["is_locked"] or door["target_room_type"] != 1:
             continue
+        if target_room is None and door["target_room"] in visited: continue
+        if target_room is not None and door["target_room"] != target_room: continue
         point = Vec(x=door["x"], y=door["y"])
         path = g.path(s.player.pos, point)
         if path:

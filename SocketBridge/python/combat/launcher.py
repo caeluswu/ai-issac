@@ -171,12 +171,26 @@ class GameLauncher:
                 continue
         raise RuntimeError("SAVE_SLOT_NOT_CONFIRMED")
 
+    async def skip_intro(self):
+        # A lost intro Enter otherwise leaves a live cutscene forever. Menu
+        # initialization is the acknowledgement; stop sending once it appears.
+        ready = lambda: 'Menu Manager Init' in self.read_game_log()
+        for attempt in range(1, 4):
+            if ready(): return attempt-1
+            self.record('intro_skip_attempt', attempt=attempt)
+            await self.pause.key(0x0D)
+            try:
+                await self.wait_for(ready, 'INTRO_SKIP_WAIT', timeout=3)
+                return attempt
+            except TimeoutError:
+                continue
+        raise RuntimeError('INTRO_SKIP_NOT_CONFIRMED')
+
     async def boot_menus(self, session):
         await self.wait_for(lambda: self.pause.game_window(refresh=True), "GAME_WINDOW_TIMEOUT")
         await self.wait_for(lambda: "playing cutscene 1" in self.read_game_log() or
                             "Menu Manager Init" in self.read_game_log(), "GAME_BOOT_TIMEOUT")
-        if "Menu Manager Init" not in self.read_game_log():
-            await self.pause.key(0x0D)  # skip intro
+        await self.skip_intro()
         await self.wait_for(lambda: "Menu Key Config Init" in self.read_game_log(), "MENU_INIT_TIMEOUT")
         if "Repentance v1.7.9b.J835" not in self.read_game_log(): raise RuntimeError("GAME_BUILD_LOG_MISMATCH")
         # Pinned vanilla build has no menu API. These bounded key steps are only

@@ -17,27 +17,29 @@ from combat.launcher import GameLauncher
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path)
+    parser.add_argument('--phase', choices=('save', 'intro'), default='save')
     options = parser.parse_args()
     destination = options.output_dir or ROOT/'artifacts/runs'/('launcher-miss-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'))
-    state = {'scope': 'prestart_fault_injection_not_combat_evaluation', 'dropped': False,
+    state = {'scope': 'prestart_fault_injection_not_combat_evaluation', 'dropped': False, 'phase': options.phase,
              'probe_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
-    original = GameLauncher.confirm_save_slot
+    method = 'confirm_save_slot' if options.phase == 'save' else 'skip_intro'
+    original = getattr(GameLauncher, method)
 
-    async def inject(launcher, previous_loads):
+    async def inject(launcher, *args):
         native = launcher.pause.key
         async def key(vk):
             if vk == 0x0D and not state['dropped']:
                 state['dropped'] = True
-                launcher.record('test_fault_injected', fault='drop_one_save_confirm_enter', **state)
+                launcher.record('test_fault_injected', fault='drop_one_'+options.phase+'_enter', **state)
                 return
             return await native(vk)
         launcher.pause.key = key
-        try: return await original(launcher, previous_loads)
+        try: return await original(launcher, *args)
         finally: launcher.pause.key = native
 
     args = argparse.Namespace(output_dir=destination, local_only=True, startup_only=True,
         slot=1, ready_timeout=75, seed=None, prepare_seeds=None, seed_count=1)
-    with patch.object(GameLauncher, 'confirm_save_slot', inject):
+    with patch.object(GameLauncher, method, inject):
         code = asyncio.run(run(args))
     state.update(exit_code=code, passed=code == 0 and state['dropped'])
     (destination/'fault-injection.json').write_text(json.dumps(state, indent=2), encoding='utf8')
