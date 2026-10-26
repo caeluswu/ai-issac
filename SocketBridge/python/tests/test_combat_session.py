@@ -107,6 +107,24 @@ class FixturePlanner:
 
 
 class TestSession(unittest.IsolatedAsyncioTestCase):
+    async def test_navigation_death_is_not_reported_as_combat_time_or_combat_damage(self):
+        class DeadOnWalk(SimulatedRoom):
+            async def data(self):
+                if self.s.frame >= 15:
+                    self.s.health["red_hearts"] = 0; self.s.player.dead = True
+                await super().data()
+        with tempfile.TemporaryDirectory() as directory:
+            game = DeadOnWalk(); bridge = SocketBridge(port=0); log = RunLog(Path(directory)/"run")
+            session = CombatSession(bridge, FixturePlanner(), game, log, ready_timeout=3)
+            async def boot(_): await game.connect(bridge._server._server.sockets[0].getsockname()[1])
+            try:
+                report = await asyncio.wait_for(session.run(bootstrap=boot), 5)
+                self.assertEqual(report.result, "DEAD")
+                self.assertEqual(report.damage_half_hearts, 6)
+                self.assertEqual(report.combat_damage_half_hearts, 0)
+                self.assertEqual(report.combat_ticks, 0)
+            finally: await game.close()
+
     async def test_pressure_plate_room_is_traversed_and_navigation_damage_is_counted(self):
         class PlateBeforeCombat(SimulatedRoom):
             entered = False

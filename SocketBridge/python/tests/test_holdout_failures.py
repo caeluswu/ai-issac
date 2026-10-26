@@ -42,7 +42,8 @@ class TestExposedFailures(unittest.TestCase):
             self.assertNotIn(g.cell(Vec(**fire["pos"])), g.walkable)
         navigator = DoorNavigator(1, s.layout["doors"]["1"])
         action = navigator.step(s, default_plan(context(s)), BuildResolver().update(s))
-        self.assertNotEqual(action.move[0], 0)
+        self.assertNotEqual(action.move, (0, 0))
+        self.assertGreater(action.score["clearance"], 0)
         self.assertEqual(action.shoot, (0, 0))
 
     def test_open_portal_crossing_is_explicit_and_does_not_open_closed_doors(self):
@@ -54,6 +55,17 @@ class TestExposedFailures(unittest.TestCase):
         self.assertEqual(action.move, (1, 0))
         s.layout["doors"]["2"]["is_open"] = False
         self.assertNotEqual(navigator.step(s, p, b).state, "NAVIGATE_PORTAL")
+
+    def test_future_path_reward_cannot_make_zero_action_win_mid_route(self):
+        s = WorldSnapshot.model_validate(json.loads((Path(__file__).parent/"fixtures/nav_portal_stall.json").read_text(encoding="utf8")))
+        navigator = DoorNavigator(0, s.layout["doors"]["0"])
+        action = navigator.step(s, default_plan(context(s)), BuildResolver().update(s))
+        self.assertLess(action.move[0], 0)
+        self.assertEqual(action.shoot, (0, 0))
+        for x in range(170, 241, 5):
+            s.player.pos = Vec(x=x, y=160); s.player.vel = Vec(x=0, y=0)
+            action = navigator.step(s, default_plan(context(s)), BuildResolver().update(s))
+            self.assertNotEqual(action.move, (0, 0), x)
 
     def test_clear_room_navigation_cannot_disable_progress_watchdog(self):
         s = snapshot(enemies=False)

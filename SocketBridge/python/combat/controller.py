@@ -228,6 +228,9 @@ class JointActionSolver:
         self.last_route_goal = (round(route_goal.x), round(route_goal.y)) if route_goal else None
         while route and route[0].distance(s.player.pos) < (18 if len(route) > 1 else 5): route.pop(0)
         waypoint = route[0] if route else None
+        suffix = [0.]*len(route)
+        for i in range(len(route)-2, -1, -1): suffix[i] = suffix[i+1]+route[i].distance(route[i+1])
+        initial_route_cost = s.player.pos.distance(route[0])+suffix[0] if route else 0.
         threats = ThreatField(s, self.enemy_adapters)
         extra = profile.evade.params["extra_margin_px"]
         self.positions.append((s.frame, s.player.pos))
@@ -247,7 +250,7 @@ class JointActionSolver:
             desired = PlayerMotion.desired(move, build)
             position, velocity = s.player.pos, s.player.vel
             trajectory = [position]
-            future_route = list(route)
+            future_index, discounted_progress = 0, 0.
             firing_velocity = velocity
             closest_waypoint = s.player.pos.distance(waypoint) if waypoint else 0
             clearance, wall = 1000., False
@@ -255,13 +258,12 @@ class JointActionSolver:
             for tick in range(1, 13):
                 rollout_desired = desired
                 if movement_only and navigation_goal is not None and tick > 1:
-                    while future_route and position.distance(future_route[0]) < (18 if len(future_route) > 1 else 5): future_route.pop(0)
-                    if future_route:
-                        offset = future_route[0]-position
+                    if future_index < len(route):
+                        offset = route[future_index]-position
                         direction = (0 if abs(offset.x) < 7 else (1 if offset.x > 0 else -1),
                                      0 if abs(offset.y) < 7 else (1 if offset.y > 0 else -1))
                         rollout_desired = PlayerMotion.desired(direction, build)
-                        if len(future_route) == 1:
+                        if future_index == len(route)-1:
                             rollout_desired = rollout_desired*min(1., offset.length()/max(1., 3*build.move_speed))
                     else: rollout_desired = ZERO
                 new_position, velocity, blocked, unsafe = PlayerMotion.step(position, velocity, rollout_desired, g, build)
@@ -270,6 +272,10 @@ class JointActionSolver:
                 if tick == 1: firing_velocity = velocity
                 position = new_position
                 trajectory.append(position)
+                if movement_only and navigation_goal is not None and route:
+                    while future_index < len(route) and position.distance(route[future_index]) < (18 if future_index < len(route)-1 else 5): future_index += 1
+                    remaining = position.distance(route[future_index])+suffix[future_index] if future_index < len(route) else 0.
+                    discounted_progress += (initial_route_cost-remaining)*(.85**(tick-1))
                 if waypoint: closest_waypoint = min(closest_waypoint, position.distance(waypoint))
             gaps = threats.path_gaps(trajectory, s.player.collision_radius+extra)
             clearance = min(gaps, default=1000.)
@@ -300,12 +306,10 @@ class JointActionSolver:
                 utility = hit*6+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)-blocked_steps*.02
                 if movement_only: utility = min(100, clearance)/20+escape+max(0, slack)/45-blocked_steps*.05
                 if movement_only and waypoint:
-                    utility += (s.player.pos.distance(waypoint)-closest_waypoint)*.25
-                    if len(trajectory) > 1:
-                        # Future route following cannot earn today's progress
-                        # for free: otherwise "wait, move next update" wins at
-                        # every receding-horizon solve and the player never moves.
-                        utility += (s.player.pos.distance(waypoint)-trajectory[1].distance(waypoint))*.4
+                    # Score the complete path, with earlier progress worth more.
+                    # A lucky near-pass of one waypoint must not make waiting
+                    # preferable to a physically feasible first action.
+                    utility += discounted_progress*.15
                 if not s.hostiles and move != (0, 0): utility -= .08
                 if wall: utility -= 100
                 candidates.append({"move": move, "shoot": shot, "safe": safety.safe,
@@ -313,6 +317,7 @@ class JointActionSolver:
                                    "escape_slack": slack, "escape_directions": exit_directions,
                                    "early_risk": max(0, -early_clearance), "first_contact": first_contact, "blocked_steps": blocked_steps,
                                    "exposure": sum(max(0, -gap) for gap in gaps),
+                                   "first_route_progress": (s.player.pos.distance(waypoint)-trajectory[1].distance(waypoint)) if waypoint and len(trajectory) > 1 else 0.,
                                    "utility": utility, "risk": damage_risk+(100 if not postkill_safe else 0), "fire_reason": attack.reason,
                                    "attack_target": attack_target.instance_id if attack_target else None,
                                    "wait": attack.wait.__dict__ if attack.wait else None})
@@ -323,6 +328,12 @@ class JointActionSolver:
         # Safety is lexicographic. If every option is unsafe, minimize modelled
         # penetration before considering output; this is not a guarantee of life.
         best = select_joint_action(candidates)
+        forward_override = False
+        if movement_only and navigation_goal is not None and initial_route_cost > 12 and s.player.vel.length() < .5 and best["move"] == (0, 0):
+            forward = [c for c in candidates if c["safe"] and c["move"] != (0, 0) and c["first_route_progress"] > .25]
+            if forward:
+                best = select_joint_action(forward)
+                forward_override = True
         self.last_candidates = candidates
         component_failures = [failure for module in modules.values() if (failure := module.pop_failure())]
         self.previous_move = best["move"]
@@ -339,5 +350,6 @@ class JointActionSolver:
                                "blocked_steps": best["blocked_steps"],
                                "near_risk_tolerance_px": 8,
                                "occlusion_reposition": repositioning,
+                               "navigation_forward_override": forward_override, "first_route_progress": best["first_route_progress"],
                                "component_failures": component_failures},
                            decision_ms=(time.perf_counter()-started)*1000)

@@ -11,6 +11,20 @@ spec.loader.exec_module(audit)
 
 
 class TestAudit(unittest.TestCase):
+    def test_combat_scope_excludes_prior_navigation_damage(self):
+        with tempfile.TemporaryDirectory() as name:
+            p = Path(name)
+            self.fixture(p, [("start",True,6),("empty",True,5),("fight",False,5)]+[("fight",True,5)]*3, damage=1)
+            report = json.loads((p/"report.json").read_text())
+            report.update(damage_scope="task", combat_scope="first_observed_blocking_room", combat_damage_half_hearts=0, combat_ticks=3)
+            (p/"report.json").write_text(json.dumps(report))
+            self.assertEqual(audit.audit_run(p)["issues"], [])
+            report.update(combat_damage_half_hearts=1, combat_ticks=4)
+            (p/"report.json").write_text(json.dumps(report))
+            issues = audit.audit_run(p)["issues"]
+            self.assertIn("COMBAT_DAMAGE_REPORT_MISMATCH", issues)
+            self.assertIn("COMBAT_TIME_REPORT_MISMATCH", issues)
+
     def fixture(self, directory, states, damage=0):
         report = {"damage_half_hearts": damage, "llm_configured": True, "success": True, "seed": "ABCD EFGH"}
         (directory/"report.json").write_text(json.dumps(report))

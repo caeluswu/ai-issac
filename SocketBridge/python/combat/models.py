@@ -246,6 +246,7 @@ class RoomReport(Strict):
     contract_override_count: int = 0
     damage_scope: str = "task"
     combat_damage_half_hearts: int = 0
+    combat_scope: str = "first_observed_blocking_room"
     task_ticks: int = 0
     environment_ticks: int = 0
     navigation_replan_requests: int = 0

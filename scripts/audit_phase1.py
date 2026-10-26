@@ -49,6 +49,9 @@ def audit_run(directory):
     last_action = 0
     pause = None
     safe_clear = None
+    combat_room = combat_first = combat_last = None
+    combat_hp = None
+    combat_loss = 0
     for row in rows(trace):
         counts[row["kind"]] += 1
         if row["sequence"] != sequence+1: issues.append("TRACE_SEQUENCE_GAP")
@@ -63,6 +66,15 @@ def audit_run(directory):
             last_action = row["action_id"]
         s = snapshot(row)
         if s is None: continue
+        if measured and not s["paused"]:
+            hp = s["health"]["red_hearts"]+s["health"]["soul_hearts"]
+            blocking = s["room"]["enemy_count"] > 0 or any(e.get("can_shut_doors", True) and not e["dead"] and not e["friendly"] and e["hp"] > 0 for e in s["enemies"])
+            if combat_room is None and blocking:
+                combat_room, combat_first = s["room_visit_id"], s["frame"]
+                combat_hp = previous["health"]["red_hearts"]+previous["health"]["soul_hearts"] if previous else hp
+            if s["room_visit_id"] == combat_room:
+                combat_loss += max(0, combat_hp-hp)
+                combat_hp, combat_last = hp, s["frame"]
         if measured: rooms.add(s["room_visit_id"])
         if measured and (s["room_visit_id"] == target or report.get("damage_scope") == "task"):
             hp = s["health"]["red_hearts"]+s["health"]["soul_hearts"]
@@ -79,6 +91,9 @@ def audit_run(directory):
                 clears.clear()
         previous = s
     if report["damage_half_hearts"] != loss: issues.append("DAMAGE_REPORT_MISMATCH")
+    if report.get("combat_scope") == "first_observed_blocking_room":
+        if report["combat_damage_half_hearts"] != combat_loss: issues.append("COMBAT_DAMAGE_REPORT_MISMATCH")
+        if report["combat_ticks"] != (combat_last-combat_first if combat_first is not None else 0): issues.append("COMBAT_TIME_REPORT_MISMATCH")
     if report["llm_configured"] != installed: issues.append("LLM_REPORT_MISMATCH")
     if report["success"] and (len(clears) < 3 or len(rooms) < 2 or not start or pause is None):
         issues.append("SUCCESS_WITHOUT_REQUIRED_EFFECT_EVIDENCE")

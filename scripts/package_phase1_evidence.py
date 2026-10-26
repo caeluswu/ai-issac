@@ -23,6 +23,7 @@ def metrics(label, summary):
             "mean_loss_half_hearts": mean("damage_half_hearts"),
             "max_loss_half_hearts": max((r.get("damage_half_hearts", 0) for r in reports), default=None),
             "mean_combat_seconds": mean("combat_ticks", 30), "mean_task_game_seconds": mean("task_ticks", 30),
+            "successful_mean_combat_seconds": statistics.mean(r["combat_ticks"]/30 for r in reports if r["success"]) if any(r["success"] for r in reports) else None,
             "mean_pause_seconds": mean("pause_seconds"), "mean_process_wall_seconds": mean("process_wall_seconds"),
             "max_decision_p95_ms": max((r.get("decision_p95_ms") or 0 for r in reports), default=None),
             "max_decision_p99_ms": max((r.get("decision_p99_ms") or 0 for r in reports), default=None),

@@ -302,6 +302,10 @@ class CombatSession:
         self.task_judge = CombatJudge()
         self.task_started = False
         self.task_start_frame = None
+        self.combat_room = None
+        self.combat_start_frame = self.combat_last_frame = None
+        self.combat_previous_hp = None
+        self.combat_damage_recorded = 0
         self.environment_ticks = 0
         self.navigation_timings = []
         self.navigation_metrics = []
@@ -311,7 +315,7 @@ class CombatSession:
 
     def on_message(self, raw):
         self.log("game_message", message=raw)
-        if self.target_room and raw.get("event") == "PLAYER_DEATH": self.death_observed = True
+        if self.task_started and raw.get("event") == "PLAYER_DEATH": self.death_observed = True
         request = raw.get("request_id")
         if request in self.rpc_waiters and not self.rpc_waiters[request].done():
             self.rpc_waiters[request].set_result(raw.get("result", {}))
@@ -324,6 +328,12 @@ class CombatSession:
         s = self.observation.consume(raw)
         if s:
             if self.task_started and not s.paused:
+                if self.combat_room is None and s.blocking_combat:
+                    self.combat_room, self.combat_start_frame = s.room_visit_id, s.frame
+                    self.combat_previous_hp = self.task_judge.previous.hp if self.task_judge.previous else s.hp
+                if s.room_visit_id == self.combat_room:
+                    self.combat_damage_recorded += max(0, self.combat_previous_hp-s.hp)
+                    self.combat_previous_hp, self.combat_last_frame = s.hp, s.frame
                 self.task_judge.observe(s)
                 if s.player.dead or s.hp <= 0: self.death_observed = True
             if s.applied_action_id is not None: self.applied.add(s.applied_action_id)
@@ -499,6 +509,8 @@ class CombatSession:
             self.judge = CombatJudge()
             self.judge.previous = prior
             self.judge_result = self.judge.observe(s)
+            self.event_reasons = set(self.judge.events)
+            if "confirmed_damage" in self.judge.events: self.last_damage_frame = s.frame
             # Transitional snapshots can precede enemy creation. Observe a few
             # updates before classifying a newly entered room as empty.
             for _ in range(3): s = await self.next_snapshot(after=s.snapshot_id)
@@ -777,13 +789,13 @@ class CombatSession:
         report = RoomReport(result=result, success=result == "CLEARED" and self.transitions > 0,
             llm_configured=self.llm_configured, completed_door_transition=self.transitions > 0,
             damage_half_hearts=self.task_judge.damage, lost_bone_hearts=self.task_judge.bones_lost,
-            combat_damage_half_hearts=self.judge.damage, task_ticks=max(0, s.frame-self.task_start_frame) if s and self.task_start_frame is not None else 0,
+            combat_damage_half_hearts=self.combat_damage_recorded, task_ticks=max(0, s.frame-self.task_start_frame) if s and self.task_start_frame is not None else 0,
             environment_ticks=self.environment_ticks,
             navigation_replan_requests=self.navigation_replan_requests, navigation_metrics=self.navigation_metrics,
             navigation_decision_p95_ms=sorted(self.navigation_timings)[min(len(self.navigation_timings)-1, int(.95*len(self.navigation_timings)))] if self.navigation_timings else None,
             navigation_decision_p99_ms=sorted(self.navigation_timings)[min(len(self.navigation_timings)-1, int(.99*len(self.navigation_timings)))] if self.navigation_timings else None,
             remaining_half_hearts=s.hp if s else None,
-            combat_ticks=max(0, (self.judge.previous.frame-self.judge.started)) if self.judge.previous else 0,
+            combat_ticks=max(0, self.combat_last_frame-self.combat_start_frame) if self.combat_start_frame is not None else 0,
             wall_seconds=time.monotonic()-self.started_at, pause_seconds=self.pause_seconds,
             sent_actions=self.actions, accepted_actions=len(self.accepted), observed_applied_actions=len(self.applied),
             fallback_count=self.fallbacks, recovery_count=len(self.solver.recoveries),
