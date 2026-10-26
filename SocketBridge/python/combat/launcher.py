@@ -145,6 +145,32 @@ class GameLauncher:
             if time.monotonic() >= deadline: raise TimeoutError(reason)
             await asyncio.sleep(.1)
 
+    async def confirm_save_slot(self, previous_loads):
+        """Require a new slot load, never startup's preload of all three slots.
+
+        On slot one, Enter can safely advance either title or save selection;
+        retry a missed transition before any measured run starts. Other slots
+        cannot replay arrows without knowing the current menu, so fail closed.
+        """
+        def loads(): return re.findall(r"Loading GameState (\d) from", self.read_game_log())
+        def confirmed():
+            current = loads()
+            if len(current) <= previous_loads: return False
+            if int(current[-1]) != self.slot:
+                raise RuntimeError(f"SAVE_SLOT_MISMATCH: expected={self.slot}, observed={current[-1]}")
+            return True
+        attempts = 3 if self.slot == 1 else 1
+        for attempt in range(1, attempts+1):
+            if confirmed(): return attempt-1
+            self.record("save_slot_confirm_attempt", slot=self.slot, attempt=attempt)
+            await self.pause.key(0x0D)
+            try:
+                await self.wait_for(confirmed, "SAVE_SLOT_CONFIRM_WAIT", timeout=2)
+                return attempt
+            except TimeoutError:
+                continue
+        raise RuntimeError("SAVE_SLOT_NOT_CONFIRMED")
+
     async def boot_menus(self, session):
         await self.wait_for(lambda: self.pause.game_window(refresh=True), "GAME_WINDOW_TIMEOUT")
         await self.wait_for(lambda: "playing cutscene 1" in self.read_game_log() or
@@ -156,6 +182,7 @@ class GameLauncher:
         # Pinned vanilla build has no menu API. These bounded key steps are only
         # bootstrap; a fresh typed in-game snapshot is the success criterion.
         self.record("menus", slot=self.slot)
+        previous_loads = len(re.findall(r"Loading GameState (\d) from", self.read_game_log()))
         await asyncio.sleep(1)
         await self.pause.key(0x0D)  # title -> save slots
         await asyncio.sleep(1)
@@ -163,14 +190,18 @@ class GameLauncher:
         for key in [0x27]*(self.slot-1):
             await self.pause.key(key)
             await asyncio.sleep(.2)
-        await self.pause.key(0x0D)  # selected save -> main menu
-        await asyncio.sleep(1)
-        loaded = re.findall(r"Loading GameState (\d) from", self.read_game_log())
-        if not loaded or int(loaded[-1]) != self.slot: raise RuntimeError("SAVE_SLOT_NOT_CONFIRMED")
-        self.record("save_slot_confirmed", slot=self.slot)
-        await self.pause.key(0x0D)  # main menu -> character selection
-        await asyncio.sleep(1)
-        await self.pause.key(0x0D)  # enter game; normalized via audited restart 0
+        attempts = await self.confirm_save_slot(previous_loads)
+        self.record("save_slot_confirmed", slot=self.slot, attempts=attempts)
+        # A restored save may offer Continue, whereas a fresh slot offers New
+        # Run. Stop menu input as soon as the in-game bridge actually connects.
+        for attempt in range(1, 5):
+            if session.bridge.connected: break
+            await self.pause.key(0x0D)
+            try:
+                await self.wait_for(lambda: session.bridge.connected, "GAME_ENTRY_WAIT", timeout=3)
+                break
+            except TimeoutError:
+                self.record("game_entry_wait", attempt=attempt)
         await self.wait_for(lambda: session.bridge.connected, "GAME_CONNECTION_TIMEOUT")
         self.record("bridge_connected", pid=self.process.pid)
 
