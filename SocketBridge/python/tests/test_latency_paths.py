@@ -13,15 +13,16 @@ from combat.threats import ThreatField
 from tests.combat_fixtures import snapshot
 
 
-def exhaustive_route(g, start, target, effective_range):
+def exhaustive_route(g, start, target, effective_range, terrain=False, excluded=()):
     origin = g.nearest(start)
     queue, parents, depth, best = deque([origin]), {}, {origin: 0}, None
     while queue:
         i = queue.popleft(); p = g.positions[i]
         for candidate in (Vec(x=p.x, y=target.y), Vec(x=target.x, y=p.y)):
-            if candidate.distance(p) > 19: continue
+            if candidate.distance(p) > 19 or (round(candidate.x),round(candidate.y)) in excluded: continue
             distance = (target-candidate).length()
-            if 60 <= distance <= effective_range*.85 and g.clear(candidate) and g.line_clear(p, candidate) and g.line_clear(candidate, target, shot=True):
+            end = target-(target-candidate).unit()*22 if terrain else target
+            if (25 if terrain else 60) <= distance <= effective_range*.85 and g.clear(candidate) and g.line_clear(p, candidate) and g.line_clear(candidate, end, shot=True):
                 score = depth[i]*40+p.distance(candidate)+abs(distance-effective_range*.55)*.15
                 if best is None or score < best[0]: best = (score, i, candidate)
         for j in g.neighbors.get(i, []):
@@ -36,6 +37,44 @@ def exhaustive_route(g, start, target, effective_range):
 
 
 class TestExactLatencyPaths(unittest.TestCase):
+    def captured_fields(self):
+        return [WorldSnapshot.model_validate(v['snapshot']) for v in json.loads(
+            (Path(__file__).parent/'fixtures/latency_room_fields.json').read_text(encoding='utf8'))]
+
+    def test_cached_terrain_stances_preserve_paths_and_new_exclusions(self):
+        for s in self.captured_fields():
+            g=GeometryService(s); build=BuildResolver().update(s)
+            targets=[Vec(x=c['x'],y=c['y']) for c in s.layout['grid'].values() if c['type']==14 and c['variant']==0 and c['collision']!=0][:3]
+            for target in targets:
+                expected=exhaustive_route(g,s.player.pos,target,build.effective_range,True)
+                self.assertEqual(g.firing_route(s.player.pos,target,build.effective_range,True),expected)
+                excluded=[(round(expected[-1].x),round(expected[-1].y))] if expected else []
+                self.assertEqual(g.firing_route(s.player.pos,target,build.effective_range,True,excluded),
+                                 exhaustive_route(g,s.player.pos,target,build.effective_range,True,excluded))
+
+    def test_terrain_target_pruning_preserves_exhaustive_global_minimum(self):
+        from combat.catalog import default_plan
+        from tests.combat_fixtures import context
+        for s in self.captured_fields():
+            g=GeometryService(s); build=BuildResolver().update(s); all_routes=[]
+            for index,c in s.layout['grid'].items():
+                if c['type']==14 and c['variant']==0 and c['collision']!=0:
+                    target=Vec(x=c['x'],y=c['y']); route=exhaustive_route(g,s.player.pos,target,build.effective_range,True)
+                    if route: all_routes.append((len(route)*40+target.distance(s.player.pos),index,route))
+            expected=min(all_routes,key=lambda x:x[:2])
+            solver=JointActionSolver(); action=solver.solve(s,default_plan(context(s)),build)
+            self.assertEqual(action.diagnostics['movement_target'],'terrain:'+expected[1])
+            self.assertEqual(action.diagnostics['route_goal'],[round(expected[2][-1].x),round(expected[2][-1].y)])
+            self.assertFalse(action.diagnostics['budget_exhausted'])
+
+    def test_firing_stance_lru_keeps_hot_targets_bounded(self):
+        g=GeometryService(snapshot()); target=Vec(x=320,y=160)
+        original=g.firing_stances(target,225,True)
+        for i in range(70):
+            g.firing_stances(Vec(x=10000+i,y=10000),225,True)
+            self.assertIs(g.firing_stances(target,225,True),original)
+        self.assertLessEqual(len(g.firing_stance_cache),64)
+
     def test_pruned_firing_stance_matches_full_search_in_obstructed_rooms(self):
         rng = random.Random(4711)
         for _ in range(20):

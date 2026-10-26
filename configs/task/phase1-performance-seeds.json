@@ -1,0 +1,16 @@
+{
+  "purpose": "exposed_terrain_latency_and_portal_bomb_regression_not_holdout",
+  "source_manifest": "artifacts\\runs\\batch-20261026T033028698792Z\\seeds.json",
+  "source_seeds_sha256": "0652a8e1417bf762af4f83bb7a73d30d78b3aa2b278fa20e4bf21988c9f98aa9",
+  "source_indices": [
+    30,
+    36,
+    38
+  ],
+  "seeds": [
+    "AA3T 4NK1",
+    "86ER ED8Q",
+    "P1ZG CEAC"
+  ],
+  "seeds_sha256": "35d785a1e342fae228cecc38cb13c159944de4b2d89829d9b511e450b375d4ea"
+}

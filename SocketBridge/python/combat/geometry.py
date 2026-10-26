@@ -1,7 +1,7 @@
 """Grid geometry, swept segments, A* routing and reachable escape area."""
 import heapq
 import math
-from collections import deque
+from collections import deque, OrderedDict
 from .models import Vec, WorldSnapshot
 
 
@@ -42,6 +42,9 @@ class GeometryService:
         # GeometryService is replaced when terrain/fire/flight permissions
         # change. Cache exact queries only, with bounded per-room memory.
         self.line_cache = {}
+        self.firing_stance_cache = OrderedDict()
+        self.portals = tuple((int(slot), Vec(x=d['x'], y=d['y'])) for slot, d in (snapshot.layout['doors'] or {}).items()
+                             if d['is_open'] and not d['is_locked'])
 
     def cell(self, p):
         return self.cell_xy(p.x, p.y)
@@ -96,6 +99,7 @@ class GeometryService:
 
     def motion_clear(self, start, end):
         if self.line_clear(start, end, radius=self.physical_radius): return True
+        if self.retreat_from_portal(start, end): return True
         # Entity.Size is the NPC contact radius, not an exact grid footprint.
         # Knockback can leave a valid observed position inside our conservative
         # wall margin. Permit only motion out of existing overlap; never cross
@@ -118,6 +122,35 @@ class GeometryService:
                 nearest = self.positions[self.nearest(Vec(x=ax, y=ay))]
                 if (bx-nearest.x)**2+(by-nearest.y)**2 > (ax-nearest.x)**2+(ay-nearest.y)**2+1e-6: return False
         return self.cell(end) in self.walkable
+
+    def retreat_from_portal(self, start, end):
+        """Allow an observed body in an open aperture to move into this room.
+
+        Portal centers sit outside the interior walkable grid. Knockback and
+        drift can leave an otherwise legal player there. This narrow exception
+        never authorizes outward crossing; DoorNavigator owns that operation.
+        """
+        r = self.physical_radius
+        offsets = ((0,0),(r,0),(-r,0),(0,r),(0,-r),
+                   (r*.707,r*.707),(-r*.707,r*.707),(r*.707,-r*.707),(-r*.707,-r*.707))
+        dx, dy = end.x-start.x, end.y-start.y
+        steps = max(1, math.ceil(math.hypot(dx,dy)/8))
+        for slot, point in self.portals:
+            ix, iy = ((1,0),(0,1),(-1,0),(0,-1))[slot%4]
+            if start.distance(point) > 45 or dx*ix+dy*iy <= 1e-6: continue
+            valid = True
+            for step in range(steps+1):
+                for ox, oy in offsets:
+                    x, y = start.x+dx*step/steps+ox, start.y+dy*step/steps+oy
+                    cell = self.cell_xy(x,y)
+                    if cell in self.dangerous: valid = False; break
+                    if cell in self.walkable: continue
+                    inward = (x-point.x)*ix+(y-point.y)*iy
+                    lateral = abs((x-point.x)*iy-(y-point.y)*ix)
+                    if not (-2*r <= inward <= 60 and lateral <= 20): valid = False; break
+                if not valid: break
+            if valid: return True
+        return False
 
     def nearest(self, p):
         if not self.walkable: raise ValueError("No walkable cells")
@@ -162,8 +195,39 @@ class GeometryService:
                     safe.discard(i); break
         return safe
 
+    def firing_stances(self, target, effective_range, terrain):
+        """Geometry-only candidates; origin/recovery exclusions stay dynamic.
+
+        Many ordinary-poop targets share one unchanged room geometry. Compute
+        their legal cardinal stances once instead of constructing vectors for
+        every rejected projection on every frame. The bounded LRU keeps static
+        targets hot while moving enemies cannot grow the cache indefinitely.
+        """
+        key = (target.x, target.y, effective_range, terrain)
+        if key in self.firing_stance_cache:
+            self.firing_stance_cache.move_to_end(key)
+            return self.firing_stance_cache[key]
+        stances = {}
+        for i in self.walkable:
+            p = self.positions[i]
+            for x, y in ((p.x, target.y), (target.x, p.y)):
+                offset = math.hypot(x-p.x, y-p.y)
+                if offset > 19: continue
+                dx, dy = target.x-x, target.y-y
+                distance = math.hypot(dx, dy)
+                if not (25 if terrain else 60) <= distance <= effective_range*.85: continue
+                candidate = Vec(x=x, y=y)
+                end = Vec(x=target.x-dx/distance*22, y=target.y-dy/distance*22) if terrain else target
+                if self.clear(candidate) and self.line_clear(p, candidate) and self.line_clear(candidate, end, shot=True):
+                    stances.setdefault(i, []).append((candidate, offset, abs(distance-effective_range*.55)*.15))
+        if len(self.firing_stance_cache) >= 64: self.firing_stance_cache.popitem(last=False)
+        self.firing_stance_cache[key] = stances
+        return stances
+
     def firing_route(self, start, target, effective_range, terrain=False, excluded=()):
         """Reach a cardinal firing lane, including around obstructing rocks."""
+        stances = self.firing_stances(target, effective_range, terrain)
+        if not stances: return []
         origin = self.nearest(start)
         queue, parents, depth = deque([origin]), {}, {origin: 0}
         best = None
@@ -173,16 +237,10 @@ class GeometryService:
             # nonnegative. No deeper stance can improve the current minimum.
             # Keep equal-depth candidates so deterministic tie order survives.
             if best is not None and depth[i]*40 > best[0]: break
-            # Project into exact cardinal alignment inside each walkable cell.
-            # A grid center within 14px is not necessarily a hittable stance.
-            for candidate in (Vec(x=p.x, y=target.y), Vec(x=target.x, y=p.y)):
-                if candidate.distance(p) > 19 or (round(candidate.x), round(candidate.y)) in excluded: continue
-                delta = target-candidate; distance = delta.length()
-                if (25 if terrain else 60) <= distance <= effective_range*.85:
-                    end = target-delta.unit()*22 if terrain else target
-                    if self.clear(candidate) and self.line_clear(p, candidate) and self.line_clear(candidate, end, shot=True):
-                        score = depth[i]*40+p.distance(candidate)+abs(distance-effective_range*.55)*.15
-                        if best is None or score < best[0]: best = (score, i, candidate)
+            for candidate, offset, bias in stances.get(i, ()):
+                if (round(candidate.x), round(candidate.y)) in excluded: continue
+                score = depth[i]*40+offset+bias
+                if best is None or score < best[0]: best = (score, i, candidate)
             for j in self.neighbors.get(i, []):
                 if j not in depth:
                     depth[j], parents[j] = depth[i]+1, i; queue.append(j)

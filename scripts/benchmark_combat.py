@@ -70,6 +70,12 @@ def main():
     raw = json.loads((ROOT/"SocketBridge/python/tests/fixtures/latency_joint.json").read_text(encoding="utf8"))
     result["cases"].append({"case": "captured_llm_joint_tail", **measure(WorldSnapshot.model_validate(raw["snapshot"]),
                             args.repeats, plan=BattlePlan.model_validate(raw["plan"]))})
+    for raw in json.loads((ROOT/"SocketBridge/python/tests/fixtures/latency_room_fields.json").read_text(encoding="utf8")):
+        for cold in (False,True):
+            step=(lambda s,p,b: JointActionSolver().solve(s,p,b)) if cold else None
+            result["cases"].append({"case":"captured_terrain_route_cold" if cold else "captured_terrain_route_warm",
+                "source_sample":raw["sample"],"source_frame":raw["snapshot"]["frame"],
+                **measure(WorldSnapshot.model_validate(raw["snapshot"]),args.repeats,step)})
     args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
     return int(any(c["p95_ms"] > 20 or c["p99_ms"] > 30 for c in result["cases"]))

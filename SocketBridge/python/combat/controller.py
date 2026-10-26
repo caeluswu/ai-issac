@@ -188,7 +188,9 @@ class JointActionSolver:
         target = None if movement_only else self.target(s, profile, build)
         fire_cells = tuple(sorted((h["id"], h["pos"]["x"], h["pos"]["y"]) for h in s.hazards
                                   if h.get("type") == "FIREPLACE" and not h.get("is_extinguished", False)))
-        geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices), fire_cells)
+        portals = tuple(sorted((slot, d['x'], d['y']) for slot, d in (s.layout['doors'] or {}).items()
+                               if d['is_open'] and not d['is_locked']))
+        geometry_key = (s.room_visit_id, s.stats["can_fly"], str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices), fire_cells, portals)
         if geometry_key != self.geometry_key:
             self.geometry, self.geometry_key = GeometryService(s, allowed_devices), geometry_key
         g = self.geometry
@@ -210,10 +212,19 @@ class JointActionSolver:
             for index, grid in (s.layout["grid"] or {}).items():
                 if grid["type"] == 14 and grid["variant"] == 0 and grid["collision"] != 0:
                     position = Vec(x=grid["x"], y=grid["y"])
-                    path = list(modules["position"].route(g, s, position, build, modules["fire"], terrain=True).waypoints)
-                    if path: blockers.append((len(path)*40+position.distance(s.player.pos), index, position, path))
-            if blockers:
-                _, index, position, route = min(blockers, key=lambda x: (x[0], x[1]))
+                    blockers.append((position.distance(s.player.pos), index, position))
+            best_blocker = None
+            for distance, index, position in sorted(blockers, key=lambda x: (x[0], x[1])):
+                # Every usable proposal has at least one waypoint, hence its
+                # existing score is >=40+distance. Skip only targets proven
+                # unable to beat the current minimum, including custom weapons.
+                if best_blocker is not None and 40+distance > best_blocker[0]: break
+                path = list(modules["position"].route(g, s, position, build, modules["fire"], terrain=True).waypoints)
+                if path:
+                    proposal = (len(path)*40+distance, index, position, path)
+                    if best_blocker is None or proposal[:2] < best_blocker[:2]: best_blocker = proposal
+            if best_blocker:
+                _, index, position, route = best_blocker
                 target = Enemy(instance_id="terrain:"+index, type=0, variant=0, pos=position, vel=ZERO,
                                hp=1, max_hp=1, collision_radius=18, vulnerable=True, friendly=False, dead=False, collision_class=0)
         repositioning = False
@@ -278,6 +289,13 @@ class JointActionSolver:
                     discounted_progress += (initial_route_cost-remaining)*(.85**(tick-1))
                 if waypoint: closest_waypoint = min(closest_waypoint, position.distance(waypoint))
             gaps = threats.path_gaps(trajectory, s.player.collision_radius+extra)
+            # A valid observation may already lie inside an open aperture,
+            # outside the interior grid. Holding there is not a verified safe
+            # stance. Prefer an admissible inward retreat over twelve blocked
+            # rollout steps that merely freeze the model at that invalid cell.
+            invalid_pose_stall = (blocked_steps == 12 and position.distance(s.player.pos) < .1
+                                  and g.cell(s.player.pos) not in g.walkable)
+            wall = wall or invalid_pose_stall
             clearance = min(gaps, default=1000.)
             early_clearance = min(gaps[:3], default=1000.)
             first_contact = next((tick for tick, gap in enumerate(gaps, 1) if gap <= 0), 13)
@@ -316,6 +334,7 @@ class JointActionSolver:
                                    "clearance": clearance, "wall": wall, "hit": hit, "escape": escape,
                                    "escape_slack": slack, "escape_directions": exit_directions,
                                    "early_risk": max(0, -early_clearance), "first_contact": first_contact, "blocked_steps": blocked_steps,
+                                   "invalid_pose_stall": invalid_pose_stall,
                                    "exposure": sum(max(0, -gap) for gap in gaps),
                                    "first_route_progress": (s.player.pos.distance(waypoint)-trajectory[1].distance(waypoint)) if waypoint and len(trajectory) > 1 else 0.,
                                    "utility": utility, "risk": damage_risk+(100 if not postkill_safe else 0), "fire_reason": attack.reason,
@@ -348,6 +367,7 @@ class JointActionSolver:
                                "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"],
                                "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),
                                "blocked_steps": best["blocked_steps"],
+                               "invalid_pose_stall": best["invalid_pose_stall"],
                                "near_risk_tolerance_px": 8,
                                "occlusion_reposition": repositioning,
                                "navigation_forward_override": forward_override, "first_route_progress": best["first_route_progress"],
