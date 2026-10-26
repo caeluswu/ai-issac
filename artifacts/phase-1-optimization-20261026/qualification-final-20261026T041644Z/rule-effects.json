@@ -1,0 +1,960 @@
+{
+  "qualification": "artifacts\\phase-1-optimization-20261026\\qualification-final-20261026T041644Z",
+  "runs": [
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-01",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 963,
+      "safe_clear_sequence": 962,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-02",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 883,
+      "safe_clear_sequence": 882,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-03",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 841,
+      "safe_clear_sequence": 840,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-04",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 2547,
+      "safe_clear_sequence": 2546,
+      "contract_entries": 2,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-05",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 987,
+      "safe_clear_sequence": 986,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-06",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1413,
+      "safe_clear_sequence": 1412,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-07",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 566,
+      "safe_clear_sequence": 565,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-08",
+      "result": "ABORTED",
+      "success": false,
+      "issues": [],
+      "combat_observed": false,
+      "manual_ack_sequence": 1104,
+      "safe_clear_sequence": null,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-09",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1209,
+      "safe_clear_sequence": 1208,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-10",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 920,
+      "safe_clear_sequence": 919,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-11",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1248,
+      "safe_clear_sequence": 1247,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-12",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 959,
+      "safe_clear_sequence": 958,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-13",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 858,
+      "safe_clear_sequence": 857,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-14",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 698,
+      "safe_clear_sequence": 697,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-15",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 928,
+      "safe_clear_sequence": 927,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-16",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 2153,
+      "safe_clear_sequence": 2152,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-17",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1368,
+      "safe_clear_sequence": 1367,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-18",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1179,
+      "safe_clear_sequence": 1178,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-19",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1314,
+      "safe_clear_sequence": 1313,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-20",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1173,
+      "safe_clear_sequence": 1172,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-21",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1902,
+      "safe_clear_sequence": 1901,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-22",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 850,
+      "safe_clear_sequence": 849,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-23",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 924,
+      "safe_clear_sequence": 923,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-24",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1426,
+      "safe_clear_sequence": 1425,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-25",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 567,
+      "safe_clear_sequence": 566,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-26",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 813,
+      "safe_clear_sequence": 812,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-27",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 810,
+      "safe_clear_sequence": 809,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-28",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 601,
+      "safe_clear_sequence": 600,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-29",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 3763,
+      "safe_clear_sequence": 3762,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-30",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 670,
+      "safe_clear_sequence": 669,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-31",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 831,
+      "safe_clear_sequence": 830,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-32",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1036,
+      "safe_clear_sequence": 1035,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-33",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 441,
+      "safe_clear_sequence": 440,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-34",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1301,
+      "safe_clear_sequence": 1300,
+      "contract_entries": 1,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-35",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 450,
+      "safe_clear_sequence": 449,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-36",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1789,
+      "safe_clear_sequence": 1788,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-37",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 888,
+      "safe_clear_sequence": 887,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-38",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 444,
+      "safe_clear_sequence": 443,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-39",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 612,
+      "safe_clear_sequence": 611,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-40",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 350,
+      "safe_clear_sequence": 349,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-41",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1006,
+      "safe_clear_sequence": 1005,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-42",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 352,
+      "safe_clear_sequence": 351,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-43",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 840,
+      "safe_clear_sequence": 839,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-44",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 697,
+      "safe_clear_sequence": 696,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-45",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 794,
+      "safe_clear_sequence": 793,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-46",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 552,
+      "safe_clear_sequence": 551,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-47",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 700,
+      "safe_clear_sequence": 699,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-48",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1866,
+      "safe_clear_sequence": 1865,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-49",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 1140,
+      "safe_clear_sequence": 1139,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    },
+    {
+      "directory": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-50",
+      "result": "CLEARED",
+      "success": true,
+      "issues": [],
+      "combat_observed": true,
+      "manual_ack_sequence": 2019,
+      "safe_clear_sequence": 2018,
+      "contract_entries": 0,
+      "baseline": {
+        "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+        "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+      },
+      "dependencies": {
+        "pydantic": "2.14.1",
+        "httpx": "0.28.1",
+        "numpy": "2.5.4"
+      }
+    }
+  ],
+  "checked": 50,
+  "same_baseline": true,
+  "same_dependencies": true,
+  "issues": 0,
+  "passed": true
+}

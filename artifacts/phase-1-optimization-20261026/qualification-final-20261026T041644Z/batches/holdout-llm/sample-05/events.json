@@ -1,0 +1,331 @@
+[
+  {
+    "sequence": 26,
+    "wall_monotonic": 67193.625,
+    "kind": "run_start",
+    "seed": "E791 9EAM",
+    "snapshot_id": "680525933:67192757:1:4"
+  },
+  {
+    "sequence": 144,
+    "wall_monotonic": 67195.578,
+    "kind": "pause_confirmed",
+    "entry_frame": 41,
+    "paused_frame": 41,
+    "delay_ticks": 0
+  },
+  {
+    "sequence": 466,
+    "wall_monotonic": 67226.734,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 2,
+      "context_ref": {
+        "run_id": "680525933:67192757",
+        "room_visit_id": "680525933:67192757:2",
+        "snapshot_id": "680525933:67192757:2:41",
+        "build_revision": 1,
+        "catalog_revision": 2,
+        "plan_revision": 0
+      },
+      "default_profile": "kite_standard",
+      "profiles": {
+        "kite_standard": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 6
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        },
+        "cautious": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.25,
+              "min_hold_ticks": 15
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.6,
+              "max_range_ratio": 0.9
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.35
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 10
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 45,
+              "min_safe_area_ratio": 0.35
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 20,
+              "recovery_ticks": 9
+            }
+          }
+        },
+        "finish": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.1,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.75
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 6
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [
+        {
+          "when": [
+            {
+              "field": "health_ratio",
+              "op": "lt",
+              "value": 0.5,
+              "enemy_type": null
+            }
+          ],
+          "use_profile": "cautious"
+        },
+        {
+          "when": [
+            {
+              "field": "attackable_count",
+              "op": "le",
+              "value": 1.0,
+              "enemy_type": null
+            }
+          ],
+          "use_profile": "finish"
+        }
+      ],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Two hostiles: a champion Flaming Gaper (type 10 variant 2, 18 HP, 2.0 contact damage, wiki confirms it walks toward Isaac and deals contact damage, is not fire-immune, and may leave a Pacer/Gusher on death) and an unidentified type 208 variant 2 (18 HP, 1.0 contact damage, stationary at snapshot; lookup returned no mechanics). Both are stationary now, so aim can be direct/predictive with modest lead. Effective range is 195 px while targets sit at 200 px and 312 px, so the controller must close distance while kiting in the open lower band around (320,400); dense collision-3 obstacles and ten 5 HP fireplaces block lanes, so max-clearance evasion plus route preservation is preferred over tight strafing. Focus one target at a time (6 hits per 18 HP at 3.5 damage), switching to finish_first once only one remains, and going more conservative below half health. Unknowns: type 208 behavior, champion-color-12 modifier effect, and whether fireplaces block tears.",
+        "evidence_refs": [
+          "snapshot:enemies[3905654509:3]",
+          "snapshot:enemies[4172393809:7]",
+          "snapshot:hazards",
+          "snapshot:derived.target_distance",
+          "snapshot:build.effective_range",
+          "wiki:gaper"
+        ]
+      },
+      "required_capabilities": [
+        "normal_tears"
+      ]
+    }
+  },
+  {
+    "sequence": 472,
+    "wall_monotonic": 67227.187,
+    "kind": "resume_confirmed",
+    "frame": 42,
+    "attempts": 1
+  },
+  {
+    "sequence": 477,
+    "wall_monotonic": 67227.234,
+    "kind": "replan_started",
+    "frame": 44,
+    "reasons": [
+      "new_enemy_mechanism"
+    ]
+  },
+  {
+    "sequence": 635,
+    "wall_monotonic": 67228.968,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "idle",
+      "frame": 96,
+      "age_ticks": 30,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1349,
+    "wall_monotonic": 67235.968,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "stall",
+      "frame": 306,
+      "age_ticks": 60,
+      "severity": "warning"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1435,
+    "wall_monotonic": 67236.703,
+    "kind": "safe_clear_confirmed",
+    "frame": 328,
+    "started": 313,
+    "safe_since": 313
+  },
+  {
+    "sequence": 1437,
+    "wall_monotonic": 67236.703,
+    "kind": "report",
+    "result": "CLEARED",
+    "success": true,
+    "llm_configured": true,
+    "completed_door_transition": true,
+    "damage_half_hearts": 0,
+    "lost_bone_hearts": 0,
+    "remaining_half_hearts": 6,
+    "combat_ticks": 290,
+    "wall_seconds": 56.421999999991385,
+    "pause_seconds": 31.969000000011874,
+    "sent_actions": 318,
+    "accepted_actions": 317,
+    "observed_applied_actions": 288,
+    "fallback_count": 0,
+    "recovery_count": 2,
+    "decision_p95_ms": 10.196400005952455,
+    "seed": "E791 9EAM",
+    "error": null,
+    "progress_metrics": {
+      "max_no_progress_ticks": 82,
+      "max_idle_ticks": 32,
+      "boundary_counts": {
+        "idle": 1,
+        "stall": 1
+      },
+      "recovery_entries": 3
+    },
+    "replan_requests": 1,
+    "decision_p99_ms": 11.79210000555031,
+    "safe_clear_ticks": 15,
+    "discarded_decisions": 0,
+    "contract_override_count": 0,
+    "damage_scope": "task",
+    "combat_damage_half_hearts": 0,
+    "combat_scope": "first_observed_blocking_room",
+    "task_ticks": 324,
+    "environment_ticks": 0,
+    "navigation_replan_requests": 0,
+    "navigation_decision_p95_ms": 5.580099998041987,
+    "navigation_decision_p99_ms": 5.8293000038247555,
+    "navigation_metrics": [
+      {
+        "room_visit_id": "680525933:67192757:1",
+        "max_no_progress_ticks": 4,
+        "max_idle_ticks": 0,
+        "boundary_counts": {},
+        "recovery_entries": 0
+      }
+    ]
+  }
+]

@@ -1,0 +1,122 @@
+{
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.9",
+  "repeats": 100,
+  "cases": [
+    {
+      "case": "synthetic_density",
+      "enemies": 1,
+      "projectiles": 0,
+      "median_ms": 3.1638000000384636,
+      "p95_ms": 3.585200000088662,
+      "p99_ms": 5.822700004500803,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "synthetic_density",
+      "enemies": 1,
+      "projectiles": 50,
+      "median_ms": 5.125100000441307,
+      "p95_ms": 5.8649999991757795,
+      "p99_ms": 7.619999996677507,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "synthetic_density",
+      "enemies": 1,
+      "projectiles": 200,
+      "median_ms": 3.5088499971607234,
+      "p95_ms": 4.1912999950000085,
+      "p99_ms": 5.642800002533477,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "synthetic_density",
+      "enemies": 1,
+      "projectiles": 500,
+      "median_ms": 4.682399998273468,
+      "p95_ms": 5.32050000037998,
+      "p99_ms": 6.630900003074203,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "synthetic_density",
+      "enemies": 32,
+      "projectiles": 200,
+      "median_ms": 8.293599999888102,
+      "p95_ms": 8.831799998006318,
+      "p99_ms": 10.572699997283053,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "synthetic_density",
+      "enemies": 64,
+      "projectiles": 500,
+      "median_ms": 10.847900000953814,
+      "p95_ms": 11.718800000380725,
+      "p99_ms": 13.497799998731352,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "captured_large_wall",
+      "source_frame": 602,
+      "enemies": 1,
+      "projectiles": 0,
+      "median_ms": 6.9716499965579715,
+      "p95_ms": 7.739299995591864,
+      "p99_ms": 9.48659999994561,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "captured_large_wall",
+      "source_frame": 619,
+      "enemies": 0,
+      "projectiles": 0,
+      "median_ms": 6.855600000562845,
+      "p95_ms": 7.44989999657264,
+      "p99_ms": 9.130500002356712,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "captured_fire_navigation",
+      "enemies": 0,
+      "projectiles": 0,
+      "median_ms": 4.135650000534952,
+      "p95_ms": 4.756600006658118,
+      "p99_ms": 6.467100000008941,
+      "budget_exhausted": 0
+    },
+    {
+      "case": "captured_llm_joint_tail",
+      "enemies": 2,
+      "projectiles": 0,
+      "median_ms": 4.335350004112115,
+      "p95_ms": 4.901400003291201,
+      "p99_ms": 8.282599999802187,
+      "budget_exhausted": 0
+    }
+  ],
+  "implementation_commit": "b88df449bab3bad5184acb4af12a467ef0cc34ed",
+  "source_hashes": {
+    "SocketBridge\\python\\combat\\catalog.py": "a1461f7eac06d11abeda805e89868953f211a6e898df4a63daad5e59f16ecb72",
+    "SocketBridge\\python\\combat\\components.py": "921ef8e3ab65fdad1e47b9e84611cfd8f96acb65abf20d8ae1b428c33a3c3e41",
+    "SocketBridge\\python\\combat\\controller.py": "3a749666d8b983ca2ea4fc3ba4e6bfe5fd9fd297412ef4ab9fd897c482c07916",
+    "SocketBridge\\python\\combat\\environment.py": "8a4e49de3e2f26599e119cf69c790715e3118650d34c4c87b15f2e4f6024937d",
+    "SocketBridge\\python\\combat\\geometry.py": "674f395eb17602f9fa47245756ab7437cea58af2fa95e09ca2d3d5949522b48e",
+    "SocketBridge\\python\\combat\\launcher.py": "7151434036084ccfae146632625ff442723da402429aacb45fae00fbcfed19cf",
+    "SocketBridge\\python\\combat\\models.py": "276ad545cab1a1ded6039820622be194863c51ce6eb39fc5b92c52ef853045b1",
+    "SocketBridge\\python\\combat\\motion.py": "34dd20bad414a6c6da7b82a92ee08fcb11e56f49a78109250427e04345ba2f12",
+    "SocketBridge\\python\\combat\\navigation.py": "c3ae51a5c2884e026e004a21058375200d9dc21ce3097e0f833281c01e0a1af6",
+    "SocketBridge\\python\\combat\\observation.py": "b2bb10c8ec0c87e5386ca84be17fc0831bd2652705f84b60a781c473e08e50d5",
+    "SocketBridge\\python\\combat\\planner.py": "2d8168f56c6193fef7ffd37daeebfa0bc3bed0ddadbf5b8ce47678c00c138a13",
+    "SocketBridge\\python\\combat\\runtime.py": "de891a29e66cbd311b73427c21d05269b46fc0746f70fc6331303728deb979c7",
+    "SocketBridge\\python\\combat\\supervision.py": "90d590b12225ce36df4da5e4cf05e61c68b18be8b00cef95d44e261b1e654917",
+    "SocketBridge\\python\\combat\\threats.py": "56429ef2948a51f1513f22f4e5f90b715f9dbb07a228e1d829a0fa1f58a1292a",
+    "SocketBridge\\python\\combat\\__init__.py": "611ce211027cb62c851089d36eec040427d42d75fb3e0291ce03fba34b40d563"
+  },
+  "dependencies": {
+    "numpy": "2.5.4",
+    "pydantic": "2.14.1",
+    "httpx": "0.28.1"
+  }
+}

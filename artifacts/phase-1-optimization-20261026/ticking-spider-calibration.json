@@ -1,0 +1,252 @@
+{
+  "kind": "observational_calibration_not_exact_radius",
+  "unit": "room pixels",
+  "limitations": [
+    "Snapshot and callback timing differ; preserve the surrounding position window.",
+    "No damage after earlier damage cannot bound radius because of invulnerability.",
+    "Line of sight, ordinary variant and the pinned game build must be checked."
+  ],
+  "runs": [
+    {
+      "trace": "artifacts\\runs\\batch-20261025T161249930368Z\\sample-01\\trace.jsonl",
+      "trace_sha256": "1aabcb6850d1254ce171f8293f2a9161fd53397f18146a1f7828926239b78edb",
+      "deaths": [
+        {
+          "death_frame": 227,
+          "type": 250,
+          "variant": 0,
+          "event": {
+            "frame": 227,
+            "timestamp": 22190438,
+            "version": "3.0",
+            "type": "EVENT",
+            "data": {
+              "pos": {
+                "x": 407.3127746582,
+                "y": 346.59423828125
+              },
+              "variant": 0,
+              "type": 250,
+              "subtype": 0,
+              "is_boss": false
+            },
+            "event": "NPC_DEATH"
+          },
+          "nearest_snapshot_frame": 227,
+          "distance": 72.1047710220342,
+          "line_of_sight": true,
+          "prior_damage_within_60_updates": [],
+          "window": [
+            {
+              "frame": 224,
+              "distance": 59.15435801945562,
+              "hp": 6
+            },
+            {
+              "frame": 225,
+              "distance": 62.329826343744394,
+              "hp": 6
+            },
+            {
+              "frame": 226,
+              "distance": 67.04277904489581,
+              "hp": 6
+            },
+            {
+              "frame": 227,
+              "distance": 72.1047710220342,
+              "hp": 6
+            },
+            {
+              "frame": 228,
+              "distance": 76.07561864056471,
+              "hp": 6
+            },
+            {
+              "frame": 229,
+              "distance": 79.17733923371537,
+              "hp": 6
+            },
+            {
+              "frame": 230,
+              "distance": 81.59408932067083,
+              "hp": 6
+            }
+          ],
+          "damage_attempts_window": [],
+          "complete_post_window": true
+        }
+      ]
+    },
+    {
+      "trace": "artifacts\\runs\\batch-20261025T162533784205Z\\sample-01\\trace.jsonl",
+      "trace_sha256": "c225a2cb03980eba3abfe6b77880c20189274869613be19e4bf0dad53b4cdc81",
+      "deaths": [
+        {
+          "death_frame": 247,
+          "type": 250,
+          "variant": 0,
+          "event": {
+            "data": {
+              "is_boss": false,
+              "pos": {
+                "x": 478.32574462891,
+                "y": 211.94412231445
+              },
+              "subtype": 0,
+              "type": 250,
+              "variant": 0
+            },
+            "version": "3.0",
+            "frame": 247,
+            "timestamp": 22929291,
+            "type": "EVENT",
+            "event": "NPC_DEATH"
+          },
+          "nearest_snapshot_frame": 247,
+          "distance": 54.48840366027814,
+          "line_of_sight": true,
+          "prior_damage_within_60_updates": [],
+          "window": [
+            {
+              "frame": 244,
+              "distance": 47.71888057626032,
+              "hp": 6
+            },
+            {
+              "frame": 245,
+              "distance": 50.736296256946865,
+              "hp": 6
+            },
+            {
+              "frame": 246,
+              "distance": 53.552598949795126,
+              "hp": 6
+            },
+            {
+              "frame": 247,
+              "distance": 54.48840366027814,
+              "hp": 5
+            },
+            {
+              "frame": 248,
+              "distance": 72.28820757143014,
+              "hp": 5
+            },
+            {
+              "frame": 249,
+              "distance": 79.1264097563069,
+              "hp": 5
+            },
+            {
+              "frame": 250,
+              "distance": 82.4508052225249,
+              "hp": 5
+            }
+          ],
+          "damage_attempts_window": [
+            {
+              "data": {
+                "hp_before": 6,
+                "source_type": 250,
+                "flags": 4,
+                "amount": 1.0
+              },
+              "version": "3.0",
+              "frame": 247,
+              "timestamp": 22929291,
+              "type": "EVENT",
+              "event": "PLAYER_DAMAGE_ATTEMPT"
+            }
+          ],
+          "complete_post_window": true
+        }
+      ]
+    },
+    {
+      "trace": "artifacts\\runs\\batch-20261025T093732068829Z\\sample-01\\trace.jsonl",
+      "trace_sha256": "3c718ce7a32ea852c608fc18c233af62ac24083510efd9973cadbc37b2589371",
+      "deaths": [
+        {
+          "death_frame": 256,
+          "type": 250,
+          "variant": 0,
+          "event": {
+            "type": "EVENT",
+            "version": "3.0",
+            "frame": 256,
+            "data": {
+              "type": 250,
+              "pos": {
+                "x": 315.16058349609,
+                "y": 235.87600708008
+              },
+              "variant": 0,
+              "subtype": 0,
+              "is_boss": false
+            },
+            "event": "NPC_DEATH",
+            "timestamp": 25403004
+          },
+          "nearest_snapshot_frame": 256,
+          "distance": 59.56200822528282,
+          "line_of_sight": true,
+          "prior_damage_within_60_updates": [],
+          "window": [
+            {
+              "frame": 253,
+              "distance": 47.963954804804295,
+              "hp": 6
+            },
+            {
+              "frame": 254,
+              "distance": 54.1688711678381,
+              "hp": 6
+            },
+            {
+              "frame": 255,
+              "distance": 57.568191990265355,
+              "hp": 6
+            },
+            {
+              "frame": 256,
+              "distance": 59.56200822528282,
+              "hp": 5
+            },
+            {
+              "frame": 257,
+              "distance": 78.33450074600222,
+              "hp": 5
+            },
+            {
+              "frame": 258,
+              "distance": 92.89176886814785,
+              "hp": 5
+            },
+            {
+              "frame": 259,
+              "distance": 104.17661095976784,
+              "hp": 5
+            }
+          ],
+          "damage_attempts_window": [
+            {
+              "type": "EVENT",
+              "version": "3.0",
+              "frame": 256,
+              "data": {
+                "hp_before": 6,
+                "flags": 4,
+                "source_type": 250,
+                "amount": 1.0
+              },
+              "event": "PLAYER_DAMAGE_ATTEMPT",
+              "timestamp": 25403004
+            }
+          ],
+          "complete_post_window": true
+        }
+      ]
+    }
+  ]
+}

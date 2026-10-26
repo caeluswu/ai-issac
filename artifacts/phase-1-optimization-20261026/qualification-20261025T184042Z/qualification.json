@@ -1,0 +1,63 @@
+{
+  "implementation_commit": "d4f25531dbcdc7fceee6d6f4885e7f79f909a88b",
+  "source_hashes": {
+    "SocketBridge\\python\\combat\\catalog.py": "55e2a8deb026e4e6fe4f4bed34e736d67cf8a65146db0bf0401397e3d6cae7ae",
+    "SocketBridge\\python\\combat\\components.py": "4bf9c07f5bee62210250b44507e125c41b1520acf011bebf31cb789d3cbbe13e",
+    "SocketBridge\\python\\combat\\controller.py": "abd7205bd885bbbad19d87f14cd72811c38d1ce2420e4f2c54a5cabfface5cdd",
+    "SocketBridge\\python\\combat\\geometry.py": "4c784e244a6e1ebae3e7aa02668c19a7ecf11c9c1956ec7321ef1cb87c791a8a",
+    "SocketBridge\\python\\combat\\launcher.py": "7151434036084ccfae146632625ff442723da402429aacb45fae00fbcfed19cf",
+    "SocketBridge\\python\\combat\\models.py": "1fec703d323315d3fc4239648167ec3d889be9d43dfea3fc4c55a7be398d2ce1",
+    "SocketBridge\\python\\combat\\observation.py": "f86c22bc327ea5f608a0cf889fead0b80178ec6dd4b900b581714876452af2b1",
+    "SocketBridge\\python\\combat\\planner.py": "2d8168f56c6193fef7ffd37daeebfa0bc3bed0ddadbf5b8ce47678c00c138a13",
+    "SocketBridge\\python\\combat\\runtime.py": "e25ae6567d3cf611597e96d713a0c11b93576c8e172ee2f650924c130b7476ce",
+    "SocketBridge\\python\\combat\\supervision.py": "0515bcbe64c368b4d40bd5b65fc8f3a9acb53252738a196ec784562a573a97a3",
+    "SocketBridge\\python\\combat\\threats.py": "444cd031ba590583bf2a667543b6e98ae394201ad951d0deff5b0dcd77f4e17f",
+    "SocketBridge\\python\\combat\\__init__.py": "611ce211027cb62c851089d36eec040427d42d75fb3e0291ce03fba34b40d563",
+    "SocketBridge\\python\\apps\\auto_first_room.py": "430d891e4e181edd9f585a269cbae8403d7e26a759744eabc9af0eb5dcda35d7",
+    "SocketBridge\\python\\apps\\bridge_hub.py": "abb05f5a2a4cb6b562b072a56b9036108721862effe53a168a4c195c821f6009",
+    "SocketBridge\\python\\apps\\console.py": "2824efcd1dab1b03160fad34670ae9a0d75d05f5ffc53f5b9bd1a76a60b759f2",
+    "SocketBridge\\python\\apps\\control_probe.py": "942073f5aeb6b478ecc543d12841fa5215fc9c5ec2e12eab644ae7d51e620792",
+    "SocketBridge\\python\\apps\\first_room.py": "87267da37e7c9abbfbce2952926174af3a3a2ea41614111a66768c34631cecfa",
+    "SocketBridge\\python\\apps\\recorder.py": "5e9b0fe43283230309bfdcfc24968a070a865bbac5d8157dd9413e65bb5f671f",
+    "SocketBridge\\python\\apps\\replay_test.py": "b0ee661bd6288181bab0e4f5f846f082870b1fe7514fadff4c476032e571c7cc",
+    "SocketBridge\\python\\apps\\room_layout_visualizer.py": "d9f5fc15d62cb7fc095d557ece39cf2d9a1b47e3cb4355acf5e91dd71f96f364",
+    "SocketBridge\\python\\apps\\terrain_validator.py": "61ec4892e90af293ef852eb6fb3ea0fb8d1c675662637ff21c0d9b20404df867",
+    "SocketBridge\\main.lua": "0e28f9f574ea21bf233d3da2dd0f1045e26fcf02fc05d58e57929b05349ed815",
+    "SocketBridge\\python\\facade.py": "fdac9e89af7f72d29d2b80ff98bcec778e1e0cfb92f5e3b0a05d54a3be711a19",
+    "SocketBridge\\python\\connection\\server.py": "5f4a1f26f8439f60de1f5edd123bd3a698bb51a6fa3ae28345d245a89b179da8",
+    "run_first_room.py": "27eaead76b55eef0203babc4784b74d208302f404b9a73eac51008bab0b513a7",
+    "run-first-room.ps1": "b3f4fd378d47c9a395398adf3c98e96294b6fa9e4dd9e48ca8f27c13543f6e43",
+    "run_phase1_batch.py": "6f0f3d9a351ef2c7e948d2ea46faeb1a21bd60c1170db88c7242e29c3684c4de"
+  },
+  "planned_through": "holdout",
+  "stages": [
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T184042534141Z",
+      "role": "rule",
+      "holdout": false,
+      "planned": 10,
+      "clears": 10,
+      "mean_loss_half_hearts": 0.7,
+      "mean_combat_seconds": 13.926666666666666,
+      "max_combat_seconds": 25.266666666666666,
+      "issues": [],
+      "passed": true
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T184554637387Z",
+      "role": "llm",
+      "holdout": false,
+      "planned": 10,
+      "clears": 10,
+      "mean_loss_half_hearts": 1.1,
+      "mean_combat_seconds": 13.013333333333334,
+      "max_combat_seconds": 19.433333333333334,
+      "issues": [
+        "HEALTH_LOSS_GATE",
+        "NO_DAMAGE_GATE"
+      ],
+      "passed": false
+    }
+  ],
+  "passed": false
+}

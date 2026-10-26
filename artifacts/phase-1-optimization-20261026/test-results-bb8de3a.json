@@ -1,0 +1,25 @@
+{
+  "implementation_commit": "bb8de3ad38e5d9f3f567765bbfdd39606cf33421",
+  "command": ".\\.venv\\Scripts\\python.exe -m unittest discover -s SocketBridge/python/tests -t SocketBridge/python -q",
+  "tests_run": 191,
+  "exit_code": 0,
+  "wall_seconds_reported_by_unittest": 46.591,
+  "result": "OK",
+  "source_hashes": {
+    "SocketBridge\\python\\combat\\catalog.py": "a1461f7eac06d11abeda805e89868953f211a6e898df4a63daad5e59f16ecb72",
+    "SocketBridge\\python\\combat\\components.py": "921ef8e3ab65fdad1e47b9e84611cfd8f96acb65abf20d8ae1b428c33a3c3e41",
+    "SocketBridge\\python\\combat\\controller.py": "3a749666d8b983ca2ea4fc3ba4e6bfe5fd9fd297412ef4ab9fd897c482c07916",
+    "SocketBridge\\python\\combat\\environment.py": "8a4e49de3e2f26599e119cf69c790715e3118650d34c4c87b15f2e4f6024937d",
+    "SocketBridge\\python\\combat\\geometry.py": "674f395eb17602f9fa47245756ab7437cea58af2fa95e09ca2d3d5949522b48e",
+    "SocketBridge\\python\\combat\\launcher.py": "179c4cdd3aab41b8bbb7f34cb8c00b955a49864a8128e111e64b95dbdc504b27",
+    "SocketBridge\\python\\combat\\models.py": "276ad545cab1a1ded6039820622be194863c51ce6eb39fc5b92c52ef853045b1",
+    "SocketBridge\\python\\combat\\motion.py": "34dd20bad414a6c6da7b82a92ee08fcb11e56f49a78109250427e04345ba2f12",
+    "SocketBridge\\python\\combat\\navigation.py": "c3ae51a5c2884e026e004a21058375200d9dc21ce3097e0f833281c01e0a1af6",
+    "SocketBridge\\python\\combat\\observation.py": "b2bb10c8ec0c87e5386ca84be17fc0831bd2652705f84b60a781c473e08e50d5",
+    "SocketBridge\\python\\combat\\planner.py": "2d8168f56c6193fef7ffd37daeebfa0bc3bed0ddadbf5b8ce47678c00c138a13",
+    "SocketBridge\\python\\combat\\runtime.py": "de891a29e66cbd311b73427c21d05269b46fc0746f70fc6331303728deb979c7",
+    "SocketBridge\\python\\combat\\supervision.py": "90d590b12225ce36df4da5e4cf05e61c68b18be8b00cef95d44e261b1e654917",
+    "SocketBridge\\python\\combat\\threats.py": "56429ef2948a51f1513f22f4e5f90b715f9dbb07a228e1d829a0fa1f58a1292a",
+    "SocketBridge\\python\\combat\\__init__.py": "611ce211027cb62c851089d36eec040427d42d75fb3e0291ce03fba34b40d563"
+  }
+}

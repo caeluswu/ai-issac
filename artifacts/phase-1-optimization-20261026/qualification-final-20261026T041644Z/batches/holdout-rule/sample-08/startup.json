@@ -1,0 +1,86 @@
+[
+  {
+    "phase": "preflight",
+    "time": 1792988410.0605276,
+    "executable_sha256": "bb9fda2535d94ae72e7fd4cd7d4a87dc9bfc27417e86f8f9190bfeeb8c9f10c2",
+    "slot": 1,
+    "save_directory": "C:\\Users\\wxt\\Documents\\My Games\\Binding of Isaac Repentance",
+    "options": {
+      "Fullscreen": 0,
+      "PauseOnFocusLost": 0,
+      "EnableMods": 1,
+      "EnableDebugConsole": 1,
+      "VSync": 1,
+      "MusicEnabled": 0
+    }
+  },
+  {
+    "phase": "closing_existing_game",
+    "time": 1792988410.066911,
+    "pids": [
+      19572
+    ]
+  },
+  {
+    "phase": "prepared",
+    "time": 1792988410.5602202,
+    "installed_mod_sha256": "0e28f9f574ea21bf233d3da2dd0f1045e26fcf02fc05d58e57929b05349ed815",
+    "saves_before": {
+      "20261024.persistentgamedata1.dat": "153fc278de386f443a3f066e62e378c7418953c44ddd0ed546f25ae4f2d73947",
+      "20261024.persistentgamedata2.dat": "003d95e178d8b28e72b3add036802ba6e6760bea11999e9a72c9feb795a85072",
+      "20261024.persistentgamedata3.dat": "5f2f55e2cdd92ac1ec1607e8bfd0644094df013c2d9ad7d613140911c4e81e0c",
+      "20261025.persistentgamedata1.dat": "8057fed70f3a1532fd2b0c400246f3284e1525ad81c4c37e1026b8f1133f83ab",
+      "20261025.persistentgamedata2.dat": "693d5de8895bb916f7cdae082ba87f9f35f75e952f484be9fb26c214f21434ff",
+      "20261025.persistentgamedata3.dat": "6fa4341d683c91cb8303c27e753dc6237666448151e8289a7c64b882f2494d81",
+      "20261026.persistentgamedata1.dat": "bd8ba857a86cf2fdfee51d0bd7d4ed3c0f0de55c01707d22c91917087d5b9391",
+      "20261026.persistentgamedata2.dat": "69d548d17fd6e7f4468c7b5620d641283ac2f4a3b9c58d3512a09e998e3f756e",
+      "20261026.persistentgamedata3.dat": "c02c2d16df79fce336b9fafec526d0d7e12537b83cacc1a48f10eec29e24669f",
+      "gamestate1.dat": "344add2d7017d03f37f4ac3b69eb7123cf1de2c7801b2f9a04e722ab7b8e22cd",
+      "inputconfigs.dat": "4adca36723cd9d14a6a7b6c89fe584c97550be05712aae29c57c0f4d6b07f846",
+      "persistentgamedata1.dat": "0a48f6b5d7ac0768120edd1a3684c611f495c90156c887c4d78813ff18d7ea95",
+      "persistentgamedata2.dat": "9371e11fcff35ce129faf3de7e654f994109e720bb4bf12add1f9f8d3104b323",
+      "persistentgamedata3.dat": "776b0c07e63f54fd118231adc7eb2629920dd2536938ab34cf3b60096ab72733"
+    },
+    "restored_baseline": {
+      "persistentgamedata1.dat": "0477ce1f84b1c127e440b2b1ffe2e23d580d7d30c4f208aed79966eebfc8a3a1",
+      "gamestate1.dat": "9e8498753a30aff726a74c97d7ecadd4870e769f7d9dd936035e44c994b24032"
+    },
+    "unlock_status": "owner_declared_fully_unlocked"
+  },
+  {
+    "phase": "launched",
+    "time": 1792988410.57509,
+    "pid": 20160,
+    "cwd": "D:\\internship1\\issac\\The Binding of Isaac Rebirth Repentance",
+    "args": [
+      "--luadebug"
+    ]
+  },
+  {
+    "phase": "intro_skip_attempt",
+    "time": 1792988415.7483149,
+    "attempt": 1
+  },
+  {
+    "phase": "menus",
+    "time": 1792988416.267264,
+    "slot": 1
+  },
+  {
+    "phase": "save_slot_confirm_attempt",
+    "time": 1792988418.364638,
+    "slot": 1,
+    "attempt": 1
+  },
+  {
+    "phase": "save_slot_confirmed",
+    "time": 1792988418.4430285,
+    "slot": 1,
+    "attempts": 1
+  },
+  {
+    "phase": "bridge_connected",
+    "time": 1792988419.400313,
+    "pid": 20160
+  }
+]

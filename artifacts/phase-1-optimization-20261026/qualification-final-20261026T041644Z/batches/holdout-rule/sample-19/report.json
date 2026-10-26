@@ -1,0 +1,50 @@
+{
+  "result": "CLEARED",
+  "success": true,
+  "llm_configured": false,
+  "completed_door_transition": true,
+  "damage_half_hearts": 3,
+  "lost_bone_hearts": 0,
+  "remaining_half_hearts": 3,
+  "combat_ticks": 356,
+  "wall_seconds": 28.078999999997905,
+  "pause_seconds": 1.1869999999908032,
+  "sent_actions": 391,
+  "accepted_actions": 390,
+  "observed_applied_actions": 363,
+  "fallback_count": 1,
+  "recovery_count": 1,
+  "decision_p95_ms": 12.989700000616722,
+  "seed": "BJ2J 9L9S",
+  "error": null,
+  "progress_metrics": {
+    "max_no_progress_ticks": 32,
+    "max_idle_ticks": 28,
+    "boundary_counts": {
+      "no_safe_candidate": 4
+    },
+    "recovery_entries": 1
+  },
+  "replan_requests": 0,
+  "decision_p99_ms": 14.133599994238466,
+  "safe_clear_ticks": 15,
+  "discarded_decisions": 0,
+  "contract_override_count": 1,
+  "damage_scope": "task",
+  "combat_damage_half_hearts": 3,
+  "combat_scope": "first_observed_blocking_room",
+  "task_ticks": 402,
+  "environment_ticks": 0,
+  "navigation_replan_requests": 0,
+  "navigation_decision_p95_ms": 5.998100008582696,
+  "navigation_decision_p99_ms": 6.59829999494832,
+  "navigation_metrics": [
+    {
+      "room_visit_id": "98562134:66091938:1",
+      "max_no_progress_ticks": 4,
+      "max_idle_ticks": 0,
+      "boundary_counts": {},
+      "recovery_entries": 0
+    }
+  ]
+}

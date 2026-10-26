@@ -1,0 +1,279 @@
+{
+  "planned": 50,
+  "started": 33,
+  "completed": 33,
+  "clears": 30,
+  "failures": [
+    5,
+    26,
+    32
+  ],
+  "administratively_unstarted": 17,
+  "reason": "Fixed gate cannot be reached after three recorded failures; no completed-50 estimate claimed. Sample33 finished after scheduler stop and is retained outside original summary.",
+  "reports": [
+    {
+      "index": 1,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-01\\report.json",
+      "sha256": "cfeb7d2f0e343a6fa4eff7f3f7079365d0b47e262b03766c9b530e657abfea3a"
+    },
+    {
+      "index": 2,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-02\\report.json",
+      "sha256": "8ac2e8900ea4799cbad4a30e76fe0b2f7a22371fe53f674a390e365647bdbb75"
+    },
+    {
+      "index": 3,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-03\\report.json",
+      "sha256": "adb13e89088105b3944f9114e7ef37f51522c79b30f409ca12e9a9c508ba8a2d"
+    },
+    {
+      "index": 4,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-04\\report.json",
+      "sha256": "ec8522da4e55b3aa6fa3f849fac532cca91f9a3419166e20d77bc676d51f6673"
+    },
+    {
+      "index": 5,
+      "result": "ABORTED",
+      "success": false,
+      "error": "RuntimeError: NO_REACHABLE_ORDINARY_DOOR",
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-05\\report.json",
+      "sha256": "e413d50992d48746b946c4cc9bdbdc11c86c5063778053c7a7bfe1ba0c6c3acb"
+    },
+    {
+      "index": 6,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-06\\report.json",
+      "sha256": "9ac12602eb7f702d69ba3c39d874973a6c392913d6b4e56affcfd0fe3179b206"
+    },
+    {
+      "index": 7,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-07\\report.json",
+      "sha256": "439f9973d05c68e2586e12510d3255e2ee27fdc67334eb98a8c7b143fde9fd01"
+    },
+    {
+      "index": 8,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-08\\report.json",
+      "sha256": "83fa3db5b95b6dd51480540866e10dc34902728cd87d38f3b111e82b2e7eb75f"
+    },
+    {
+      "index": 9,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-09\\report.json",
+      "sha256": "98c42a311d89dbb833f433151df2435e9165784a49efa91cc7d89299a108b8c7"
+    },
+    {
+      "index": 10,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-10\\report.json",
+      "sha256": "901720414379e6404eab4d54095557705730a226a5c29614c32ac81a85d47f2d"
+    },
+    {
+      "index": 11,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-11\\report.json",
+      "sha256": "bc85e452a6777f1ca0ffc9bf47327d5f5c4009cc0c8a18977ac0498d7fa8eab2"
+    },
+    {
+      "index": 12,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-12\\report.json",
+      "sha256": "3dbe28ae9cee9f141faf8754a33b928d3c1820e63502b00bf8dabb4978e2bef2"
+    },
+    {
+      "index": 13,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-13\\report.json",
+      "sha256": "b4ce5953cd3ef80de84d4526979cabe8a6106aee43eaf0ce45483d90c22777f9"
+    },
+    {
+      "index": 14,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-14\\report.json",
+      "sha256": "8c12a0b913b4d4fcb17421ad4bfa8a82c48619d099e0b307c01fb4cbf269dd38"
+    },
+    {
+      "index": 15,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-15\\report.json",
+      "sha256": "783cb6e129dbed11dcfc413e183f7348d5dd1d88745606cb275c0c92d3fded9a"
+    },
+    {
+      "index": 16,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-16\\report.json",
+      "sha256": "a715eb7773184b3145dc5d02347df888dd3b03abbd2ceb10e82a14f4ba0936d2"
+    },
+    {
+      "index": 17,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-17\\report.json",
+      "sha256": "d7ff532fa31161be403a305092ec9c001eb52535ca12b6c250cf89d187ac78e2"
+    },
+    {
+      "index": 18,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-18\\report.json",
+      "sha256": "da06e372c1bb28b089f88d7d4c9b8bd85be116d81bf0487978580eae4bd95a09"
+    },
+    {
+      "index": 19,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-19\\report.json",
+      "sha256": "03ce8ffff222bf141448b95e5d091216158f0ef6ae954eebf6cf0f19b74eebbf"
+    },
+    {
+      "index": 20,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-20\\report.json",
+      "sha256": "482f6fdb520c0c935330eb3b9537b42d2c8ec915327b55e86a56b95beb6f2092"
+    },
+    {
+      "index": 21,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-21\\report.json",
+      "sha256": "f1051bdb14f28eba8a11d893ba35485994adbff070095c6d72dcf56d73b951bf"
+    },
+    {
+      "index": 22,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-22\\report.json",
+      "sha256": "c29074876cf640f854305baa002eddd66dd37af205142bb0594bcbc0e8f1fd86"
+    },
+    {
+      "index": 23,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-23\\report.json",
+      "sha256": "1f8b183d10e276ebdc41728b18da3c026ce8d6f84f6db5e0cc2592cd09a945e1"
+    },
+    {
+      "index": 24,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-24\\report.json",
+      "sha256": "2e3f8a8275260172123df7473c40254ae68f4ab4e7411b301119bfba435a0944"
+    },
+    {
+      "index": 25,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-25\\report.json",
+      "sha256": "4184b1ade6ac3e38e05afd63db8a3eccaba4d421a53d6880fcb4b93607ab9e3c"
+    },
+    {
+      "index": 26,
+      "result": "ABORTED",
+      "success": false,
+      "error": "RuntimeError: NO_REACHABLE_ORDINARY_DOOR",
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-26\\report.json",
+      "sha256": "1bf5e9e9492b1d4068205106d7f9b99bcad6e9d7ac59b3bfbbcf278b454305b6"
+    },
+    {
+      "index": 27,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-27\\report.json",
+      "sha256": "dc5e78094c27d794436687f70f51356c05ed315031a21ef6bd66f3c72a9184fd"
+    },
+    {
+      "index": 28,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-28\\report.json",
+      "sha256": "b4775ca00f613e1924d031b20a6d471b1b1cf7ec0a12cf98838e3c40b538766a"
+    },
+    {
+      "index": 29,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-29\\report.json",
+      "sha256": "915f947bc75e17da5fbaa380ca0fbb153747d9d77dd66647f763af0c24727964"
+    },
+    {
+      "index": 30,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-30\\report.json",
+      "sha256": "316fdaf9baeda04bf377291caa20ef1c9a7ed8eb1f21b62a123b93c04aa5fdc7"
+    },
+    {
+      "index": 31,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-31\\report.json",
+      "sha256": "7606fc1d6c541b60ad9cb021018d0f56802cfdd9895cbeb69b4853e58e8d6b37"
+    },
+    {
+      "index": 32,
+      "result": "ABORTED",
+      "success": false,
+      "error": "TimeoutError: MENU_INIT_TIMEOUT",
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-32\\report.json",
+      "sha256": "5fc21ef10a9f1c7a738c88a0003f002e2dae154b3ef0f1dffc11af8a39f49e23"
+    },
+    {
+      "index": 33,
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "report": "artifacts\\runs\\batch-20261026T024154786183Z\\sample-33\\report.json",
+      "sha256": "b479e43f184454e47af0004ad99d68f3fbc5fb8c57a4ed2af43c947c8dcdcd3f"
+    }
+  ]
+}

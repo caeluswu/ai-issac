@@ -1,0 +1,576 @@
+[
+  {
+    "sequence": 26,
+    "wall_monotonic": 67415.0,
+    "kind": "run_start",
+    "seed": "WRPJ QVKX",
+    "snapshot_id": "2620782736:67414144:1:4"
+  },
+  {
+    "sequence": 75,
+    "wall_monotonic": 67416.109,
+    "kind": "pause_confirmed",
+    "entry_frame": 18,
+    "paused_frame": 18,
+    "delay_ticks": 0
+  },
+  {
+    "sequence": 455,
+    "wall_monotonic": 67453.0,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 2,
+      "context_ref": {
+        "run_id": "2620782736:67414144",
+        "room_visit_id": "2620782736:67414144:2",
+        "snapshot_id": "2620782736:67414144:2:18",
+        "build_revision": 1,
+        "catalog_revision": 2,
+        "plan_revision": 0
+      },
+      "default_profile": "safe",
+      "profiles": {
+        "safe": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        },
+        "low_health": {
+          "target": {
+            "component": "target.finish_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.5,
+              "max_range_ratio": 0.9
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.3
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 8
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.35
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [
+        {
+          "when": [
+            {
+              "field": "health_ratio",
+              "op": "lt",
+              "value": 0.5,
+              "enemy_type": null
+            }
+          ],
+          "use_profile": "low_health"
+        }
+      ],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Clear the room from the open central corridor, committing to one side at a time. Type 85 enemies have 6.5 HP and die in two 3.5-damage hits, so finish-first targeting is appropriate while they are stationary. Keep just inside the 195 px effective tear range and use kite movement plus maximum clearance to avoid contact damage if enemies begin moving. If health drops below 50%, switch to a more defensive kite/evade/escape profile. Enemy movement and projectile mechanics are unverified, so replan on new mechanisms, confirmed damage, no progress, repeated recovery, or invalid profile behavior.",
+        "evidence_refs": [
+          "snapshot.enemies[type=85]",
+          "snapshot.enemies[type=12]",
+          "inspect_entity:2986182828:1",
+          "inspect_entity:1154021472:3",
+          "lookup_enemy_mechanics(85):unknown",
+          "lookup_enemy_mechanics(12):unknown",
+          "build.effective_range=195",
+          "derived.target_distance",
+          "snapshot.player.pos=(320,160)",
+          "snapshot.room.enemy_count=6",
+          "assessment.recommended_tactics"
+        ]
+      },
+      "required_capabilities": [
+        "normal_tears"
+      ]
+    }
+  },
+  {
+    "sequence": 462,
+    "wall_monotonic": 67453.64,
+    "kind": "resume_confirmed",
+    "frame": 19,
+    "attempts": 1
+  },
+  {
+    "sequence": 467,
+    "wall_monotonic": 67453.687,
+    "kind": "replan_started",
+    "frame": 21,
+    "reasons": [
+      "new_enemy_mechanism"
+    ]
+  },
+  {
+    "sequence": 784,
+    "wall_monotonic": 67457.14,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 125,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 787,
+    "wall_monotonic": 67457.156,
+    "kind": "contract_override",
+    "frame": 125,
+    "last_damage_frame": -1000,
+    "recovery_level": 0,
+    "until": 185,
+    "profile": {
+      "target": {
+        "component": "target.finish_first",
+        "params": {
+          "switch_margin": 0.05,
+          "min_hold_ticks": 0
+        }
+      },
+      "position": {
+        "component": "position.kite",
+        "params": {
+          "min_range_ratio": 0.6,
+          "max_range_ratio": 0.9
+        }
+      },
+      "aim": {
+        "component": "aim.predictive",
+        "params": {
+          "max_lead_ticks": 12,
+          "movement_inheritance": true
+        }
+      },
+      "fire": {
+        "component": "fire.normal_tears",
+        "params": {
+          "min_hit_score": 0.1
+        }
+      },
+      "evade": {
+        "component": "evade.max_clearance",
+        "params": {
+          "extra_margin_px": 8
+        }
+      },
+      "escape": {
+        "component": "escape.keep_routes",
+        "params": {
+          "horizon_ticks": 45,
+          "min_safe_area_ratio": 0.25
+        }
+      },
+      "recovery": {
+        "component": "recovery.local_repath",
+        "params": {
+          "stall_window_ticks": 30,
+          "recovery_ticks": 6
+        }
+      }
+    }
+  },
+  {
+    "sequence": 832,
+    "wall_monotonic": 67457.64,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "escape_margin",
+      "frame": 140,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1122,
+    "wall_monotonic": 67460.578,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 228,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": [
+      {
+        "kind": "enemy_hp_decreased",
+        "frame": 228,
+        "entity": "2986182828:1"
+      }
+    ]
+  },
+  {
+    "sequence": 1125,
+    "wall_monotonic": 67460.593,
+    "kind": "contract_override",
+    "frame": 228,
+    "last_damage_frame": -1000,
+    "recovery_level": 0,
+    "until": 288,
+    "profile": {
+      "target": {
+        "component": "target.finish_first",
+        "params": {
+          "switch_margin": 0.05,
+          "min_hold_ticks": 0
+        }
+      },
+      "position": {
+        "component": "position.kite",
+        "params": {
+          "min_range_ratio": 0.6,
+          "max_range_ratio": 0.9
+        }
+      },
+      "aim": {
+        "component": "aim.predictive",
+        "params": {
+          "max_lead_ticks": 12,
+          "movement_inheritance": true
+        }
+      },
+      "fire": {
+        "component": "fire.normal_tears",
+        "params": {
+          "min_hit_score": 0.1
+        }
+      },
+      "evade": {
+        "component": "evade.max_clearance",
+        "params": {
+          "extra_margin_px": 8
+        }
+      },
+      "escape": {
+        "component": "escape.keep_routes",
+        "params": {
+          "horizon_ticks": 45,
+          "min_safe_area_ratio": 0.25
+        }
+      },
+      "recovery": {
+        "component": "recovery.local_repath",
+        "params": {
+          "stall_window_ticks": 30,
+          "recovery_ticks": 6
+        }
+      }
+    }
+  },
+  {
+    "sequence": 1265,
+    "wall_monotonic": 67462.015,
+    "kind": "plan_installed",
+    "source": "deepseek_replan",
+    "plan": {
+      "schema_version": 2,
+      "context_ref": {
+        "run_id": "2620782736:67414144",
+        "room_visit_id": "2620782736:67414144:2",
+        "snapshot_id": "2620782736:67414144:2:21",
+        "build_revision": 1,
+        "catalog_revision": 2,
+        "plan_revision": 0
+      },
+      "default_profile": "safe",
+      "profiles": {
+        "safe": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        },
+        "low_health": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.5,
+              "max_range_ratio": 0.9
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.3
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 8
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.35
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [
+        {
+          "when": [
+            {
+              "field": "health_ratio",
+              "op": "lt",
+              "value": 0.5,
+              "enemy_type": null
+            }
+          ],
+          "use_profile": "low_health"
+        }
+      ],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Six enemies are present in symmetric left/right pairs; two type 12 enemies have 10 HP and four type 85 enemies have 6.5 HP, so with 3.5 damage per tear they require 3 and 2 hits respectively. Enemy mechanics for types 85 and 12 are unknown from the catalog, so the plan avoids assuming movement or projectile behavior and replans on new enemy mechanisms. Use threat-first targeting among stationary enemies, approach within the 195 px effective tear range, and fire normal tears with predictive aim. Kite to maintain spacing, maximize clearance against contact damage, and preserve escape routes; if health falls below 50%, switch to the more defensive low_health profile.",
+        "evidence_refs": [
+          "snapshot.enemies[type=85]x4",
+          "snapshot.enemies[type=12]x2",
+          "snapshot.room.enemy_count=6",
+          "snapshot.player.pos=(320,160)",
+          "build.effective_range=195",
+          "build.damage=3.5",
+          "derived.target_distance",
+          "lookup_enemy_mechanics(85):unknown",
+          "lookup_enemy_mechanics(12):unknown"
+        ]
+      },
+      "required_capabilities": [
+        "normal_tears"
+      ]
+    }
+  },
+  {
+    "sequence": 1266,
+    "wall_monotonic": 67462.015,
+    "kind": "replan_started",
+    "frame": 271,
+    "reasons": [
+      "escape_margin",
+      "no_progress",
+      "no_safe_candidate"
+    ]
+  },
+  {
+    "sequence": 1609,
+    "wall_monotonic": 67465.75,
+    "kind": "safe_clear_confirmed",
+    "frame": 383,
+    "started": 368,
+    "safe_since": 368
+  },
+  {
+    "sequence": 1611,
+    "wall_monotonic": 67465.75,
+    "kind": "report",
+    "result": "CLEARED",
+    "success": true,
+    "llm_configured": true,
+    "completed_door_transition": true,
+    "damage_half_hearts": 0,
+    "lost_bone_hearts": 0,
+    "remaining_half_hearts": 6,
+    "combat_ticks": 368,
+    "wall_seconds": 63.937999999994645,
+    "pause_seconds": 37.82799999999406,
+    "sent_actions": 373,
+    "accepted_actions": 372,
+    "observed_applied_actions": 311,
+    "fallback_count": 0,
+    "recovery_count": 0,
+    "decision_p95_ms": 11.315300012938678,
+    "seed": "WRPJ QVKX",
+    "error": null,
+    "progress_metrics": {
+      "max_no_progress_ticks": 46,
+      "max_idle_ticks": 27,
+      "boundary_counts": {
+        "no_safe_candidate": 2,
+        "escape_margin": 1
+      },
+      "recovery_entries": 2
+    },
+    "replan_requests": 2,
+    "decision_p99_ms": 14.546999998856336,
+    "safe_clear_ticks": 15,
+    "discarded_decisions": 0,
+    "contract_override_count": 2,
+    "damage_scope": "task",
+    "combat_damage_half_hearts": 0,
+    "combat_scope": "first_observed_blocking_room",
+    "task_ticks": 379,
+    "environment_ticks": 0,
+    "navigation_replan_requests": 0,
+    "navigation_decision_p95_ms": 7.025300001259893,
+    "navigation_decision_p99_ms": 7.025300001259893,
+    "navigation_metrics": [
+      {
+        "room_visit_id": "2620782736:67414144:1",
+        "max_no_progress_ticks": 4,
+        "max_idle_ticks": 0,
+        "boundary_counts": {},
+        "recovery_entries": 0
+      }
+    ]
+  }
+]

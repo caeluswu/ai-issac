@@ -1,0 +1,434 @@
+{
+  "scope": "development_and_feasibility_evidence_not_a_pooled_experiment",
+  "records": [
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261025T180326Z\\qualification.json",
+      "implementation_commit": "fb481254195bdb2637cf7500de7b424bca033bb9",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T180326198343Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T180848980522Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 10,
+          "issues": [
+            "HEALTH_LOSS_GATE",
+            "MEAN_COMBAT_TIME_GATE",
+            "NO_DAMAGE_GATE"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261025T184042Z\\qualification.json",
+      "implementation_commit": "d4f25531dbcdc7fceee6d6f4885e7f79f909a88b",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T184042534141Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T184554637387Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 10,
+          "issues": [
+            "HEALTH_LOSS_GATE",
+            "NO_DAMAGE_GATE"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261025T191746Z\\qualification.json",
+      "implementation_commit": "b8162043a217819eb593e6f4176525870ab13770",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T191746730789Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T192256636256Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T193239877490Z",
+          "stage": "development",
+          "planned": 30,
+          "clears": 29,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261025T201159Z\\qualification.json",
+      "implementation_commit": "8d5fdc10576913eefa74d50671ac7e4681e8dbc2",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T201200012660Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [
+            "DECISION_LATENCY_GATE"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261025T202112Z\\qualification.json",
+      "implementation_commit": "86c5cafa5785f87c46362bf555002bb554f4fcb4",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T202112501665Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "artifacts\\runs\\batch-20261025T202615508549Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 2,
+          "issues": [
+            "INCOMPLETE_BATCH",
+            "HEALTH_LOSS_GATE",
+            "NO_DAMAGE_GATE"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261025T203213Z\\qualification.json",
+      "implementation_commit": "f72a2d66eede397dae25c441097e6f921fe02f1b",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T203213594268Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T203706679498Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 10,
+          "issues": [
+            "NO_DAMAGE_GATE"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261025T205315Z\\qualification.json",
+      "implementation_commit": "449f7df915d4c30f378f64071e6accdfa9bedeb4",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T205315119293Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T205809457831Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T210812885358Z",
+          "stage": "development",
+          "planned": 30,
+          "completed": 1,
+          "clears": 1,
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261025T211431Z\\qualification.json",
+      "implementation_commit": "0b0e675014946f207669ea3cb3bdf30bd010b298",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T211431428653Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T211932061625Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T212850895852Z",
+          "stage": "development",
+          "planned": 30,
+          "clears": 30,
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T215628300060Z",
+          "role": "llm",
+          "planned": 50,
+          "clears": 49,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T224345031446Z",
+          "role": "rule",
+          "planned": 50,
+          "clears": 47,
+          "issues": [
+            "3:FORBIDDEN_STALL_OR_TIMEOUT",
+            "16:FORBIDDEN_STALL_OR_TIMEOUT",
+            "INSUFFICIENT_CLEARS"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261026T003241Z\\qualification.json",
+      "implementation_commit": "ce5bc54d5e5299b06e647c417d926e1959b13648",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T003241800879Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 9,
+          "issues": [
+            "4:FORBIDDEN_STALL_OR_TIMEOUT",
+            "INSUFFICIENT_CLEARS"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261026T005434Z\\qualification.json",
+      "implementation_commit": "914bb2fff273d4497383b62a6b24ded691534b9e",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T005435073724Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T005936569707Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 10,
+          "issues": [
+            "DECISION_LATENCY_GATE"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261026T012321Z\\qualification.json",
+      "implementation_commit": "b88df449bab3bad5184acb4af12a467ef0cc34ed",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012321893908Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z",
+          "role": "llm",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T013841648916Z",
+          "role": "rule",
+          "stage": "adversarial",
+          "planned": 3,
+          "clears": 3,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T013958538582Z",
+          "role": "llm",
+          "stage": "adversarial",
+          "planned": 3,
+          "clears": 3,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T014244792386Z",
+          "role": "llm",
+          "stage": "development",
+          "planned": 30,
+          "clears": 29,
+          "issues": [
+            "2:NOT_CLEARED",
+            "2:NO_LLM_CONFIGURATION",
+            "15:NOT_CLEARED",
+            "15:NO_LLM_CONFIGURATION",
+            "15:SEED_MISMATCH",
+            "15:NO_SNAPSHOT"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-20261026T022932Z\\qualification.json",
+      "implementation_commit": "bb8de3ad38e5d9f3f567765bbfdd39606cf33421",
+      "status": "gate_failed_or_incomplete",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T022932141604Z",
+          "role": "rule",
+          "planned": 10,
+          "clears": 10,
+          "issues": [],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-final-20261026T033028Z\\qualification.json",
+      "implementation_commit": "60b14c326aa1898b21388afff97621d2d289c627",
+      "status": "failed_rule_latency_no_llm_batch_spent",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [
+        {
+          "directory": "artifacts\\runs\\batch-20261026T033028698792Z",
+          "role": "rule",
+          "planned": 50,
+          "clears": 49,
+          "issues": [
+            "DECISION_LATENCY_GATE"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-final-20261026T041644Z\\qualification.json",
+      "implementation_commit": "50eb92ae3f33a20e19530cd159c706687b49cda0",
+      "status": "research_comparison_deferred",
+      "formal_qualification_passed": false,
+      "feasibility_passed": true,
+      "stages": [
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T041644919870Z",
+          "role": "rule",
+          "planned": 50,
+          "clears": 49,
+          "issues": [],
+          "passed": true
+        },
+        {
+          "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T044004013870Z",
+          "role": "llm",
+          "planned": 50,
+          "completed": 12,
+          "clears": 11,
+          "issues": [
+            "ADMINISTRATIVELY_STOPPED",
+            "NOT_A_COMPLETED_50_SAMPLE_EVALUATION"
+          ],
+          "passed": false
+        }
+      ]
+    },
+    {
+      "record": "artifacts\\phase-1-optimization-20261026\\qualification-holdout-20261026T024154Z\\qualification.json",
+      "implementation_commit": "bb8de3ad38e5d9f3f567765bbfdd39606cf33421",
+      "status": "stopped_for_futility_not_a_completed_50_sample_estimate",
+      "formal_qualification_passed": false,
+      "feasibility_passed": false,
+      "stages": [],
+      "started_samples_record": "artifacts\\phase-1-optimization-20261026\\qualification-holdout-20261026T024154Z\\started-samples.json"
+    }
+  ]
+}

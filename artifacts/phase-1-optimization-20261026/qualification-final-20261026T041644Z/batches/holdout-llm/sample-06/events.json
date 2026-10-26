@@ -1,0 +1,474 @@
+[
+  {
+    "sequence": 26,
+    "wall_monotonic": 67250.531,
+    "kind": "run_start",
+    "seed": "MDLK 37T6",
+    "snapshot_id": "1463542539:67249662:1:4"
+  },
+  {
+    "sequence": 333,
+    "wall_monotonic": 67254.875,
+    "kind": "pause_confirmed",
+    "entry_frame": 104,
+    "paused_frame": 104,
+    "delay_ticks": 0
+  },
+  {
+    "sequence": 774,
+    "wall_monotonic": 67297.578,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 2,
+      "context_ref": {
+        "run_id": "1463542539:67249662",
+        "room_visit_id": "1463542539:67249662:3",
+        "snapshot_id": "1463542539:67249662:3:104",
+        "build_revision": 1,
+        "catalog_revision": 2,
+        "plan_revision": 0
+      },
+      "default_profile": "sustained_kite",
+      "profiles": {
+        "sustained_kite": {
+          "target": {
+            "component": "target.weighted",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10,
+              "threat_weight": 0.6,
+              "finish_weight": 0.2,
+              "approach_cost_weight": 0.2
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.55,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.direct",
+            "params": {
+              "max_lead_ticks": 6,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.minimal_shift",
+            "params": {
+              "extra_margin_px": 6
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Single sustained profile: weighted targeting keeps pressure on the closest/chasing type-16.2 candidate while not ignoring the two type-16.1 enemies; kite positioning holds roughly 0.55-0.8 of the 195 px effective range so kills do not happen adjacent; direct aim with small lead because velocities are currently zero; cardinal normal tears; minimal-shift evasion; keep-routes escape and local repath around the interior obstacle cells at (560,160), (120,160), (400,320). Variant-to-Mulligoon/Mulliboom mapping, self-detonation timing, Troll Bomb drops, and post-death spawns remain unverified, so replan on new enemy mechanisms, confirmed damage, or no progress.",
+        "evidence_refs": [
+          "2735570338:1",
+          "1131997289:2",
+          "3763096623:3",
+          "wiki:mulligan",
+          "derived:target_distance",
+          "17",
+          "28",
+          "84"
+        ]
+      },
+      "required_capabilities": [
+        "normal_tears"
+      ]
+    }
+  },
+  {
+    "sequence": 781,
+    "wall_monotonic": 67298.171,
+    "kind": "resume_confirmed",
+    "frame": 105,
+    "attempts": 1
+  },
+  {
+    "sequence": 785,
+    "wall_monotonic": 67298.203,
+    "kind": "replan_started",
+    "frame": 106,
+    "reasons": [
+      "new_enemy_mechanism"
+    ]
+  },
+  {
+    "sequence": 907,
+    "wall_monotonic": 67299.531,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 146,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 909,
+    "wall_monotonic": 67299.531,
+    "kind": "contract_override",
+    "frame": 146,
+    "last_damage_frame": -1000,
+    "recovery_level": 0,
+    "until": 206,
+    "profile": {
+      "target": {
+        "component": "target.finish_first",
+        "params": {
+          "switch_margin": 0.05,
+          "min_hold_ticks": 0
+        }
+      },
+      "position": {
+        "component": "position.kite",
+        "params": {
+          "min_range_ratio": 0.6,
+          "max_range_ratio": 0.9
+        }
+      },
+      "aim": {
+        "component": "aim.predictive",
+        "params": {
+          "max_lead_ticks": 12,
+          "movement_inheritance": true
+        }
+      },
+      "fire": {
+        "component": "fire.normal_tears",
+        "params": {
+          "min_hit_score": 0.1
+        }
+      },
+      "evade": {
+        "component": "evade.max_clearance",
+        "params": {
+          "extra_margin_px": 8
+        }
+      },
+      "escape": {
+        "component": "escape.keep_routes",
+        "params": {
+          "horizon_ticks": 45,
+          "min_safe_area_ratio": 0.25
+        }
+      },
+      "recovery": {
+        "component": "recovery.local_repath",
+        "params": {
+          "stall_window_ticks": 30,
+          "recovery_ticks": 6
+        }
+      }
+    }
+  },
+  {
+    "sequence": 1023,
+    "wall_monotonic": 67300.796,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 184,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1027,
+    "wall_monotonic": 67300.828,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "escape_margin",
+      "frame": 185,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1115,
+    "wall_monotonic": 67301.796,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 214,
+      "age_ticks": 45,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1119,
+    "wall_monotonic": 67301.828,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "escape_margin",
+      "frame": 215,
+      "age_ticks": 45,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1243,
+    "wall_monotonic": 67303.187,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 256,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1244,
+    "wall_monotonic": 67303.187,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "escape_margin",
+      "frame": 256,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1335,
+    "wall_monotonic": 67304.187,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 286,
+      "age_ticks": 45,
+      "severity": "critical"
+    },
+    "evidence": [
+      {
+        "kind": "route_cost_decreased",
+        "frame": 286,
+        "entity": "2735570338:1"
+      }
+    ]
+  },
+  {
+    "sequence": 1336,
+    "wall_monotonic": 67304.187,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "escape_margin",
+      "frame": 286,
+      "age_ticks": 45,
+      "severity": "critical"
+    },
+    "evidence": [
+      {
+        "kind": "route_cost_decreased",
+        "frame": 286,
+        "entity": "2735570338:1"
+      }
+    ]
+  },
+  {
+    "sequence": 1427,
+    "wall_monotonic": 67305.203,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 316,
+      "age_ticks": 75,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1428,
+    "wall_monotonic": 67305.203,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "escape_margin",
+      "frame": 316,
+      "age_ticks": 75,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1553,
+    "wall_monotonic": 67306.203,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 346,
+      "age_ticks": 105,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1554,
+    "wall_monotonic": 67306.203,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "escape_margin",
+      "frame": 346,
+      "age_ticks": 24,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1586,
+    "wall_monotonic": 67306.5,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "blocked",
+      "frame": 355,
+      "age_ticks": 30,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1650,
+    "wall_monotonic": 67307.187,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 376,
+      "age_ticks": 135,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1651,
+    "wall_monotonic": 67307.187,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "escape_margin",
+      "frame": 376,
+      "age_ticks": 54,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 1666,
+    "wall_monotonic": 67307.312,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "stall",
+      "frame": 379,
+      "age_ticks": 60,
+      "severity": "warning"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 2129,
+    "wall_monotonic": 67312.062,
+    "kind": "safe_clear_confirmed",
+    "frame": 522,
+    "started": 507,
+    "safe_since": 507
+  },
+  {
+    "sequence": 2131,
+    "wall_monotonic": 67312.078,
+    "kind": "report",
+    "result": "CLEARED",
+    "success": true,
+    "llm_configured": true,
+    "completed_door_transition": true,
+    "damage_half_hearts": 3,
+    "lost_bone_hearts": 0,
+    "remaining_half_hearts": 3,
+    "combat_ticks": 421,
+    "wall_seconds": 74.73500000000058,
+    "pause_seconds": 43.65600000000268,
+    "sent_actions": 510,
+    "accepted_actions": 508,
+    "observed_applied_actions": 495,
+    "fallback_count": 0,
+    "recovery_count": 3,
+    "decision_p95_ms": 8.412199997110292,
+    "seed": "MDLK 37T6",
+    "error": null,
+    "progress_metrics": {
+      "max_no_progress_ticks": 68,
+      "max_idle_ticks": 13,
+      "boundary_counts": {
+        "no_safe_candidate": 8,
+        "escape_margin": 7,
+        "blocked": 1,
+        "stall": 1
+      },
+      "recovery_entries": 3
+    },
+    "replan_requests": 1,
+    "decision_p99_ms": 10.494600006495602,
+    "safe_clear_ticks": 15,
+    "discarded_decisions": 0,
+    "contract_override_count": 1,
+    "damage_scope": "task",
+    "combat_damage_half_hearts": 3,
+    "combat_scope": "first_observed_blocking_room",
+    "task_ticks": 518,
+    "environment_ticks": 0,
+    "navigation_replan_requests": 0,
+    "navigation_decision_p95_ms": 6.023000009008683,
+    "navigation_decision_p99_ms": 10.62689999525901,
+    "navigation_metrics": [
+      {
+        "room_visit_id": "1463542539:67249662:1",
+        "max_no_progress_ticks": 4,
+        "max_idle_ticks": 0,
+        "boundary_counts": {},
+        "recovery_entries": 0
+      },
+      {
+        "room_visit_id": "1463542539:67249662:2",
+        "max_no_progress_ticks": 4,
+        "max_idle_ticks": 0,
+        "boundary_counts": {},
+        "recovery_entries": 0
+      }
+    ]
+  }
+]

@@ -1,0 +1,48 @@
+{
+  "result": "CLEARED",
+  "success": true,
+  "llm_configured": false,
+  "completed_door_transition": true,
+  "damage_half_hearts": 0,
+  "lost_bone_hearts": 0,
+  "remaining_half_hearts": 6,
+  "combat_ticks": 201,
+  "wall_seconds": 22.265999999988708,
+  "pause_seconds": 0.8439999999973224,
+  "sent_actions": 229,
+  "accepted_actions": 228,
+  "observed_applied_actions": 218,
+  "fallback_count": 1,
+  "recovery_count": 1,
+  "decision_p95_ms": 8.584199997130781,
+  "seed": "RJ3Q 6P8W",
+  "error": null,
+  "progress_metrics": {
+    "max_no_progress_ticks": 37,
+    "max_idle_ticks": 27,
+    "boundary_counts": {},
+    "recovery_entries": 2
+  },
+  "replan_requests": 0,
+  "decision_p99_ms": 11.264100001426414,
+  "safe_clear_ticks": 15,
+  "discarded_decisions": 0,
+  "contract_override_count": 0,
+  "damage_scope": "task",
+  "combat_damage_half_hearts": 0,
+  "combat_scope": "first_observed_blocking_room",
+  "task_ticks": 235,
+  "environment_ticks": 0,
+  "navigation_replan_requests": 0,
+  "navigation_decision_p95_ms": 5.7047000009333715,
+  "navigation_decision_p99_ms": 5.899199997656979,
+  "navigation_metrics": [
+    {
+      "room_visit_id": "1977455050:66305995:1",
+      "max_no_progress_ticks": 4,
+      "max_idle_ticks": 0,
+      "boundary_counts": {},
+      "recovery_entries": 0
+    }
+  ]
+}

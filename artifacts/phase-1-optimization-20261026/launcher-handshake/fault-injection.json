@@ -1,0 +1,7 @@
+{
+  "scope": "prestart_fault_injection_not_combat_evaluation",
+  "dropped": true,
+  "probe_sha256": "3bbe3e4695c97710481b3468776a8c47f5ff14649edff35098ae91c336e20640",
+  "exit_code": 0,
+  "passed": true
+}

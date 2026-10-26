@@ -1,0 +1,1151 @@
+{
+  "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z",
+  "role": "llm",
+  "holdout": false,
+  "planned": 10,
+  "clears": 10,
+  "mean_loss_half_hearts": 0,
+  "mean_combat_seconds": 11.576666666666666,
+  "max_combat_seconds": 24.033333333333335,
+  "issues": [],
+  "passed": true,
+  "audits": [
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-01",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 208,
+        "wall_seconds": 50.390999999995984,
+        "pause_seconds": 28.437000000005355,
+        "sent_actions": 214,
+        "accepted_actions": 213,
+        "observed_applied_actions": 192,
+        "fallback_count": 0,
+        "recovery_count": 1,
+        "decision_p95_ms": 9.674100001575425,
+        "seed": "Z0T2 P1D8",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 29,
+          "max_idle_ticks": 22,
+          "boundary_counts": {
+            "no_safe_candidate": 1
+          },
+          "recovery_entries": 0
+        },
+        "replan_requests": 1,
+        "decision_p99_ms": 10.453800001414493,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 1,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 219,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 6.511999999929685,
+        "navigation_decision_p99_ms": 6.511999999929685,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "2722953505:55485676:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "40791c964059459a8a4afe677e880f61086168c6c760719a0fa56bb5dd15701e",
+      "report_sha256": "a5ac8099b9b2f8226ebb9917424e54ba5b2ebaf3dd280f55b84accc390993fe4",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 221,
+          "room_visit_id": "2722953505:55485676:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 222,
+          "room_visit_id": "2722953505:55485676:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 223,
+          "room_visit_id": "2722953505:55485676:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 73,
+        "wall_monotonic": 55487.687,
+        "kind": "pause_confirmed",
+        "entry_frame": 18,
+        "paused_frame": 18,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 748,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 214,
+        "pause_confirmed": 1,
+        "llm_request": 8,
+        "llm_response": 7,
+        "llm_validation_error": 2,
+        "llm_tools": 3,
+        "plan_installed": 1,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 1,
+        "boundary": 1,
+        "contract_override": 1,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-02",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 357,
+        "wall_seconds": 45.42200000000594,
+        "pause_seconds": 17.485000000000582,
+        "sent_actions": 398,
+        "accepted_actions": 397,
+        "observed_applied_actions": 374,
+        "fallback_count": 0,
+        "recovery_count": 1,
+        "decision_p95_ms": 9.200000000419095,
+        "seed": "4NA1 KDEH",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 37,
+          "max_idle_ticks": 27,
+          "boundary_counts": {},
+          "recovery_entries": 2
+        },
+        "replan_requests": 1,
+        "decision_p99_ms": 10.746400002972223,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 0,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 403,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 5.485300003783777,
+        "navigation_decision_p99_ms": 5.761799999163486,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "3706588017:55536566:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "b2e3a9ec236beb458aeb856be1d091529e79299d656bba6b6424d35f6905c36c",
+      "report_sha256": "0e3dfb66a426a25cc3a2153b12c2529aae276b81ad04239a617fb7ac00172fe5",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 405,
+          "room_visit_id": "3706588017:55536566:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 406,
+          "room_visit_id": "3706588017:55536566:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 407,
+          "room_visit_id": "3706588017:55536566:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 178,
+        "wall_monotonic": 55539.75,
+        "kind": "pause_confirmed",
+        "entry_frame": 53,
+        "paused_frame": 53,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 1005,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 398,
+        "pause_confirmed": 1,
+        "llm_request": 6,
+        "llm_response": 6,
+        "llm_tools": 2,
+        "llm_validation_error": 1,
+        "plan_installed": 2,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 1,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-03",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 337,
+        "wall_seconds": 57.437999999994645,
+        "pause_seconds": 31.343999999997322,
+        "sent_actions": 343,
+        "accepted_actions": 342,
+        "observed_applied_actions": 306,
+        "fallback_count": 0,
+        "recovery_count": 3,
+        "decision_p95_ms": 9.803299995837733,
+        "seed": "FBM4 TBFJ",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 39,
+          "max_idle_ticks": 27,
+          "boundary_counts": {},
+          "recovery_entries": 2
+        },
+        "replan_requests": 2,
+        "decision_p99_ms": 11.48010000179056,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 0,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 348,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 6.488900005933829,
+        "navigation_decision_p99_ms": 6.488900005933829,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "666425209:55582609:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "3fbad6add0d3dc664fec783d5be95910e2972a0b8ca84c176b597e547c669a8f",
+      "report_sha256": "7250ef7f6e3b5ffc65d11544e34c4a9690be30799e43172d7f9c15bbfa3084ae",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 350,
+          "room_visit_id": "666425209:55582609:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 351,
+          "room_visit_id": "666425209:55582609:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 352,
+          "room_visit_id": "666425209:55582609:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 73,
+        "wall_monotonic": 55584.609,
+        "kind": "pause_confirmed",
+        "entry_frame": 18,
+        "paused_frame": 18,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 1034,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 343,
+        "pause_confirmed": 1,
+        "llm_request": 9,
+        "llm_response": 8,
+        "llm_tools": 4,
+        "llm_validation_error": 1,
+        "plan_installed": 2,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 2,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-04",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 196,
+        "wall_seconds": 63.67199999999866,
+        "pause_seconds": 40.32800000000134,
+        "sent_actions": 251,
+        "accepted_actions": 249,
+        "observed_applied_actions": 229,
+        "fallback_count": 0,
+        "recovery_count": 0,
+        "decision_p95_ms": 9.408300000359304,
+        "seed": "ET2N NPQZ",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 37,
+          "max_idle_ticks": 27,
+          "boundary_counts": {},
+          "recovery_entries": 2
+        },
+        "replan_requests": 1,
+        "decision_p99_ms": 11.399399998481385,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 0,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 260,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 8.704100000613835,
+        "navigation_decision_p99_ms": 9.89300000219373,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "731888072:55640579:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          },
+          {
+            "room_visit_id": "731888072:55640579:2",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "413e5a1ffcee1910724f5137d917f2eaf5cf3207e866c747323f847252304933",
+      "report_sha256": "aa36da085db11d32c36bf1057faa090d50128a54f3848075b194d72492b43625",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 3,
+      "clear_evidence": [
+        {
+          "frame": 262,
+          "room_visit_id": "731888072:55640579:3",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 263,
+          "room_visit_id": "731888072:55640579:3",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 264,
+          "room_visit_id": "731888072:55640579:3",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 232,
+        "wall_monotonic": 55644.687,
+        "kind": "pause_confirmed",
+        "entry_frame": 71,
+        "paused_frame": 71,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 947,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 2,
+        "action_sent": 251,
+        "pause_confirmed": 1,
+        "llm_request": 6,
+        "llm_response": 5,
+        "llm_tools": 2,
+        "llm_validation_error": 1,
+        "plan_installed": 1,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 1,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-05",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 574,
+        "wall_seconds": 84.57800000000134,
+        "pause_seconds": 50.48399999999674,
+        "sent_actions": 579,
+        "accepted_actions": 578,
+        "observed_applied_actions": 507,
+        "fallback_count": 0,
+        "recovery_count": 2,
+        "decision_p95_ms": 9.91710000380408,
+        "seed": "ZP6Q 9ZMV",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 37,
+          "max_idle_ticks": 27,
+          "boundary_counts": {
+            "no_safe_candidate": 1
+          },
+          "recovery_entries": 1
+        },
+        "replan_requests": 2,
+        "decision_p99_ms": 11.041599995223805,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 1,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 585,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 6.598100000701379,
+        "navigation_decision_p99_ms": 6.598100000701379,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "2761396264:55705127:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "43041756d5128255af041badb654ec3ea9d1aef95861237817e134e47f403530",
+      "report_sha256": "112f7ee8fddc6d3cdcfe475ea4525992e37e92f0c3954d238df45944f6037ca9",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 587,
+          "room_visit_id": "2761396264:55705127:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 588,
+          "room_visit_id": "2761396264:55705127:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 589,
+          "room_visit_id": "2761396264:55705127:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 73,
+        "wall_monotonic": 55707.171,
+        "kind": "pause_confirmed",
+        "entry_frame": 18,
+        "paused_frame": 18,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 1702,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 579,
+        "pause_confirmed": 1,
+        "llm_request": 10,
+        "llm_response": 9,
+        "llm_tools": 3,
+        "llm_validation_error": 3,
+        "plan_installed": 2,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 2,
+        "debug_trigger": 3,
+        "candidate_window": 93,
+        "boundary": 1,
+        "contract_override": 1,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-06",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 250,
+        "wall_seconds": 58.07800000000134,
+        "pause_seconds": 34.10899999999674,
+        "sent_actions": 278,
+        "accepted_actions": 277,
+        "observed_applied_actions": 258,
+        "fallback_count": 0,
+        "recovery_count": 3,
+        "decision_p95_ms": 9.261699997296091,
+        "seed": "HG96 6KF9",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 47,
+          "max_idle_ticks": 27,
+          "boundary_counts": {},
+          "recovery_entries": 1
+        },
+        "replan_requests": 1,
+        "decision_p99_ms": 11.205700000573415,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 0,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 284,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 5.112400001962669,
+        "navigation_decision_p99_ms": 5.719599997974001,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "911258073:55790313:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "3f2ec4dc04104ffbca608d11e7be2c1794a5907a1687538ba60c3c4f6780efce",
+      "report_sha256": "4d80f2d9c9b019ad24bda0417e816d3370371cc0e543c1b861eda9568ce43f0d",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 286,
+          "room_visit_id": "911258073:55790313:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 287,
+          "room_visit_id": "911258073:55790313:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 288,
+          "room_visit_id": "911258073:55790313:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 142,
+        "wall_monotonic": 55793.031,
+        "kind": "pause_confirmed",
+        "entry_frame": 41,
+        "paused_frame": 41,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 932,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 278,
+        "pause_confirmed": 1,
+        "llm_request": 6,
+        "llm_response": 5,
+        "llm_tools": 2,
+        "llm_validation_error": 1,
+        "plan_installed": 1,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 1,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-07",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 246,
+        "wall_seconds": 59.703999999997905,
+        "pause_seconds": 36.70300000000134,
+        "sent_actions": 252,
+        "accepted_actions": 251,
+        "observed_applied_actions": 243,
+        "fallback_count": 0,
+        "recovery_count": 2,
+        "decision_p95_ms": 7.861799997044727,
+        "seed": "D4C6 MKEL",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 48,
+          "max_idle_ticks": 27,
+          "boundary_counts": {},
+          "recovery_entries": 1
+        },
+        "replan_requests": 1,
+        "decision_p99_ms": 8.867899996403139,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 0,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 257,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 6.459500000346452,
+        "navigation_decision_p99_ms": 6.459500000346452,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "292207193:55848914:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "eb763cf129dcfa8f4c6c7c61b48b5c2a5729e8e127f5a919fb629252223faf1e",
+      "report_sha256": "2be1cf378aa39ddb168bba188d76e4873f39c344315fd927f129916a8c9ddb30",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 259,
+          "room_visit_id": "292207193:55848914:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 260,
+          "room_visit_id": "292207193:55848914:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 261,
+          "room_visit_id": "292207193:55848914:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 73,
+        "wall_monotonic": 55850.921,
+        "kind": "pause_confirmed",
+        "entry_frame": 18,
+        "paused_frame": 18,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 914,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 252,
+        "pause_confirmed": 1,
+        "llm_request": 7,
+        "llm_response": 6,
+        "llm_tools": 2,
+        "llm_validation_error": 2,
+        "plan_installed": 1,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 1,
+        "debug_trigger": 2,
+        "candidate_window": 62,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-08",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 484,
+        "wall_seconds": 80.09399999999732,
+        "pause_seconds": 48.96899999999732,
+        "sent_actions": 489,
+        "accepted_actions": 488,
+        "observed_applied_actions": 441,
+        "fallback_count": 0,
+        "recovery_count": 0,
+        "decision_p95_ms": 10.550899998634122,
+        "seed": "ATFD PJHJ",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 47,
+          "max_idle_ticks": 27,
+          "boundary_counts": {
+            "no_safe_candidate": 1
+          },
+          "recovery_entries": 3
+        },
+        "replan_requests": 1,
+        "decision_p99_ms": 12.453700001060497,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 1,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 495,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 6.582800000614952,
+        "navigation_decision_p99_ms": 6.582800000614952,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "195381597:55909446:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "d1cbb646a271e629a2f42a7737b068902580a857f31d119d595ed795f1a03a79",
+      "report_sha256": "e6aec3a32cfa01cce987dfe997cae4986276129a310336f2ecae4e360debd2a1",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 497,
+          "room_visit_id": "195381597:55909446:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 498,
+          "room_visit_id": "195381597:55909446:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 499,
+          "room_visit_id": "195381597:55909446:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 73,
+        "wall_monotonic": 55911.468,
+        "kind": "pause_confirmed",
+        "entry_frame": 18,
+        "paused_frame": 18,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 1506,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 489,
+        "pause_confirmed": 1,
+        "llm_request": 6,
+        "llm_response": 5,
+        "llm_tools": 3,
+        "plan_installed": 1,
+        "resume_retry": 1,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 1,
+        "boundary": 1,
+        "contract_override": 1,
+        "debug_trigger": 1,
+        "candidate_window": 31,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-09",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 100,
+        "wall_seconds": 50.40600000000268,
+        "pause_seconds": 31.56199999999808,
+        "sent_actions": 124,
+        "accepted_actions": 123,
+        "observed_applied_actions": 118,
+        "fallback_count": 0,
+        "recovery_count": 0,
+        "decision_p95_ms": 8.469199994578958,
+        "seed": "4Q2J MSDY",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 39,
+          "max_idle_ticks": 19,
+          "boundary_counts": {},
+          "recovery_entries": 1
+        },
+        "replan_requests": 1,
+        "decision_p99_ms": 12.669700001424644,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 0,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 134,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 5.069699996965937,
+        "navigation_decision_p99_ms": 5.827599998156074,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "3697277501:55990144:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "5bf654aa8f96857b67f54669711386e1f8cadb1d7eafa2e240b942ea53f7edee",
+      "report_sha256": "073c0a48d570c0e76d6dee607d8d44e3962c8cee02fec6b8f840cecd4049458e",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 136,
+          "room_visit_id": "3697277501:55990144:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 137,
+          "room_visit_id": "3697277501:55990144:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 138,
+          "room_visit_id": "3697277501:55990144:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 147,
+        "wall_monotonic": 55993.093,
+        "kind": "pause_confirmed",
+        "entry_frame": 41,
+        "paused_frame": 46,
+        "delay_ticks": 5
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 598,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 124,
+        "pause_confirmed": 1,
+        "llm_request": 8,
+        "llm_response": 7,
+        "llm_tools": 4,
+        "llm_validation_error": 1,
+        "plan_installed": 1,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 1,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261026T012821729254Z\\sample-10",
+      "report": {
+        "result": "CLEARED",
+        "success": true,
+        "llm_configured": true,
+        "completed_door_transition": true,
+        "damage_half_hearts": 0,
+        "lost_bone_hearts": 0,
+        "remaining_half_hearts": 6,
+        "combat_ticks": 721,
+        "wall_seconds": 60.578999999997905,
+        "pause_seconds": 21.04699999999866,
+        "sent_actions": 749,
+        "accepted_actions": 748,
+        "observed_applied_actions": 641,
+        "fallback_count": 0,
+        "recovery_count": 4,
+        "decision_p95_ms": 11.523000001034234,
+        "seed": "BNKX Y4X7",
+        "error": null,
+        "progress_metrics": {
+          "max_no_progress_ticks": 36,
+          "max_idle_ticks": 27,
+          "boundary_counts": {},
+          "recovery_entries": 3
+        },
+        "replan_requests": 2,
+        "decision_p99_ms": 13.29039999836823,
+        "safe_clear_ticks": 15,
+        "discarded_decisions": 0,
+        "contract_override_count": 0,
+        "damage_scope": "task",
+        "combat_damage_half_hearts": 0,
+        "combat_scope": "first_observed_blocking_room",
+        "task_ticks": 755,
+        "environment_ticks": 0,
+        "navigation_replan_requests": 0,
+        "navigation_decision_p95_ms": 5.424800001492258,
+        "navigation_decision_p99_ms": 5.680399997800123,
+        "navigation_metrics": [
+          {
+            "room_visit_id": "83641751:56041000:1",
+            "max_no_progress_ticks": 4,
+            "max_idle_ticks": 0,
+            "boundary_counts": {},
+            "recovery_entries": 0
+          }
+        ]
+      },
+      "issues": [],
+      "trace_sha256": "3940527acc2814418ae0d11c8043c216438444dc313b075c331cebce03358b9a",
+      "report_sha256": "176a472114b65b7c269903b91943c215e4ca412a4f2e05d52f596552ff8c2253",
+      "manifest_sha256": "62bebc0bb4cf3f7cf313f2c05e49bf0fbf9054f26331e26f33d803385d41a249",
+      "audited_damage_half_hearts": 0,
+      "observed_room_visits": 2,
+      "clear_evidence": [
+        {
+          "frame": 757,
+          "room_visit_id": "83641751:56041000:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 758,
+          "room_visit_id": "83641751:56041000:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        },
+        {
+          "frame": 759,
+          "room_visit_id": "83641751:56041000:2",
+          "is_clear": true,
+          "enemy_count": 0,
+          "blocking_hostiles": 0,
+          "hp": 6
+        }
+      ],
+      "initial_deepseek_plan_installed": true,
+      "pause_evidence": {
+        "sequence": 142,
+        "wall_monotonic": 56043.843,
+        "kind": "pause_confirmed",
+        "entry_frame": 41,
+        "paused_frame": 41,
+        "delay_ticks": 0
+      },
+      "event_counts": {
+        "startup": 7,
+        "game_message": 1742,
+        "initialization_command": 1,
+        "run_start": 1,
+        "door_selected": 1,
+        "action_sent": 749,
+        "pause_confirmed": 1,
+        "llm_request": 9,
+        "llm_response": 8,
+        "llm_tools": 4,
+        "plan_installed": 2,
+        "resume_confirmed": 1,
+        "rejected_action": 1,
+        "replan_started": 2,
+        "llm_validation_error": 1,
+        "debug_trigger": 4,
+        "candidate_window": 124,
+        "safe_clear_confirmed": 1,
+        "report": 1
+      }
+    }
+  ]
+}

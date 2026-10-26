@@ -1,0 +1,17 @@
+{
+  "older_commit": "b88df449bab3bad5184acb4af12a467ef0cc34ed",
+  "current_commit": "bb8de3ad38e5d9f3f567765bbfdd39606cf33421",
+  "changed_runtime_sources": {
+    "SocketBridge\\python\\combat\\launcher.py": {
+      "before": "7151434036084ccfae146632625ff442723da402429aacb45fae00fbcfed19cf",
+      "after": "179c4cdd3aab41b8bbb7f34cb8c00b955a49864a8128e111e64b95dbdc504b27"
+    }
+  },
+  "unchanged_combat_and_planner": true,
+  "commit_changed_paths": [
+    "SocketBridge/python/combat/launcher.py",
+    "SocketBridge/python/tests/test_launcher_handshake.py",
+    "scripts/probe_launcher_handshake.py"
+  ],
+  "reuse_scope": "unchanged combat/planner components only; not a full current-version 30/30 claim"
+}

@@ -1,0 +1,9 @@
+{
+  "time": "2026-10-26T02:37:38.970935+00:00",
+  "status": "stopped_before_redundant_stages",
+  "reason": "Launcher-only change; combat, planner, prompts and schemas unchanged. Existing evidence is reused only for unchanged components; current batch retained in full. Fresh holdout still required.",
+  "stopped_process": 4036,
+  "active_batch_process": 2688,
+  "old_combat_qualification": "artifacts/phase-1-optimization-20261026/qualification-20261026T012321Z",
+  "source_commit": "bb8de3a"
+}

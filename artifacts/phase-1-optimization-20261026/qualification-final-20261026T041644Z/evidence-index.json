@@ -1,0 +1,2205 @@
+[
+  {
+    "stage": "holdout-rule",
+    "sample": 1,
+    "seed": "06EK J6VS",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-01\\trace.jsonl",
+    "trace_sha256": "7e7df6e7588843a7783fee1b5ad98a926946dfbd01132d896b6f3c8d63337b3b",
+    "observed_enemy_type_variant_champions": [
+      [
+        868,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 6,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 2,
+    "seed": "1PTV NMHD",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-02\\trace.jsonl",
+    "trace_sha256": "905a96c4e01d6efc775a0b941012acf1ab1064ac75006e86ed38f031e0666066",
+    "observed_enemy_type_variant_champions": [
+      [
+        256,
+        0,
+        -1
+      ],
+      [
+        289,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      8
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      },
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 3,
+    "seed": "36RL F4FB",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-03\\trace.jsonl",
+    "trace_sha256": "ec4a309995c6099e78a4d9ee56717e62e7ca1e2e254af374f4868c8a70f36b74",
+    "observed_enemy_type_variant_champions": [
+      [
+        218,
+        0,
+        -1
+      ],
+      [
+        222,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 5,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      },
+      {
+        "intended_room": 96,
+        "actual_room": 96,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 4,
+    "seed": "C39D BCJ7",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-04\\trace.jsonl",
+    "trace_sha256": "9c59fc8aaae4579c9d83e2ac5f8892306f786869769b0318d9bbe839c8a91916",
+    "observed_enemy_type_variant_champions": [
+      [
+        85,
+        0,
+        -1
+      ],
+      [
+        94,
+        0,
+        -1
+      ],
+      [
+        276,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      11
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 6,
+    "max_enemy_projectiles": 4,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 5,
+    "seed": "E791 9EAM",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-05\\trace.jsonl",
+    "trace_sha256": "c5844f74a119ef593594bb53fdc87c337e8ffee1656ad7ad6fe347e5529fb97a",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        2,
+        12
+      ],
+      [
+        208,
+        2,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 6,
+    "seed": "MDLK 37T6",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-06\\trace.jsonl",
+    "trace_sha256": "5b6679a2b079562dc59424a1aba2ffdcee29e02610d328f87d83b32fd82e466c",
+    "observed_enemy_type_variant_champions": [
+      [
+        16,
+        1,
+        -1
+      ],
+      [
+        16,
+        2,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 8,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      },
+      {
+        "intended_room": 98,
+        "actual_room": 98,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 7,
+    "seed": "E6EP GY89",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-07\\trace.jsonl",
+    "trace_sha256": "f5dd03162819b6774cc268532283c44ee8a9c3467a3820f62ae09ca3a32fa10f",
+    "observed_enemy_type_variant_champions": [
+      [
+        214,
+        0,
+        -1
+      ],
+      [
+        218,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 8,
+    "seed": "3ZRY 1PEK",
+    "result": "ABORTED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-08\\trace.jsonl",
+    "trace_sha256": "638c20a56df09969ec8e21e89ec1eee984d549a82b6f023915622365cf968466",
+    "observed_enemy_type_variant_champions": [],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 5,
+    "max_hostiles": 0,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [
+      "activate_pressure_plate",
+      "explosion_withdrawal"
+    ],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      },
+      {
+        "intended_room": 84,
+        "actual_room": 84,
+        "redirected": false
+      },
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      },
+      {
+        "intended_room": 86,
+        "actual_room": 86,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 9,
+    "seed": "WRPJ QVKX",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-09\\trace.jsonl",
+    "trace_sha256": "44e4ac7a0061d9443127e77255218db229f21f4b4df1944e29dab3a687953988",
+    "observed_enemy_type_variant_champions": [
+      [
+        12,
+        0,
+        -1
+      ],
+      [
+        85,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 6,
+    "max_enemy_projectiles": 2,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 10,
+    "seed": "GYZS 1BMP",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-10\\trace.jsonl",
+    "trace_sha256": "b07ae65c706b686dc2555888534163ea58f0a7762b2f13d5b947a906c94890af",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        0,
+        -1
+      ],
+      [
+        10,
+        2,
+        -1
+      ],
+      [
+        11,
+        1,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 11,
+    "seed": "F1AB 4NCT",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-11\\trace.jsonl",
+    "trace_sha256": "3fa77ca3a79b67ff2ef9b32bc9c1eae040555dee1779ff2e6f649e5e4d068c50",
+    "observed_enemy_type_variant_champions": [
+      [
+        96,
+        0,
+        -1
+      ],
+      [
+        244,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 1,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 12,
+    "seed": "TLEC WWCH",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-12\\trace.jsonl",
+    "trace_sha256": "ff724de597052960afffd47448c464e7d50be0a822d7b670846c29279a9d4617",
+    "observed_enemy_type_variant_champions": [
+      [
+        240,
+        0,
+        -1
+      ],
+      [
+        250,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 3,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 13,
+    "seed": "07YB 0RSZ",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-13\\trace.jsonl",
+    "trace_sha256": "c8c956a7b8229d5df607605bca1070627af07dd9cb8a8286e6e18189f34f2abe",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        1,
+        -1
+      ],
+      [
+        11,
+        1,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      },
+      {
+        "intended_room": 110,
+        "actual_room": 110,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 14,
+    "seed": "FTBD D31H",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-14\\trace.jsonl",
+    "trace_sha256": "d1a9bc99f515624b81f6058984bd79357811665aae61d81f344391d44b9756d2",
+    "observed_enemy_type_variant_champions": [
+      [
+        14,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 3,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 15,
+    "seed": "969W EKYW",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-15\\trace.jsonl",
+    "trace_sha256": "553a796857bf2affb6ea43b0f2aade7a8f79f9592e3413131f2411064e17a270",
+    "observed_enemy_type_variant_champions": [
+      [
+        256,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 5,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      },
+      {
+        "intended_room": 84,
+        "actual_room": 84,
+        "redirected": false
+      },
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      },
+      {
+        "intended_room": 82,
+        "actual_room": 82,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 16,
+    "seed": "M2J4 AAAB",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-16\\trace.jsonl",
+    "trace_sha256": "1aee8507db354d1d43362688134a6e77f8630b1cd70ee23fd10b9b3ed0c880a3",
+    "observed_enemy_type_variant_champions": [
+      [
+        85,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      8
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 12,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 17,
+    "seed": "9RSM KV33",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-17\\trace.jsonl",
+    "trace_sha256": "ce74de5d01e30ef849340b97d699603533a59e52eeb8938ab0baa3e85d0ec43c",
+    "observed_enemy_type_variant_champions": [
+      [
+        30,
+        2,
+        -1
+      ],
+      [
+        85,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 18,
+    "seed": "BKMY EGZ7",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-18\\trace.jsonl",
+    "trace_sha256": "e166d51f4adf1f54457ef3e6c6bd2dfcb98a15a3ed4c1f6f0f37e2bb82712122",
+    "observed_enemy_type_variant_champions": [
+      [
+        29,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 19,
+    "seed": "BJ2J 9L9S",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-19\\trace.jsonl",
+    "trace_sha256": "f34c36fbaec493bc5aaf1b300e2fd0bb495e44602e79633a2e239d5b5acd33c5",
+    "observed_enemy_type_variant_champions": [
+      [
+        226,
+        0,
+        -1
+      ],
+      [
+        226,
+        2,
+        -1
+      ],
+      [
+        868,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 8,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 20,
+    "seed": "4X0D DHWG",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-20\\trace.jsonl",
+    "trace_sha256": "d025554e0e58576fcc938ff49e0d5adc4bb3a60553a0c9cde9746a086fa31767",
+    "observed_enemy_type_variant_champions": [
+      [
+        12,
+        0,
+        -1
+      ],
+      [
+        61,
+        1,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      10
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 5,
+    "max_enemy_projectiles": 4,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 21,
+    "seed": "BPBX B211",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-21\\trace.jsonl",
+    "trace_sha256": "a02c0da467ee2e7188c289a3fe6fcf286ba40cf6270b63a74a0580df1fe52766",
+    "observed_enemy_type_variant_champions": [
+      [
+        16,
+        1,
+        -1
+      ],
+      [
+        61,
+        1,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      9
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 5,
+    "max_enemy_projectiles": 4,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 22,
+    "seed": "VDTT N84Q",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-22\\trace.jsonl",
+    "trace_sha256": "a6a5563bb72166d13bce7f538c37724083b3297d1208f50bf167685314b32593",
+    "observed_enemy_type_variant_champions": [
+      [
+        244,
+        0,
+        -1
+      ],
+      [
+        302,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 1,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 23,
+    "seed": "MAKD GK1V",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-23\\trace.jsonl",
+    "trace_sha256": "213f68b74d2a05867029660f38d01332a17bef0b7bd665baa1e0bd784b6f0f02",
+    "observed_enemy_type_variant_champions": [
+      [
+        30,
+        2,
+        -1
+      ],
+      [
+        85,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 24,
+    "seed": "HTH9 7D27",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-24\\trace.jsonl",
+    "trace_sha256": "8c70968d92f9dc87a9208059d373260e881a861c48a9500db3b3cc22482e2d9c",
+    "observed_enemy_type_variant_champions": [
+      [
+        96,
+        0,
+        -1
+      ],
+      [
+        217,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 7,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 25,
+    "seed": "SE70 7PJL",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-25\\trace.jsonl",
+    "trace_sha256": "09ed93812c29ead3d4bba0c7c3a3e0d193163202af669c834b2fb6d4217a4477",
+    "observed_enemy_type_variant_champions": [
+      [
+        14,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 2,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 26,
+    "seed": "ZAAF 2P2F",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-26\\trace.jsonl",
+    "trace_sha256": "974f929cfb91a6c56670d3b82ea98484d657f5402acc90b0ca3d5147a4bf9f9a",
+    "observed_enemy_type_variant_champions": [
+      [
+        217,
+        0,
+        -1
+      ],
+      [
+        220,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      6
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 27,
+    "seed": "RJ3Q 6P8W",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-27\\trace.jsonl",
+    "trace_sha256": "4281ec612b036883d486c1a165f2ce3ca2d41f41da763b466f19074d30093d5c",
+    "observed_enemy_type_variant_champions": [
+      [
+        29,
+        1,
+        -1
+      ],
+      [
+        85,
+        0,
+        -1
+      ],
+      [
+        205,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      3
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 28,
+    "seed": "S383 W9S4",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-28\\trace.jsonl",
+    "trace_sha256": "626e479d09a938a5fa40c49cd3c7bdef24ca95a1588c59fa5b4e0b7bfa2c63f0",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      },
+      {
+        "intended_room": 98,
+        "actual_room": 98,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 29,
+    "seed": "SSKG WSRC",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-29\\trace.jsonl",
+    "trace_sha256": "6e4544aa709beffd21b5768f2fb2f1a1881e206d341fa4516920460f57fe7b41",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        0,
+        -1
+      ],
+      [
+        11,
+        0,
+        -1
+      ],
+      [
+        11,
+        1,
+        -1
+      ],
+      [
+        16,
+        2,
+        -1
+      ],
+      [
+        85,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      8
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 10,
+    "max_enemy_projectiles": 2,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 30,
+    "seed": "LT9P L446",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-30\\trace.jsonl",
+    "trace_sha256": "0bd67c7c8e2dbdbc626d385c67592476b4e033dde5e52db81920abd2644b3733",
+    "observed_enemy_type_variant_champions": [
+      [
+        29,
+        0,
+        -1
+      ],
+      [
+        29,
+        1,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 31,
+    "seed": "7CKJ 9B6E",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-31\\trace.jsonl",
+    "trace_sha256": "3fdf54fa2a4033d1670625be3e3c7e581638b66ddb3de28c634f50499864c834",
+    "observed_enemy_type_variant_champions": [
+      [
+        207,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 4,
+    "max_hostiles": 1,
+    "max_enemy_projectiles": 8,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      },
+      {
+        "intended_room": 84,
+        "actual_room": 84,
+        "redirected": false
+      },
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 32,
+    "seed": "89D0 10Y7",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-32\\trace.jsonl",
+    "trace_sha256": "2801ffa5e464e7821a0926a6a3208e3eead64350f32df54edfb3f838214aa3d6",
+    "observed_enemy_type_variant_champions": [
+      [
+        215,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      6
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 4,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 33,
+    "seed": "TCHT WL82",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-33\\trace.jsonl",
+    "trace_sha256": "c316bbcd9951227b4fb83abf739619b139da8187a4863b0d493b38ca4630c29d",
+    "observed_enemy_type_variant_champions": [
+      [
+        85,
+        0,
+        -1
+      ],
+      [
+        240,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 3,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 34,
+    "seed": "LE03 Y0KM",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-34\\trace.jsonl",
+    "trace_sha256": "770cc354e61a6545cac6fe35b8304db7de64a0b29c7db049470f71771cca096d",
+    "observed_enemy_type_variant_champions": [
+      [
+        85,
+        0,
+        -1
+      ],
+      [
+        250,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 4,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 35,
+    "seed": "SHPW E3Q6",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-35\\trace.jsonl",
+    "trace_sha256": "ef22b05217af0772e42fd47039e66312ce3e3ee4842b559a2063109206ecf980",
+    "observed_enemy_type_variant_champions": [
+      [
+        15,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 1,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 36,
+    "seed": "00GC ZNF0",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-36\\trace.jsonl",
+    "trace_sha256": "c2409d325ce467149155b83d4fa3611c83032891557debb7e3d5564d0bf2d644",
+    "observed_enemy_type_variant_champions": [
+      [
+        12,
+        0,
+        -1
+      ],
+      [
+        12,
+        0,
+        10
+      ],
+      [
+        85,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 6,
+    "max_enemy_projectiles": 3,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      },
+      {
+        "intended_room": 70,
+        "actual_room": 70,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 37,
+    "seed": "H4L1 9WLT",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-37\\trace.jsonl",
+    "trace_sha256": "f2432cee2176a900c3946c1b8c18defc7b91ca69fbc915414f303e0562a853f1",
+    "observed_enemy_type_variant_champions": [
+      [
+        207,
+        0,
+        0
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 1,
+    "max_enemy_projectiles": 8,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 38,
+    "seed": "GTZ9 6JE6",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-38\\trace.jsonl",
+    "trace_sha256": "adcb1cc3761b8f8906c3ba3e8b7b636d1b602dcfef2859037df4fe338492af65",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        1,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      2
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 1,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 39,
+    "seed": "V3TN GJXT",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-39\\trace.jsonl",
+    "trace_sha256": "84a0a3a55c7368593b206b3bae343117246d96c385f6f3156a3bc24576d08edd",
+    "observed_enemy_type_variant_champions": [
+      [
+        208,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 1,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 40,
+    "seed": "X2AB CPKT",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-40\\trace.jsonl",
+    "trace_sha256": "bc52ca2f0ce0dc5c43259ffe9b6d5f9ec9cc888bd9bbf94389ec5a253b37f511",
+    "observed_enemy_type_variant_champions": [
+      [
+        29,
+        1,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      3
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 1,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 41,
+    "seed": "YEJC 7PTV",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-41\\trace.jsonl",
+    "trace_sha256": "61c95c749a62f5b5ffac89c20e00c6ff1787ec45179da6d5702c5035f7a37e9c",
+    "observed_enemy_type_variant_champions": [
+      [
+        18,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      4
+    ],
+    "observed_room_visits": 4,
+    "max_hostiles": 8,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      },
+      {
+        "intended_room": 84,
+        "actual_room": 84,
+        "redirected": false
+      },
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 42,
+    "seed": "BMWY B8A9",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-42\\trace.jsonl",
+    "trace_sha256": "508658f2ebce1537e1e2c8acadde958d68b8df6ceb4ebb65bb0a7eb03d97a5e2",
+    "observed_enemy_type_variant_champions": [
+      [
+        13,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 4,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 43,
+    "seed": "4B8W VW7V",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-43\\trace.jsonl",
+    "trace_sha256": "ad9fd7387ec14a0b4bbad921c2381e250e1bcfed3991e6e5fd59910647b425ba",
+    "observed_enemy_type_variant_champions": [
+      [
+        18,
+        0,
+        -1
+      ],
+      [
+        80,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 44,
+    "seed": "W9B1 V3C1",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-44\\trace.jsonl",
+    "trace_sha256": "8019d3dec13523b701eb412c43fc39f569c64d2ebe49d4a6f5150646b974878d",
+    "observed_enemy_type_variant_champions": [
+      [
+        284,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 1,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 45,
+    "seed": "KWRC FZ62",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-45\\trace.jsonl",
+    "trace_sha256": "2d35bbe88b38a57ae02520f8c82a23ea9c9132117364f45f5a8aeac96a93b4a3",
+    "observed_enemy_type_variant_champions": [
+      [
+        244,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 4,
+    "max_hostiles": 1,
+    "max_enemy_projectiles": 1,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      },
+      {
+        "intended_room": 72,
+        "actual_room": 72,
+        "redirected": false
+      },
+      {
+        "intended_room": 59,
+        "actual_room": 59,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 46,
+    "seed": "CCSE L8MV",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-46\\trace.jsonl",
+    "trace_sha256": "6335c11ced7a9a97e74731cc06b9b599389b00b011c3f97c6306447b5a7b21b4",
+    "observed_enemy_type_variant_champions": [
+      [
+        13,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 4,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 47,
+    "seed": "AESY 2HE9",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-47\\trace.jsonl",
+    "trace_sha256": "9595a190a3d4f23b63a03863211917beea163b15f43053bba15402a17bb83b94",
+    "observed_enemy_type_variant_champions": [
+      [
+        16,
+        0,
+        -1
+      ],
+      [
+        16,
+        1,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      2
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 8,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 48,
+    "seed": "SGT4 9SP8",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-48\\trace.jsonl",
+    "trace_sha256": "ddcac6554f123d9e546d3797c620aa6773ea36b5b944e0b93cc1f9383fb1bbc2",
+    "observed_enemy_type_variant_champions": [
+      [
+        217,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 4,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 49,
+    "seed": "7EFM Q9V6",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-49\\trace.jsonl",
+    "trace_sha256": "662893d65a665a37ba6c316cb26d24c3900c1b3bfa91e4af743f6c8b42984f91",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        1,
+        -1
+      ],
+      [
+        10,
+        2,
+        -1
+      ],
+      [
+        11,
+        0,
+        -1
+      ],
+      [
+        11,
+        1,
+        -1
+      ],
+      [
+        302,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 4,
+    "max_enemy_projectiles": 1,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-rule",
+    "sample": 50,
+    "seed": "7PQ3 SM6J",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T041644919870Z\\sample-50\\trace.jsonl",
+    "trace_sha256": "659448d5f57288a2e22c02d16201e3d6a88530201fb811a88b681eb41c405bfc",
+    "observed_enemy_type_variant_champions": [
+      [
+        85,
+        0,
+        -1
+      ],
+      [
+        226,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      4
+    ],
+    "observed_room_visits": 4,
+    "max_hostiles": 6,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      },
+      {
+        "intended_room": 84,
+        "actual_room": 84,
+        "redirected": false
+      },
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 1,
+    "seed": "06EK J6VS",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-01\\trace.jsonl",
+    "trace_sha256": "7f72aeea0da9a0c2d6a442cceefe9e2f819797588581b8c2a2b869d7f3ea4121",
+    "observed_enemy_type_variant_champions": [
+      [
+        868,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 6,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 2,
+    "seed": "1PTV NMHD",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-02\\trace.jsonl",
+    "trace_sha256": "e77a7fa3042fd4984aa7578f666f3070aefdf62c51a3399c6de32cfd973aea5e",
+    "observed_enemy_type_variant_champions": [
+      [
+        256,
+        0,
+        -1
+      ],
+      [
+        289,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      8
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      },
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 3,
+    "seed": "36RL F4FB",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-03\\trace.jsonl",
+    "trace_sha256": "facab1a993a5a4bea0bac0a7bdfe84ed19e853ccf01807cf3dfdda4dd4719e2a",
+    "observed_enemy_type_variant_champions": [
+      [
+        218,
+        0,
+        -1
+      ],
+      [
+        222,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 5,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      },
+      {
+        "intended_room": 96,
+        "actual_room": 96,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 4,
+    "seed": "C39D BCJ7",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-04\\trace.jsonl",
+    "trace_sha256": "14b7d709a64868c4f1cb2ac46c73108ca100634a98b23f6745cbb32e2773ae2f",
+    "observed_enemy_type_variant_champions": [
+      [
+        85,
+        0,
+        -1
+      ],
+      [
+        94,
+        0,
+        -1
+      ],
+      [
+        276,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1,
+      11
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 6,
+    "max_enemy_projectiles": 4,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 5,
+    "seed": "E791 9EAM",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-05\\trace.jsonl",
+    "trace_sha256": "5b1e1831ad6eb4bd97a15502bda0c3ca888df8726d8724c0cd0d9293b640d727",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        2,
+        12
+      ],
+      [
+        11,
+        0,
+        12
+      ],
+      [
+        208,
+        2,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 2,
+    "max_enemy_projectiles": 1,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 71,
+        "actual_room": 71,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 6,
+    "seed": "MDLK 37T6",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-06\\trace.jsonl",
+    "trace_sha256": "bec9c56a2e1d2c5fab1d07af2f70732ec6eb6e26c3018c2e50ce454c74844c15",
+    "observed_enemy_type_variant_champions": [
+      [
+        16,
+        1,
+        -1
+      ],
+      [
+        16,
+        2,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 3,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 4,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      },
+      {
+        "intended_room": 98,
+        "actual_room": 98,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 7,
+    "seed": "E6EP GY89",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-07\\trace.jsonl",
+    "trace_sha256": "f985e2cd777343753518c7f44b34727b1475eaae29ebd2f5601f033c0392c60a",
+    "observed_enemy_type_variant_champions": [
+      [
+        214,
+        0,
+        -1
+      ],
+      [
+        218,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 8,
+    "seed": "3ZRY 1PEK",
+    "result": "ABORTED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-08\\trace.jsonl",
+    "trace_sha256": "a0751735ec1f52f138d841fb0e19da4807d24befd4a136f3a390afef269a47f2",
+    "observed_enemy_type_variant_champions": [],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 5,
+    "max_hostiles": 0,
+    "max_enemy_projectiles": 0,
+    "environment_objectives": [
+      "activate_pressure_plate",
+      "explosion_withdrawal"
+    ],
+    "door_entries": [
+      {
+        "intended_room": 83,
+        "actual_room": 83,
+        "redirected": false
+      },
+      {
+        "intended_room": 84,
+        "actual_room": 84,
+        "redirected": false
+      },
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      },
+      {
+        "intended_room": 86,
+        "actual_room": 86,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 9,
+    "seed": "WRPJ QVKX",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-09\\trace.jsonl",
+    "trace_sha256": "37a9c84d3a21ed3fd190f79e13db14d6d89cf2d3e287b4ed2826b036086d0ec0",
+    "observed_enemy_type_variant_champions": [
+      [
+        12,
+        0,
+        -1
+      ],
+      [
+        85,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 6,
+    "max_enemy_projectiles": 2,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 10,
+    "seed": "GYZS 1BMP",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-10\\trace.jsonl",
+    "trace_sha256": "19f293df6edecb1057a57a238e26b1508aef4c95991ad72185fc60befeded06c",
+    "observed_enemy_type_variant_champions": [
+      [
+        10,
+        0,
+        -1
+      ],
+      [
+        10,
+        2,
+        -1
+      ],
+      [
+        11,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 2,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 11,
+    "seed": "F1AB 4NCT",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-11\\trace.jsonl",
+    "trace_sha256": "28aa0ef75d66b2ddcfb0d446494702c97e6cda05a3f0d0879377789edef5584e",
+    "observed_enemy_type_variant_champions": [
+      [
+        96,
+        0,
+        -1
+      ],
+      [
+        244,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 1,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 97,
+        "actual_room": 97,
+        "redirected": false
+      }
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "sample": 12,
+    "seed": "TLEC WWCH",
+    "result": "CLEARED",
+    "raw_trace": "artifacts\\runs\\batch-20261026T044004013870Z\\sample-12\\trace.jsonl",
+    "trace_sha256": "f10edd74cbd5eb51ff980cd003f1e1893bf654c7b125535ccb4969e101a19a22",
+    "observed_enemy_type_variant_champions": [
+      [
+        240,
+        0,
+        -1
+      ],
+      [
+        250,
+        0,
+        -1
+      ]
+    ],
+    "observed_room_shapes": [
+      1
+    ],
+    "observed_room_visits": 2,
+    "max_hostiles": 3,
+    "max_enemy_projectiles": 3,
+    "environment_objectives": [],
+    "door_entries": [
+      {
+        "intended_room": 85,
+        "actual_room": 85,
+        "redirected": false
+      }
+    ]
+  }
+]

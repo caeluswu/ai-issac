@@ -1,0 +1,188 @@
+[
+  {
+    "sequence": 26,
+    "wall_monotonic": 67528.015,
+    "kind": "run_start",
+    "seed": "F1AB 4NCT",
+    "snapshot_id": "573530829:67527152:1:4"
+  },
+  {
+    "sequence": 80,
+    "wall_monotonic": 67529.375,
+    "kind": "pause_confirmed",
+    "entry_frame": 18,
+    "paused_frame": 23,
+    "delay_ticks": 5
+  },
+  {
+    "sequence": 614,
+    "wall_monotonic": 67580.718,
+    "kind": "plan_installed",
+    "source": "deepseek",
+    "plan": {
+      "schema_version": 2,
+      "context_ref": {
+        "run_id": "573530829:67527152",
+        "room_visit_id": "573530829:67527152:2",
+        "snapshot_id": "573530829:67527152:2:23",
+        "build_revision": 1,
+        "catalog_revision": 2,
+        "plan_revision": 0
+      },
+      "default_profile": "standoff",
+      "profiles": {
+        "standoff": {
+          "target": {
+            "component": "target.weighted",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10,
+              "threat_weight": 0.5,
+              "finish_weight": 0.3,
+              "approach_cost_weight": 0.2
+            }
+          },
+          "position": {
+            "component": "position.keep_range",
+            "params": {
+              "min_range_ratio": 0.5,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 6
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.3
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Room holds two vulnerable type-244 entities (10 hp each, contact_damage 1.0, can_shut_doors true) at (240,280) and (400,280), plus one non-vulnerable 300 hp type-96 near (435,278). lookup_enemy_mechanics returned unknown for both types, so attack patterns, state transitions and door-locking behaviour stay unverified rather than assumed. inspect_room_region confirms collision-3 blockers on all four cardinal neighbours of each 244, and normal tears travel cardinally, so straight shots are likely blocked; the plan therefore holds standoff at mid range, keeps a retreat lane toward the top door area, and treats the invulnerable type-96 as a hazard to keep clearance from rather than a target. Predictive aim with movement inheritance is used because inheritance data exists and the 244s are currently stationary, so no lead is applied until they move. Health is 6/6 red with no spare hearts, so engagement stays at standoff distance instead of pressing into the blocked enclosure.",
+        "evidence_refs": [
+          "snapshot.enemies[0]",
+          "snapshot.enemies[1]",
+          "snapshot.enemies[2]",
+          "lookup_enemy_mechanics:244:unknown",
+          "lookup_enemy_mechanics:96:unknown",
+          "inspect_room_region:50,64,66,80,54,68,70,84",
+          "snapshot.build.effective_range",
+          "snapshot.health"
+        ]
+      },
+      "required_capabilities": [
+        "normal_tears"
+      ]
+    }
+  },
+  {
+    "sequence": 634,
+    "wall_monotonic": 67582.484,
+    "kind": "resume_confirmed",
+    "frame": 24,
+    "attempts": 2
+  },
+  {
+    "sequence": 639,
+    "wall_monotonic": 67582.515,
+    "kind": "replan_started",
+    "frame": 26,
+    "reasons": [
+      "new_enemy_mechanism"
+    ]
+  },
+  {
+    "sequence": 1573,
+    "wall_monotonic": 67592.484,
+    "kind": "safe_clear_confirmed",
+    "frame": 325,
+    "started": 310,
+    "safe_since": 310
+  },
+  {
+    "sequence": 1575,
+    "wall_monotonic": 67592.484,
+    "kind": "report",
+    "result": "CLEARED",
+    "success": true,
+    "llm_configured": true,
+    "completed_door_transition": true,
+    "damage_half_hearts": 0,
+    "lost_bone_hearts": 0,
+    "remaining_half_hearts": 6,
+    "combat_ticks": 310,
+    "wall_seconds": 78.5,
+    "pause_seconds": 53.64100000000326,
+    "sent_actions": 310,
+    "accepted_actions": 309,
+    "observed_applied_actions": 271,
+    "fallback_count": 0,
+    "recovery_count": 3,
+    "decision_p95_ms": 10.15269999334123,
+    "seed": "F1AB 4NCT",
+    "error": null,
+    "progress_metrics": {
+      "max_no_progress_ticks": 31,
+      "max_idle_ticks": 1,
+      "boundary_counts": {},
+      "recovery_entries": 1
+    },
+    "replan_requests": 1,
+    "decision_p99_ms": 12.811599997803569,
+    "safe_clear_ticks": 15,
+    "discarded_decisions": 0,
+    "contract_override_count": 0,
+    "damage_scope": "task",
+    "combat_damage_half_hearts": 0,
+    "combat_scope": "first_observed_blocking_room",
+    "task_ticks": 321,
+    "environment_ticks": 0,
+    "navigation_replan_requests": 0,
+    "navigation_decision_p95_ms": 7.209700008388609,
+    "navigation_decision_p99_ms": 7.209700008388609,
+    "navigation_metrics": [
+      {
+        "room_visit_id": "573530829:67527152:1",
+        "max_no_progress_ticks": 4,
+        "max_idle_ticks": 0,
+        "boundary_counts": {},
+        "recovery_entries": 0
+      }
+    ]
+  }
+]

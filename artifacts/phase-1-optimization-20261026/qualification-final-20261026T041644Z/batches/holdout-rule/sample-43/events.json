@@ -1,0 +1,167 @@
+[
+  {
+    "sequence": 26,
+    "wall_monotonic": 66705.625,
+    "kind": "run_start",
+    "seed": "4B8W VW7V",
+    "snapshot_id": "3750908470:66704772:1:4"
+  },
+  {
+    "sequence": 183,
+    "wall_monotonic": 66707.984,
+    "kind": "pause_confirmed",
+    "entry_frame": 54,
+    "paused_frame": 54,
+    "delay_ticks": 0
+  },
+  {
+    "sequence": 184,
+    "wall_monotonic": 66707.984,
+    "kind": "fallback",
+    "error": "ValueError: Local-only run requested",
+    "plan": {
+      "schema_version": 2,
+      "context_ref": {
+        "run_id": "3750908470:66704772",
+        "room_visit_id": "3750908470:66704772:2",
+        "snapshot_id": "3750908470:66704772:2:54",
+        "build_revision": 1,
+        "catalog_revision": 2,
+        "plan_revision": 0
+      },
+      "default_profile": "safe",
+      "profiles": {
+        "safe": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Local deterministic fallback; not an LLM decision",
+        "evidence_refs": []
+      },
+      "required_capabilities": [
+        "normal_tears"
+      ]
+    }
+  },
+  {
+    "sequence": 190,
+    "wall_monotonic": 66708.421,
+    "kind": "resume_confirmed",
+    "frame": 55,
+    "attempts": 1
+  },
+  {
+    "sequence": 839,
+    "wall_monotonic": 66715.187,
+    "kind": "safe_clear_confirmed",
+    "frame": 258,
+    "started": 243,
+    "safe_since": 243
+  },
+  {
+    "sequence": 841,
+    "wall_monotonic": 66715.187,
+    "kind": "report",
+    "result": "CLEARED",
+    "success": true,
+    "llm_configured": false,
+    "completed_door_transition": true,
+    "damage_half_hearts": 0,
+    "lost_bone_hearts": 0,
+    "remaining_half_hearts": 6,
+    "combat_ticks": 207,
+    "wall_seconds": 22.906000000002678,
+    "pause_seconds": 0.7810000000026776,
+    "sent_actions": 249,
+    "accepted_actions": 248,
+    "observed_applied_actions": 219,
+    "fallback_count": 1,
+    "recovery_count": 1,
+    "decision_p95_ms": 9.942600008798763,
+    "seed": "4B8W VW7V",
+    "error": null,
+    "progress_metrics": {
+      "max_no_progress_ticks": 31,
+      "max_idle_ticks": 27,
+      "boundary_counts": {},
+      "recovery_entries": 1
+    },
+    "replan_requests": 0,
+    "decision_p99_ms": 10.80819999333471,
+    "safe_clear_ticks": 15,
+    "discarded_decisions": 0,
+    "contract_override_count": 0,
+    "damage_scope": "task",
+    "combat_damage_half_hearts": 0,
+    "combat_scope": "first_observed_blocking_room",
+    "task_ticks": 254,
+    "environment_ticks": 0,
+    "navigation_replan_requests": 0,
+    "navigation_decision_p95_ms": 5.849799999850802,
+    "navigation_decision_p99_ms": 6.268400000408292,
+    "navigation_metrics": [
+      {
+        "room_visit_id": "3750908470:66704772:1",
+        "max_no_progress_ticks": 4,
+        "max_idle_ticks": 0,
+        "boundary_counts": {},
+        "recovery_entries": 0
+      }
+    ]
+  }
+]

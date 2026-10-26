@@ -1,0 +1,281 @@
+[
+  {
+    "sequence": 26,
+    "wall_monotonic": 66092.796,
+    "kind": "run_start",
+    "seed": "BJ2J 9L9S",
+    "snapshot_id": "98562134:66091938:1:4"
+  },
+  {
+    "sequence": 186,
+    "wall_monotonic": 66095.359,
+    "kind": "pause_confirmed",
+    "entry_frame": 53,
+    "paused_frame": 58,
+    "delay_ticks": 5
+  },
+  {
+    "sequence": 187,
+    "wall_monotonic": 66095.359,
+    "kind": "fallback",
+    "error": "ValueError: Local-only run requested",
+    "plan": {
+      "schema_version": 2,
+      "context_ref": {
+        "run_id": "98562134:66091938",
+        "room_visit_id": "98562134:66091938:2",
+        "snapshot_id": "98562134:66091938:2:58",
+        "build_revision": 1,
+        "catalog_revision": 2,
+        "plan_revision": 0
+      },
+      "default_profile": "safe",
+      "profiles": {
+        "safe": {
+          "target": {
+            "component": "target.threat_first",
+            "params": {
+              "switch_margin": 0.15,
+              "min_hold_ticks": 10
+            }
+          },
+          "position": {
+            "component": "position.kite",
+            "params": {
+              "min_range_ratio": 0.45,
+              "max_range_ratio": 0.8
+            }
+          },
+          "aim": {
+            "component": "aim.predictive",
+            "params": {
+              "max_lead_ticks": 12,
+              "movement_inheritance": true
+            }
+          },
+          "fire": {
+            "component": "fire.normal_tears",
+            "params": {
+              "min_hit_score": 0.2
+            }
+          },
+          "evade": {
+            "component": "evade.max_clearance",
+            "params": {
+              "extra_margin_px": 4
+            }
+          },
+          "escape": {
+            "component": "escape.keep_routes",
+            "params": {
+              "horizon_ticks": 30,
+              "min_safe_area_ratio": 0.25
+            }
+          },
+          "recovery": {
+            "component": "recovery.local_repath",
+            "params": {
+              "stall_window_ticks": 30,
+              "recovery_ticks": 6
+            }
+          }
+        }
+      },
+      "switch_rules": [],
+      "replan_on": [
+        "confirmed_damage",
+        "no_progress",
+        "new_enemy_mechanism",
+        "repeated_recovery",
+        "invalid_profile"
+      ],
+      "rationale": {
+        "summary": "Local deterministic fallback; not an LLM decision",
+        "evidence_refs": []
+      },
+      "required_capabilities": [
+        "normal_tears"
+      ]
+    }
+  },
+  {
+    "sequence": 194,
+    "wall_monotonic": 66095.968,
+    "kind": "resume_confirmed",
+    "frame": 59,
+    "attempts": 1
+  },
+  {
+    "sequence": 376,
+    "wall_monotonic": 66097.968,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 120,
+      "age_ticks": 15,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 381,
+    "wall_monotonic": 66097.984,
+    "kind": "contract_override",
+    "frame": 120,
+    "last_damage_frame": 120,
+    "recovery_level": 0,
+    "until": 180,
+    "profile": {
+      "target": {
+        "component": "target.finish_first",
+        "params": {
+          "switch_margin": 0.05,
+          "min_hold_ticks": 0
+        }
+      },
+      "position": {
+        "component": "position.kite",
+        "params": {
+          "min_range_ratio": 0.6,
+          "max_range_ratio": 0.9
+        }
+      },
+      "aim": {
+        "component": "aim.predictive",
+        "params": {
+          "max_lead_ticks": 12,
+          "movement_inheritance": true
+        }
+      },
+      "fire": {
+        "component": "fire.normal_tears",
+        "params": {
+          "min_hit_score": 0.1
+        }
+      },
+      "evade": {
+        "component": "evade.max_clearance",
+        "params": {
+          "extra_margin_px": 8
+        }
+      },
+      "escape": {
+        "component": "escape.keep_routes",
+        "params": {
+          "horizon_ticks": 45,
+          "min_safe_area_ratio": 0.25
+        }
+      },
+      "recovery": {
+        "component": "recovery.local_repath",
+        "params": {
+          "stall_window_ticks": 30,
+          "recovery_ticks": 6
+        }
+      }
+    }
+  },
+  {
+    "sequence": 499,
+    "wall_monotonic": 66098.968,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 150,
+      "age_ticks": 45,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 593,
+    "wall_monotonic": 66099.968,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 180,
+      "age_ticks": 75,
+      "severity": "critical"
+    },
+    "evidence": []
+  },
+  {
+    "sequence": 687,
+    "wall_monotonic": 66100.968,
+    "kind": "boundary",
+    "boundary": {
+      "kind": "no_safe_candidate",
+      "frame": 210,
+      "age_ticks": 105,
+      "severity": "critical"
+    },
+    "evidence": [
+      {
+        "kind": "enemy_hp_decreased",
+        "frame": 210,
+        "entity": "2357911978:3"
+      }
+    ]
+  },
+  {
+    "sequence": 1313,
+    "wall_monotonic": 66107.5,
+    "kind": "safe_clear_confirmed",
+    "frame": 406,
+    "started": 391,
+    "safe_since": 391
+  },
+  {
+    "sequence": 1315,
+    "wall_monotonic": 66107.5,
+    "kind": "report",
+    "result": "CLEARED",
+    "success": true,
+    "llm_configured": false,
+    "completed_door_transition": true,
+    "damage_half_hearts": 3,
+    "lost_bone_hearts": 0,
+    "remaining_half_hearts": 3,
+    "combat_ticks": 356,
+    "wall_seconds": 28.078999999997905,
+    "pause_seconds": 1.1869999999908032,
+    "sent_actions": 391,
+    "accepted_actions": 390,
+    "observed_applied_actions": 363,
+    "fallback_count": 1,
+    "recovery_count": 1,
+    "decision_p95_ms": 12.989700000616722,
+    "seed": "BJ2J 9L9S",
+    "error": null,
+    "progress_metrics": {
+      "max_no_progress_ticks": 32,
+      "max_idle_ticks": 28,
+      "boundary_counts": {
+        "no_safe_candidate": 4
+      },
+      "recovery_entries": 1
+    },
+    "replan_requests": 0,
+    "decision_p99_ms": 14.133599994238466,
+    "safe_clear_ticks": 15,
+    "discarded_decisions": 0,
+    "contract_override_count": 1,
+    "damage_scope": "task",
+    "combat_damage_half_hearts": 3,
+    "combat_scope": "first_observed_blocking_room",
+    "task_ticks": 402,
+    "environment_ticks": 0,
+    "navigation_replan_requests": 0,
+    "navigation_decision_p95_ms": 5.998100008582696,
+    "navigation_decision_p99_ms": 6.59829999494832,
+    "navigation_metrics": [
+      {
+        "room_visit_id": "98562134:66091938:1",
+        "max_no_progress_ticks": 4,
+        "max_idle_ticks": 0,
+        "boundary_counts": {},
+        "recovery_entries": 0
+      }
+    ]
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "scope": "Isaac Normal on pinned original Repentance build; empirical model, not engine specification",
+  "player_displacement_scale": 2,
+  "other_entities_scale": 1,
+  "native_velocity_limit_at_speed_one": 4.4,
+  "native_velocity_retention_per_update": 0.75,
+  "sources": [
+    {
+      "trace": "artifacts\\runs\\batch-20261025T201200012660Z\\sample-02\\trace.jsonl",
+      "trace_sha256": "181fb402950dfbf553a4f4b3c164a6cc6c56f796bea63f50cae626537a5fab49",
+      "steady_velocity_change_limit": 0.05,
+      "measurements": {
+        "player": {
+          "samples": 6,
+          "median": 1.994749472329174
+        },
+        "enemy": {
+          "samples": 34,
+          "median": 1.0000014862130708
+        },
+        "enemy_projectile": {
+          "samples": 347,
+          "median": 0.9999998024619399
+        },
+        "player_tear": {
+          "samples": 273,
+          "median": 1.0000000950005032
+        }
+      }
+    },
+    {
+      "trace": "artifacts\\runs\\batch-20261025T201200012660Z\\sample-10\\trace.jsonl",
+      "trace_sha256": "1edf3c1a8b31b9c3a92f5ce7ce21c41088ffc3f87ec438aba701331023424b58",
+      "steady_velocity_change_limit": 0.05,
+      "measurements": {
+        "player": {
+          "samples": 28,
+          "median": 1.9961144278962832
+        },
+        "enemy": {
+          "samples": 20,
+          "median": 0.9999996564457428
+        },
+        "enemy_projectile": {
+          "samples": 647,
+          "median": 1.0000002695093493
+        },
+        "player_tear": {
+          "samples": 203,
+          "median": 1.0000000197925556
+        }
+      }
+    }
+  ]
+}

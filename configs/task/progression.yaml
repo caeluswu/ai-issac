@@ -176,24 +176,6 @@ open_items:
   - m2_m3_stability_gates_and_seed_sample_sizes
   - runner_reads_frozen_game_options_and_aborts_on_mismatch
 
-change_log:
-  - version: 5
-    date: 2026-10-25
-    change: >-
-      取消控制器对前台窗口的校验：send_action 不再要求前台，动作经模组输入缓存可在后台执行；
-      interrupt_on 移除 focus_loss。NativePause 改为"置前游戏窗口 → 发 Escape → 确认暂停 →
-      恢复后再置前发 Escape → 归还原前台窗口"，置前失败抛 GAME_WINDOW_ACTIVATION_FAILED，
-      不把 Escape 注入未知窗口。窗口不得最小化（渲染回调中断会使暂停心跳失效）。
-  - version: 4
-    date: 2026-10-25
-    change: >-
-      运行环境选项冻结项修订：pause_on_focus_lost 由 1 改为 0，并新增 game_options 冻结块
-      （fullscreen/vsync/music/enable_debug_console）。失焦自动暂停会停止 MC_POST_UPDATE，
-      使模组既不连接也不发快照，与启动程序必然切换前台窗口冲突。
-  - version: 3
-    date: 2026-10-24
-    change: M1/M2/M3 里程碑划分与 DeepSeek 上层接入范围
-
 # 第一阶段工程链路验收；不代替 M1 稳定胜率门槛。
 phase_one_validation:
   status: engineering_verified
@@ -204,3 +186,37 @@ phase_one_validation:
   held_out_samples: 0
   llm_clears: 10
   rule_clears: 9
+
+
+verification_policy:
+  current_scope: phase_one_end_to_end_feasibility
+  documentation: README.md
+  prefer: [local_unit_tests, simulated_tcp, offline_trace_replay, targeted_rule_runs]
+  paid_llm_calls: minimal_necessary_end_to_end_checks
+  automatic_paid_batch_regression: false
+  llm_rule_ablation: deferred
+  component_ablations: deferred
+  statistical_generalization_evaluation: deferred
+  preserve_all_started_outcomes: true
+  stopped_batch_is_not_a_completed_sample_estimate: true
+
+phase_one_optimization_validation:
+  status: feasibility_verified_with_known_limitations
+  report: docs/phase-1-optimization-validation.zh-CN.md
+  evidence: artifacts/phase-1-optimization-20261026/qualification-final-20261026T041644Z/feasibility-audit.json
+  implementation_commit: 50eb92ae3f33a20e19530cd159c706687b49cda0
+  local_tests_passed: 207
+  standalone_performance_cases: 18
+  rule_runs_completed: 50
+  rule_clears: 49
+  llm_runs_completed: 12
+  llm_clears: 11
+  llm_batch_status: administratively_stopped
+  llm_planned_but_unstarted: 38
+  full_llm_holdout_evaluation_complete: false
+  ablation_conclusion: not_evaluated
+  stable_win_rate_claim: false
+  known_limitations:
+    - first_room_search_only_follows_ordinary_room_doors
+    - normal_tears_live_support_only
+    - llm_resource_and_total_time_advantage_not_established

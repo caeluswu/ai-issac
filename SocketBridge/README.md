@@ -1,5 +1,7 @@
 # SocketBridge 项目文档
 
+项目级验证与付费 API 原则见[根目录 README](../README.md#验证与付费-api-原则)：当前以目标可行性为验收标准，优先本地验证，付费批量回归与消融暂缓执行。
+
 > **版本**: 3.0
 > **更新日期**: 2026年4月
 > **状态**: 架构重构完成 — Sensor-based 数据采集框架
@@ -21,7 +23,7 @@
 
 ## 项目概述
 
-**SocketBridge** 是为《以撒的结合：重生》（The Binding of Isaac: Repentance）开发的模组，实现游戏与 Python 程序之间的实时数据桥接。
+**SocketBridge** 是为《以撒的结合：忏悔》（The Binding of Isaac: Repentance）开发的模组，实现游戏与 Python 程序之间的实时数据桥接。
 
 ### 核心特性
 

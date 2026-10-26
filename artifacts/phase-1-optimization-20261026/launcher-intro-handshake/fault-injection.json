@@ -1,0 +1,8 @@
+{
+  "scope": "prestart_fault_injection_not_combat_evaluation",
+  "dropped": true,
+  "fault_phase": "intro",
+  "probe_sha256": "1ff03fbc42b0355165022df26c961215997ef32bd04f714a062ea78a13bf0bc8",
+  "exit_code": 0,
+  "passed": true
+}

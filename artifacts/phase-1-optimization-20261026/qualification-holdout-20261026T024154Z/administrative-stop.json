@@ -1,0 +1,8 @@
+{
+  "time": "2026-10-26T03:15:54.340789+00:00",
+  "batch": "artifacts/runs/batch-20261026T024154786183Z",
+  "stopped_scheduler_pid": 16608,
+  "reason": "Three recorded failures imply at most 47/50 clears, below the fixed 48/50 gate. Stop unstarted samples; preserve every started sample and raw outcome. No paired rule batch spent on this failed implementation.",
+  "unindexed_active_sample": 33,
+  "do_not_modify_controller_until_active_run_finishes": true
+}

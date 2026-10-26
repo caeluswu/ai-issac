@@ -1,0 +1,52 @@
+[
+  {
+    "stage": "holdout-rule",
+    "planned": 50,
+    "completed": 50,
+    "clears": 49,
+    "no_hit_clears": 43,
+    "mean_loss_half_hearts": 0.18,
+    "max_loss_half_hearts": 3,
+    "mean_combat_seconds": 9.474,
+    "mean_task_game_seconds": 11.161333333333333,
+    "successful_mean_combat_seconds": 9.66734693877551,
+    "mean_pause_seconds": 1.0071199999999954,
+    "mean_process_wall_seconds": 26.227260000000243,
+    "max_decision_p95_ms": 12.989700000616722,
+    "max_decision_p99_ms": 14.483699997072108,
+    "max_navigation_p95_ms": 9.60530000156723,
+    "max_navigation_p99_ms": 11.691400010022335,
+    "contract_override_entries": 11,
+    "replan_requests": 0,
+    "stall_or_timeout_samples": [],
+    "latency_violation_samples": [],
+    "damage_scope": [
+      "task"
+    ]
+  },
+  {
+    "stage": "holdout-llm",
+    "planned": 50,
+    "completed": 12,
+    "clears": 11,
+    "no_hit_clears": 9,
+    "mean_loss_half_hearts": 0.5,
+    "max_loss_half_hearts": 3,
+    "mean_combat_seconds": 9.583333333333334,
+    "mean_task_game_seconds": 11.825,
+    "successful_mean_combat_seconds": 10.454545454545455,
+    "mean_pause_seconds": 29.90124999999898,
+    "mean_process_wall_seconds": 56.35283333333306,
+    "max_decision_p95_ms": 12.320900001213886,
+    "max_decision_p99_ms": 14.546999998856336,
+    "max_navigation_p95_ms": 9.645500002079643,
+    "max_navigation_p99_ms": 11.65049998962786,
+    "contract_override_entries": 6,
+    "replan_requests": 13,
+    "stall_or_timeout_samples": [],
+    "latency_violation_samples": [],
+    "damage_scope": [
+      "task"
+    ]
+  }
+]

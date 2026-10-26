@@ -1,0 +1,112 @@
+{
+  "implementation_commit": "b8162043a217819eb593e6f4176525870ab13770",
+  "source_hashes": {
+    "SocketBridge\\python\\combat\\catalog.py": "a1461f7eac06d11abeda805e89868953f211a6e898df4a63daad5e59f16ecb72",
+    "SocketBridge\\python\\combat\\components.py": "9f9fb1ad66314eca53ef202db41a36d190c8610f390cef92387b19e70b3b1131",
+    "SocketBridge\\python\\combat\\controller.py": "faadc9ec9427381d3573600b76d5408e63eb62f722cdc355100c9186c4a28312",
+    "SocketBridge\\python\\combat\\geometry.py": "4c784e244a6e1ebae3e7aa02668c19a7ecf11c9c1956ec7321ef1cb87c791a8a",
+    "SocketBridge\\python\\combat\\launcher.py": "7151434036084ccfae146632625ff442723da402429aacb45fae00fbcfed19cf",
+    "SocketBridge\\python\\combat\\models.py": "7fd2734463abd9d509b23363de72f581e049d2f53ddc0ea6b58ab989ef45ff8e",
+    "SocketBridge\\python\\combat\\observation.py": "f86c22bc327ea5f608a0cf889fead0b80178ec6dd4b900b581714876452af2b1",
+    "SocketBridge\\python\\combat\\planner.py": "2d8168f56c6193fef7ffd37daeebfa0bc3bed0ddadbf5b8ce47678c00c138a13",
+    "SocketBridge\\python\\combat\\runtime.py": "d78d084c2a5a6ecc37c66038c108b0cd7cffc99e8324b794e495a3cd543340ec",
+    "SocketBridge\\python\\combat\\supervision.py": "4becbb8d208acc4ad8d2c1069285677f2c00ab535f4368f240288b4b45a01feb",
+    "SocketBridge\\python\\combat\\threats.py": "de4d224df16c49d6e525eaab90ce8943031e9b17e84439c2d3798ace6c1c9ba2",
+    "SocketBridge\\python\\combat\\__init__.py": "611ce211027cb62c851089d36eec040427d42d75fb3e0291ce03fba34b40d563",
+    "SocketBridge\\python\\apps\\auto_first_room.py": "430d891e4e181edd9f585a269cbae8403d7e26a759744eabc9af0eb5dcda35d7",
+    "SocketBridge\\python\\apps\\bridge_hub.py": "abb05f5a2a4cb6b562b072a56b9036108721862effe53a168a4c195c821f6009",
+    "SocketBridge\\python\\apps\\console.py": "2824efcd1dab1b03160fad34670ae9a0d75d05f5ffc53f5b9bd1a76a60b759f2",
+    "SocketBridge\\python\\apps\\control_probe.py": "942073f5aeb6b478ecc543d12841fa5215fc9c5ec2e12eab644ae7d51e620792",
+    "SocketBridge\\python\\apps\\first_room.py": "87267da37e7c9abbfbce2952926174af3a3a2ea41614111a66768c34631cecfa",
+    "SocketBridge\\python\\apps\\recorder.py": "5e9b0fe43283230309bfdcfc24968a070a865bbac5d8157dd9413e65bb5f671f",
+    "SocketBridge\\python\\apps\\replay_test.py": "b0ee661bd6288181bab0e4f5f846f082870b1fe7514fadff4c476032e571c7cc",
+    "SocketBridge\\python\\apps\\room_layout_visualizer.py": "d9f5fc15d62cb7fc095d557ece39cf2d9a1b47e3cb4355acf5e91dd71f96f364",
+    "SocketBridge\\python\\apps\\terrain_validator.py": "61ec4892e90af293ef852eb6fb3ea0fb8d1c675662637ff21c0d9b20404df867",
+    "SocketBridge\\main.lua": "0e28f9f574ea21bf233d3da2dd0f1045e26fcf02fc05d58e57929b05349ed815",
+    "SocketBridge\\python\\facade.py": "fdac9e89af7f72d29d2b80ff98bcec778e1e0cfb92f5e3b0a05d54a3be711a19",
+    "SocketBridge\\python\\connection\\server.py": "5f4a1f26f8439f60de1f5edd123bd3a698bb51a6fa3ae28345d245a89b179da8",
+    "run_first_room.py": "27eaead76b55eef0203babc4784b74d208302f404b9a73eac51008bab0b513a7",
+    "run-first-room.ps1": "b3f4fd378d47c9a395398adf3c98e96294b6fa9e4dd9e48ca8f27c13543f6e43",
+    "run_phase1_batch.py": "6f0f3d9a351ef2c7e948d2ea46faeb1a21bd60c1170db88c7242e29c3684c4de"
+  },
+  "planned_through": "holdout",
+  "stages": [
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T191746730789Z",
+      "role": "rule",
+      "holdout": false,
+      "planned": 10,
+      "clears": 10,
+      "mean_loss_half_hearts": 0.3,
+      "mean_combat_seconds": 13.796666666666667,
+      "max_combat_seconds": 27.1,
+      "issues": [],
+      "passed": true
+    },
+    {
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T192256636256Z",
+      "role": "llm",
+      "holdout": false,
+      "planned": 10,
+      "clears": 10,
+      "mean_loss_half_hearts": 0.3,
+      "mean_combat_seconds": 14.346666666666666,
+      "max_combat_seconds": 22.533333333333335,
+      "issues": [],
+      "passed": true
+    },
+    {
+      "stage": "development",
+      "directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T193239877490Z",
+      "planned": 30,
+      "clears": 29,
+      "failures": [
+        {
+          "index": 12,
+          "planned_seed": "SKDP 343R",
+          "exit_code": 1,
+          "run_directory": "D:\\internship1\\issac\\artifacts\\runs\\batch-20261025T193239877490Z\\sample-12",
+          "process_wall_seconds": 53.76499999999942,
+          "result": "STALL_UNRECOVERED",
+          "success": false,
+          "llm_configured": true,
+          "completed_door_transition": true,
+          "damage_half_hearts": 2,
+          "lost_bone_hearts": 0,
+          "remaining_half_hearts": 4,
+          "combat_ticks": 250,
+          "wall_seconds": 53.14100000000326,
+          "pause_seconds": 28.67199999999866,
+          "sent_actions": 293,
+          "accepted_actions": 292,
+          "observed_applied_actions": 284,
+          "fallback_count": 0,
+          "recovery_count": 0,
+          "decision_p95_ms": 7.926300000690389,
+          "seed": "SKDP 343R",
+          "error": null,
+          "progress_metrics": {
+            "max_no_progress_ticks": 240,
+            "max_idle_ticks": 239,
+            "boundary_counts": {
+              "idle": 7,
+              "stall": 7,
+              "no_safe_candidate": 6,
+              "escape_margin": 6,
+              "no_progress": 6,
+              "oscillation": 6
+            },
+            "recovery_entries": 2
+          },
+          "replan_requests": 1,
+          "decision_p99_ms": 9.492600001976825,
+          "safe_clear_ticks": 0,
+          "discarded_decisions": 0,
+          "contract_override_count": 1
+        }
+      ],
+      "passed": false
+    }
+  ],
+  "passed": false
+}
