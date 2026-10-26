@@ -18,6 +18,8 @@
 
 道具学习的采集范围、实验准入、预算和经验发布采用 [EID 与本地经验学习计划](eid-local-learning-plan.zh-CN.md)。当前不建设通用 Wiki 爬虫；外部 EID 说明与本地实测证据保留各自来源。
 
+进入 M2-A 开发前的统一工作队列、含道具组件职责与准入用例见 [M2-A 前置准备](phase-2a-preparation.zh-CN.md)。完成 P1–P6 基础能力后进入首层编排；有界主动实验仅在实际使用前要求验收，完整模型编程归 M2-B，不将全部道具学习功能变成首层开发前置。
+
 “第一层应该很容易”只对**在较窄装备范围内打通一次**比较合理。工程难点已经从单房走位转为状态连续性：生命、构筑、门、资源和组件版本在整个流程中必须一致。六层问题更大，因为每次小失误都可能累积，且成长决策改变之后的全部战斗。
 
 ## 2. 目标层级与成功事件
@@ -143,7 +145,7 @@ Boss 死亡与房间安全是两个事件。捡奖励、穿门和踩陷阱门前
 | 3 `refactor: separate room execution from run lifecycle` | 提取 RoomExecutor，连接持续，作用域重置，有界记录缓存 | 模拟连续三房、回房、断线、迟到计划 |
 | 4 `feat: integrate versioned knowledge packages` | 本地包客户端、Gateway、首次遇见、需求 outbox、版本和来源状态；采集由独立项目实现 | 固定资料包、未知/阻塞状态、离线、冲突与重复查询；不爬全站 |
 | 5 `feat: compile item capabilities and execute interactions` | 简单成长/飞行、拾取与主动边沿事务、资源账本、无法支持时拒绝 | 针对性本地模拟和必要实机机制验证 |
-| 5a `feat: learn item behavior with bounded probes` | EID 拾取分析、本地假设与被动测量、安全节点实验准入、经验版本与复用 | 一条完整低风险学习链路，危险计划拒绝与突发事件中止；实验损失和耗时计入本局 |
+| 5a `feat: learn item behavior with bounded probes` | 被动测量与经验复用先完成；主动实验为可关闭扩展，使用前实现安全准入与抢占，不阻塞不依赖它的首层开发 | 被动链路本地验证；启用主动实验时验证完整低风险链路、危险计划拒绝与突发事件中止，耗时和损失计入本局 |
 | 6 `feat: navigate and finish the first floor` | 已探索图、Boss 门与合法出口、Boss 适配器、FloorJudge、首层报告 | 先本地规则打通，再必要的一次 DeepSeek 完整流程 |
 | 7 `feat: validate and publish DeepSeek skill candidates` | 技能开发器、受限代码/程序、外部验证、隔离、试用与回滚、作者证据 | 非平凡模块生成→验证→实机试用→下一次复用；有问题才追加调用 |
 | 8 `feat: orchestrate continuous floors and resource budgets` | RunDirector、跨层重建、全局路线、状态持久化与中断结果 | M3-A 连续两层；不重置血量、装备或 RNG |

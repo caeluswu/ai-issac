@@ -52,6 +52,7 @@
 
 ## 文档
 
+- [M2-A 前置准备与含道具组件评估](docs/phase-2a-preparation.zh-CN.md)
 - [EID 与本地经验学习计划](docs/eid-local-learning-plan.zh-CN.md)
 - [独立知识库分层与接口计划](docs/knowledge-project-interface-plan.zh-CN.md)
 - [第一阶段扩展性审查](docs/phase-1-extensibility-review.zh-CN.md)
