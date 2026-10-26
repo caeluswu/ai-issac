@@ -48,6 +48,8 @@
 
 确需验证 LLM 完整流程时，在不入库的 `.env.local` 配置 `DEEPSEEK_API_KEY` 和 `DEEPSEEK_MODEL`，再单次执行 `run_first_room.py`。原始运行数据保存在 `artifacts/runs/`；凭据、游戏文件和存档二进制不进入 Git。
 
+项目运行入口优先采用 `.env.local` 中显式填写的 DeepSeek 配置，覆盖继承的同名进程环境值；未填写的配置仍可来自环境。更换 key 后重新启动脚本即可，新建客户端读取新值；已存在的客户端不会自动换 key。无需为更新配置发送付费请求，实际 API 授权是否有效需在下一次必要调用中确认。
+
 批次入口 `run_phase1_batch.py` 未加 `--local-only` 时会调用付费模型，当前不将其列为常规验收步骤。
 
 ## 文档导航

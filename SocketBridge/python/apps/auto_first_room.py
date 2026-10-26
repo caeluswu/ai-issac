@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 async def main(args):
-    load_env(ROOT/".env.local")
+    load_env(ROOT/".env.local", override=True)
     client = None if args.local_only or args.startup_only else DeepSeekClient()
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     log = RunLog(args.output_dir or ROOT/"artifacts/runs"/run_id)

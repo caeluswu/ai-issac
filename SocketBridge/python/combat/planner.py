@@ -17,14 +17,21 @@ from .controller import JointActionSolver
 from .geometry import GeometryService
 
 
-def load_env(path: Path):
+def load_env(path: Path, *, override=False):
+    """Load allowlisted settings; launchers explicitly prefer the local file.
+
+    Existing clients keep their captured credentials; construct a new client
+    after loading. Never return or log secret values.
+    """
     if not path.exists(): return
     for line in path.read_text(encoding="utf-8-sig").splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line: continue
         key, value = line.split("=", 1)
         if key.strip() in ("DEEPSEEK_API_KEY", "DEEPSEEK_MODEL", "DEEPSEEK_BASE_URL"):
-            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+            key, value = key.strip(), value.strip().strip('"').strip("'")
+            if override: os.environ[key] = value
+            else: os.environ.setdefault(key, value)
 
 
 class DeepSeekClient:
