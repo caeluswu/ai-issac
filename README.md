@@ -2,9 +2,9 @@
 
 面向《以撒的结合：忏悔》原版 `1.7.9b.J835`，使用 SocketBridge 读取结构化状态，由可替换的底层控制组件执行移动与射击，DeepSeek 负责选择组件、填写参数和必要的异常诊断。
 
-当前可运行能力是：自动启动游戏，从初始房间正常出门，经 LLM 配置组件后清理一个实际战斗房，并保存调试信息。允许入房暂停；战斗中本地控制持续执行。下一目标 M2-A 是正常完成第一层；整层控制尚未实现。
+当前运行入口包括单房控制 `run_first_room.py` 和首层控制 `run_floor.py`。首层流程复用同一连接，维护已观察地图，执行普通战斗、有限拾取、Boss 和正常离层，并独立确认第二层可行动。原生入房暂停与战中异步诊断均有预算。
 
-道具扩展采用固定版本 EID 说明与本地经验。P0–P6 已实现构筑变化、健康资源账本、房间执行器、EID 查询、有限拾取和被动经验持久化；历史实机验证了简单属性道具拾取后出门清房。当前审查复现了资源子型、拾取授权、清房后终态和样本重复发布四个边界缺陷，须先完成 [M2-A 计划的 A0](docs/phase-2a-plan.zh-CN.md)，再接整层调度。主动实验保持关闭，DeepSeek 自主编写机制程序属于 M2-B。
+P0–P6 的四项审查缺陷已修复并加入回归。道具采用固定 EID 说明与有样本身份的本地经验，支持范围仍有限；主动实验关闭，DeepSeek 自主编写新机制程序属于 M2-B。当前首层覆盖及剩余限制见 [M2-A 验收证据](docs/evidence/phase-2a-validation.zh-CN.md)，操作见 [首层运行手册](docs/phase-2a-runbook.zh-CN.md)。
 
 ## 验证与付费 API 原则
 
@@ -36,7 +36,13 @@
 在项目根目录使用现有 uv 虚拟环境；全解锁槽 1 的基线由 `configs/task/save-baseline.slot-1.json` 定位。
 
 ```powershell
-# 本地规则流程，不调用 DeepSeek
+# 首层规则流程，不调用 DeepSeek
+.\.venv\Scripts\python.exe run_floor.py --local-only
+
+# 首层 DeepSeek 配置；将付费请求上限降到 1
+.\.venv\Scripts\python.exe run_floor.py --llm-requests 1
+
+# 第一阶段单房诊断
 .\.venv\Scripts\python.exe run_first_room.py --local-only
 
 # 只验证启动、连接与原生暂停
@@ -54,7 +60,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 .\.venv\Scripts\python.exe run_first_room.py --local-only --with-items
 ```
 
-`--with-items` 启用实验性的本地说明、拾取、避让和被动记录。当前收藏品支持映射为 1/4/12 的简单属性、20 的飞行以及不使用主动效果的 105；未知机制、饰品、复杂武器和健康交易明确拒绝。资源子型与交互边界仍有 [已知缺陷](docs/phase-2a-preparation.zh-CN.md)，不能视为全道具安全策略。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git；遭遇、决策前态、拾取确认、房间结果、测量、结论和反例可追溯。
+`--with-items` 启用实验性的本地说明、拾取、避让和被动记录。当前收藏品支持映射为 1/4/12 的简单属性、20 的飞行以及不使用主动效果的 105；未知机制、饰品、复杂武器和健康交易明确拒绝。普通资源按已验证子型处理，首层另支持有限红/魂心；这仍是有限策略。边界及历史审查见 [准备状态](docs/phase-2a-preparation.zh-CN.md)。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git；遭遇、决策前态、拾取确认、房间结果、测量、结论和反例可追溯。
 
 开发用实机核验入口为 `scripts/validate_m2_preparation_live.py`：会自动重开固定场景，并在记录的初始化环节生成道具，再正常拾取和战斗。其结果仅验证机制，不是正常随机对局胜率；不作为日常启动命令。
 
@@ -66,13 +72,14 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 ## 文档导航
 
-完整目录及文档职责见 [docs 文档索引](docs/README.md)。当前执行入口是审查结论与 M2-A 计划；历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
+完整目录及文档职责见 [docs 文档索引](docs/README.md)。当前执行入口是 M2-A 计划、首层运行手册和验收证据；历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
 
 | 入口 | 解决的问题 |
 |---|---|
 | [任务契约](docs/task-contract.zh-CN.md) / [总体架构](docs/architecture-plan.zh-CN.md) | 做什么，哪些辅助允许，模块如何分工 |
 | [P0–P6 实现审查](docs/phase-2a-preparation.zh-CN.md) | 当前能做什么，四个已复现问题及准入状态 |
-| [M2-A 详细实施计划](docs/phase-2a-plan.zh-CN.md) | 从 A0 修复到地图、调度、Boss 与正常离层的具体工作和验收 |
+| [M2-A 详细实施计划](docs/phase-2a-plan.zh-CN.md) | A0–A7 的模块、预算与验收合同 |
+| [首层运行手册](docs/phase-2a-runbook.zh-CN.md) / [验收证据](docs/evidence/phase-2a-validation.zh-CN.md) | 实际入口、完整首层证明及覆盖限制 |
 | [第二、三阶段路线](docs/phase-2-3-roadmap.zh-CN.md) | M2-B 模型开发组件与 M3 连续推进至 Mom 的边界 |
 | [运行手册](docs/phase-1-runbook.zh-CN.md) | 已实现入口的配置、启动和排错 |
 | [EID 与本地经验](docs/eid-local-learning-plan.zh-CN.md) / [知识 SDK](knowledge_project/README.md) | 说明、观测和学习证据如何分开，当前接口如何使用 |

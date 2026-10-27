@@ -1,6 +1,6 @@
 # EID 与本地经验：运行机制及主动实验边界
 
-状态：P5/P6 最小链路已实现，当前缺陷与准入以 [准备审查](phase-2a-preparation.zh-CN.md) 为准。M2-A 只使用修复后的被动记录；P7 主动实验关闭。本文维护学习机制，来源字段由 [知识库接口](knowledge-project-interface-plan.zh-CN.md) 定义，模型编程由 [M2-B 设计](item-knowledge-and-skill-evolution.zh-CN.md) 定义。
+状态：P5/P6 最小链路已实现，当前缺陷与准入以 [准备审查](phase-2a-preparation.zh-CN.md) 为准。M2-A 使用有稳定样本身份的被动记录；P7 主动实验关闭。本文维护学习机制，来源字段由 [知识库接口](knowledge-project-interface-plan.zh-CN.md) 定义，模型编程由 [M2-B 设计](item-knowledge-and-skill-evolution.zh-CN.md) 定义。
 
 ## 1. 四类成果与可信度
 
@@ -27,7 +27,7 @@ LLM 自身知识标为 model_prior，可以提出解释和实验设计，不能�
 
 当前实现有 60 个速度样本窗口和 2,048 个实体去重窗口，至少 3 个样本才标为 observed。这个门槛是最低工程条件，不是统计置信区间。校准键绑定游戏构建、模型版本、攻击属性/物品与有效临时效果；不相干的飞行变化不应该作废攻击样本。
 
-A0b 必须为观察样本增加稳定身份，建议 `(run_id, room_visit_id, projectile_instance_id, extractor_version)`，测量引用样本批次和提取参数。仅改变当前 snapshot_id 或进入下一房间不能重新生成独立证据；数据库重开后仍能去重。历史记录没有完整样本身份时保留审计、限制其证据等级，不补造原始引用。
+观察样本使用稳定身份，语义为 `(run_id, room_visit_id, projectile_instance_id, extractor_version)`，测量引用样本批次和提取参数。仅改变当前 snapshot_id 或进入下一房间不能重新生成独立证据；数据库重开后仍能去重。历史记录没有完整样本身份时保留审计、限制其证据等级，不补造原始引用。
 
 采用事务为：固定知识/经验读版本 → 检索适用结论 → 过滤游戏/模拟来源 → 校验签名、单位、有限数与范围 → 在安全节点发布 BuildProfile 与新计划上下文。运行中的计划与经验版本不匹配时拒绝，不能在逐帧求解中联网或扫描 SQLite。
 

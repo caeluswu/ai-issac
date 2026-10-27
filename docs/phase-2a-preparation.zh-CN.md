@@ -1,12 +1,12 @@
 # M2-A 准备状态与 P0–P6 实现审查
 
-审查日期：2026-10-27。代码基线：`a7cd1a3`。目标环境与辅助边界以 [任务契约](task-contract.zh-CN.md) 为准。本文是当前准备状态的唯一维护入口；首层实施步骤见 [M2-A 详细计划](phase-2a-plan.zh-CN.md)，历史测试与实机成绩见 [P0–P2 证据](evidence/phase-2a-p0-p2-validation.zh-CN.md) 和 [P3–P6 证据](evidence/phase-2a-preparation-validation.zh-CN.md)。
+审查基线：`a7cd1a3`；审查日期：2026-10-27。A0 修复提交：`2dd71a7`、`174d40f`。目标环境与辅助边界以 [任务契约](task-contract.zh-CN.md) 为准。本文是当前准备状态的唯一维护入口；首层实施步骤见 [M2-A 详细计划](phase-2a-plan.zh-CN.md)，历史测试与实机成绩见 [P0–P2 证据](evidence/phase-2a-p0-p2-validation.zh-CN.md) 和 [P3–P6 证据](evidence/phase-2a-preparation-validation.zh-CN.md)。
 
 ## 1. 结论
 
-**架构方向合理，基础实现可复用；P0–P6 不能按“边界已全部闭合”处理。** 当前是普通泪弹、少量属性/飞行道具、规则拾取与被动标定的最小实现。四个离线复现的问题需要先在 M2-A 的 A0 工作包修复，再接连续楼层编排。无需重写实时控制器或先实现完整道具能力图。
+**P0–P6 的架构可复用，四个已复现边界已由 A0 修复并加入回归。** 支持范围仍是普通泪弹、少量属性/飞行道具、规则拾取与被动标定；完整能力图和模型程序运行器不是已有能力。M2-A 楼层模块基于该基础实现，最新实机结论见 [首层验收](evidence/phase-2a-validation.zh-CN.md)。
 
-历史 252 项测试和一次零失血实机清房说明已测试路径可行，不能覆盖所有组合边界。本次针对性运行 64 项现有测试通过，同时独立审查探针复现四个问题：测试通过与接口仍有缺陷可以同时成立。此次未启动游戏、未请求 DeepSeek、未修改运行控制代码；审查问题保持待修复。
+历史 252 项测试和一次零失血实机清房说明已测试路径可行，不能覆盖所有组合边界。本次针对性运行 64 项现有测试通过，同时独立审查探针复现四个问题：测试通过与接口仍有缺陷可以同时成立。该审查证据没有启动游戏或请求 DeepSeek；A0 后的回归已验证四项复现场景均不再触发。历史诊断 JSON 保留原始结果，新代码执行同一诊断会返回 issue_present=false。
 
 ## 2. 逐项判断
 
@@ -16,22 +16,22 @@
 | P1 组件校验 | 有限数、方向、数量、过期提案、兼容回退、同帧推进校验 | 可信 Python 模块的结果保护合理；计算完成后量时不等于硬时限，也不隔离死循环 | M2-A 仅运行工程可信模块；模型源码不得直接注册 |
 | P2 V2 观测 | 地上物品、生命、库存覆盖、武器集合、临时效果、楼层实例、空底座与待入库队列 | 当前房间信息足够单房；缺独立首层判定需要的诅咒、出口语义和 Boss 战证据组织 | A1 增量补充观测；不预读未探索内容 |
 | P3 构筑与账本 | 实际属性驱动、相关校准失效、旧计划拒绝、损伤/支出/资源分账 | 比按道具重复叠加属性正确；BuildResolver 仍是窄映射，不是通用机制编译器。相邻快照之间的伤害再回血无法完全重建 | 保留实现；新增生命与武器机制逐项验证 |
-| P4 房间生命周期 | 同连接多房、回访、跨层隔离、取消旧规划、有界内存 | 方向正确，但 execute_room 的返回值未覆盖清房后交互终态；异常清理也可能先于结果落盘失败 | 必须先修 R3，再供 FloorDirector 消费 |
-| P5 来源与拾取 | 独立 EID 包、只读 SDK、前态记录、跳过物品避让、正常移动拾取确认 | 来源与控制分离合理；当前按支持表决定是否拿，尚非 LLM 理解 EID 后权衡收益。资源子型和授权绑定不完整 | 必须先修 R1/R4；不扩大拾取范围来掩盖缺口 |
-| P6 被动经验 | SQLite 证据链、精确签名、重启检索、模式隔离、反例失效 | 数据所有权正确；同一批样本会在换房后再次发布，实机跨局复用仍缺足量样本 | 必须先修 R2；没有新证据时继续先验即可 |
+| P4 房间生命周期 | 同连接多房、回访、跨层隔离、取消旧规划、有界内存 | 方向正确，但 execute_room 的返回值未覆盖清房后交互终态；异常清理也可能先于结果落盘失败 | R3 已修复；FloorDirector 校验终态后消费 |
+| P5 来源与拾取 | 独立 EID 包、只读 SDK、前态记录、跳过物品避让、正常移动拾取确认 | 来源与控制分离合理；当前按支持表决定是否拿，尚非 LLM 理解 EID 后权衡收益。资源子型和授权绑定不完整 | R1/R4 已修复；有限资源/回血逐项接入 |
+| P6 被动经验 | SQLite 证据链、精确签名、重启检索、模式隔离、反例失效 | 数据所有权正确；同一批样本会在换房后再次发布，实机跨局复用仍缺足量样本 | R2 已修复；旧无身份测量仅保留审计，不采用 |
 
 保留的核心设计：唯一输入写入者、Lua TTL、结构化原子快照、计划版本约束、宿主结果校验、知识来源与智能体经验分库，以及主动实验默认关闭。这些比增加更多战术组件更重要。
 
 ## 3. 已复现的问题与修复要求
 
-以下为代码/离线诊断证据，**不表示已在真实游戏发生对应损失**。优先级高/中表示对下一阶段的影响，不沿用 P0–P6 工作包编号。
+以下为审查基线的代码/离线诊断证据，四项均已修复；**不表示已在真实游戏发生对应损失**。优先级高/中表示对下一阶段的影响，不沿用 P0–P6 工作包编号。
 
 | 编号 | 优先级、位置 | 触发与观测 | 修复与验收要求 |
 |---|---|---|---|
-| R1 | 高；[item_knowledge.py](../SocketBridge/python/combat/item_knowledge.py:79) | variant=40 且免费即 take；合成普通、巨型、金色及 troll 子型全部放行。下游却统一用炸弹数量增加确认，不能表达不同效果 | 资源使用 variant+subtype 机制表；先支持普通/双份等已验证子型，未知拒绝。金色等特殊资源有独立观测与确认后再启用 |
-| R2 | 中；[item_learning.py](../SocketBridge/python/combat/item_learning.py:59) | 保留原 3 个泪弹样本，换房且不产生新泪弹，再 record_room；claims 1→2、experience_revision 1→2 | 样本批次有稳定 ID/水位；没有新增观测不得形成新测量或提高证据量。语义值/适用性不变时避免无意义版本震荡 |
-| R3 | 高；[room_execution.py](../SocketBridge/python/combat/room_execution.py:81) | 死亡检查发生在 collect 前；模拟 collect 期间死亡，execute_room 与 room_finished 仍为 CLEARED | combat_clear 与 post_clear_result 分开；交互后重新核对同 run/floor/visit、存活/复活、威胁和新鲜度，再产生最终 RoomResult。断线和释放失败也要落盘 |
-| R4 | 高；[item_interaction.py](../SocketBridge/python/combat/item_interaction.py:27) | 记录了道具 1 的 take 决策，却将另一实体道具 149 传入执行器，仍产生一次移动输入请求；探针在任何游戏 I/O 前截断 | 决策绑定 run/floor/visit、实体、variant/subtype、价格、构筑与预算；入口和临接触前分别核对，错误目标零动作。验证 decision_id 存在不能代替授权目标校验 |
+| R1 | 高；[item_knowledge.py](../SocketBridge/python/combat/item_knowledge.py) | variant=40 且免费即 take；合成普通、巨型、金色及 troll 子型全部放行。下游却统一用炸弹数量增加确认，不能表达不同效果 | 资源使用 variant+subtype 机制表；先支持普通/双份等已验证子型，未知拒绝。金色等特殊资源有独立观测与确认后再启用 |
+| R2 | 中；[item_learning.py](../SocketBridge/python/combat/item_learning.py) | 保留原 3 个泪弹样本，换房且不产生新泪弹，再 record_room；claims 1→2、experience_revision 1→2 | 样本批次有稳定 ID/水位；没有新增观测不得形成新测量或提高证据量。语义值/适用性不变时避免无意义版本震荡 |
+| R3 | 高；[room_execution.py](../SocketBridge/python/combat/room_execution.py) | 死亡检查发生在 collect 前；模拟 collect 期间死亡，execute_room 与 room_finished 仍为 CLEARED | combat_clear 与 post_clear_result 分开；交互后重新核对同 run/floor/visit、存活/复活、威胁和新鲜度，再产生最终 RoomResult。断线和释放失败也要落盘 |
+| R4 | 高；[item_interaction.py](../SocketBridge/python/combat/item_interaction.py) | 记录了道具 1 的 take 决策，却将另一实体道具 149 传入执行器，仍产生一次移动输入请求；探针在任何游戏 I/O 前截断 | 决策绑定 run/floor/visit、实体、variant/subtype、价格、构筑与预算；入口和临接触前分别核对，错误目标零动作。验证 decision_id 存在不能代替授权目标校验 |
 
 R1 的子型语义可查 [BombSubType API](https://wofsauge.github.io/IsaacDocs/rep/enums/BombSubType.html)。真实 troll 实体可能在观测前转换成炸弹危险对象，本次只证明策略函数错误地批准这些子型；不能据此宣称实机已经追逐 troll。R3 的现有单房 `run()` 在最终报告还有死亡检查，所以缺陷重点是将公共 `execute_room()` 复用于楼层控制时的错误终态。R4 当前自动调用方通常传对目标，但执行器缺少自己的契约保护，不适合接受可替换上层的调用。
 
@@ -41,7 +41,7 @@ R1 的子型语义可查 [BombSubType API](https://wofsauge.github.io/IsaacDocs/
 .\.venv\Scripts\python.exe scripts/audit_m2_preparation.py
 ```
 
-[诊断 JSON](../artifacts/validation/m2-readiness-audit.json) 的 `issue_present` 表示实际诊断结果；命令正常结束仅表示诊断完成，不代表问题已修复。全部使用临时数据库和合成状态，未接游戏或模型。
+[审查基线诊断](../artifacts/validation/m2-readiness-audit.json) 保留四项原始复现；[修复后诊断](../artifacts/validation/m2a-readiness-closed.json) 的四个 issue_present 均为 false。脚本默认写 m2-readiness-current.json，不覆盖历史证据；命令正常结束仅表示诊断完成。诊断使用临时数据库和合成状态，不接游戏或模型。
 
 ## 4. M2-A 集成前还应落实的设计边界
 
@@ -57,10 +57,10 @@ R1 的子型语义可查 [BombSubType API](https://wofsauge.github.io/IsaacDocs/
 | 项目 | 状态 |
 |---|---|
 | P0–P6 基础实现与已测试路径 | 已实现；本次 64 项相关测试通过 |
-| R1–R4 边界修复与独立回归 | 待执行，属于 M2-A A0 |
-| 首层专用观测、地图、Boss、出口和独立判定 | 待执行，属于 A1–A6 |
-| 一次真实正常首层 + 必要 DeepSeek 接入证据 | 待执行，属于 A7 |
+| R1–R4 边界修复与独立回归 | 已完成；样本水位、旧证据隔离和目标授权均有回归 |
+| 首层专用观测、地图、Boss、出口和独立判定 | A1–A6 已实现；本地 TCP 闭环与负例已验证 |
+| 一次真实正常首层 + 必要 DeepSeek 接入证据 | 以 [M2-A 验收](evidence/phase-2a-validation.zh-CN.md) 为准 |
 | P7 主动实验 | 关闭；仅实际依赖时另行实现验收 |
 | P8 完整模型编程运行器 | M2-B，首层不依赖 |
 
-本次交付为实现评估、详细计划和文档整合。后续从 A0 开始实施，不把历史单房成功覆盖到尚未闭合的交互及楼层边界。
+历史单房成功与首层成功分别保留证据。M2-B 的模型编程和 P7 主动实验仍有独立准入条件，不因楼层模块实现而视为完成。

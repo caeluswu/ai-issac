@@ -1,6 +1,6 @@
 # M2-A 详细实施计划：正常完成第一层
 
-日期：2026-10-27。状态：待实施。基线 `a7cd1a3`，当前缺口见 [P0–P6 审查](phase-2a-preparation.zh-CN.md)。本文是 M2-A 实施顺序、模块接口、预算和验收的唯一计划；总体规则见 [任务契约](task-contract.zh-CN.md)，M2-B/M3 见 [路线图](phase-2-3-roadmap.zh-CN.md)。
+日期：2026-10-27。状态：A0–A7 已完成范围内工程可行性验收，覆盖与限制见 [实机证据](evidence/phase-2a-validation.zh-CN.md)。设计审查基线 `a7cd1a3`，准备状态见 [P0–P6 审查](phase-2a-preparation.zh-CN.md)。本文是 M2-A 实施顺序、模块接口、预算和验收的唯一计划；总体规则见 [任务契约](task-contract.zh-CN.md)，M2-B/M3 见 [路线图](phase-2-3-roadmap.zh-CN.md)。
 
 ## 1. 交付目标与支持范围
 
@@ -25,7 +25,7 @@
 
 ## 2. 执行结构与状态机
 
-新增 `SocketBridge/python/campaign/`，仅放楼层编排、图、预算和判定；现有 `combat/` 保留逐帧控制、RoomExecutor 与物品交互。不要在首层开发中为了目录整齐再拆全部模块。
+`SocketBridge/python/campaign/` 放楼层编排、图、预算和判定；现有 `combat/` 保留逐帧控制、RoomExecutor 与物品交互。不要在首层开发中为了目录整齐再拆全部模块。
 
 ```mermaid
 flowchart TD
@@ -43,7 +43,7 @@ flowchart TD
   J --> L[FloorReport 与证据]
 ```
 
-`WAIT_READY → CLASSIFY → RESOLVE_ROOM → POST_CLEAR → SELECT_OBJECTIVE → EXECUTE_OBJECTIVE → VERIFY_TRANSITION`，确认普通门转换后回到 CLASSIFY，确认合法离层后进入 `VERIFY_ACTIONABLE → COMPLETE`。
+实际状态为 `WAIT_READY → CLASSIFY → RESOLVE_ROOM / RESOLVE_ENVIRONMENT → POST_CLEAR → SELECT_OBJECTIVE → EXECUTE_DOOR / EXECUTE_EXIT`。门/出口执行器内部核验转换，普通过门后回到 CLASSIFY，合法离层后进入 `VERIFY_ACTIONABLE → COMPLETE`；取消由监督任务传播，阶段循环、调用与过渡等待分别有界。
 
 - 每个状态都有 enter/step/cancel/deadline；只有 EXECUTE/RESOLVE 路径拥有动作租约，取消立即释放。
 - 死亡、断线、过期观测、换 run、未授权楼层变化、人工接管优先中断。复活按健康账本有界等待，不能将暂时 dead 或 HP=0 单独当作可继续/已终止。
@@ -53,7 +53,7 @@ flowchart TD
 
 ## 3. 模块接口与观测增量
 
-以下 DTO 是待实现合同，不能从现有模型中假定它们已经存在。
+以下接口已在 `campaign/models.py` 与 `combat/models.py` 定义。RoomExecutor 保留首房字符串返回值，完整结果由 results 暴露，FloorDirector 校验 RoomResult 后消费；不能仅凭字符串拼成首层成功。
 
 | 对象 | 必需字段与含义 |
 |---|---|
@@ -92,7 +92,7 @@ Lua 目前已经提供房间类型/外形、部分门、当前网格、NPC 的 `
 
 先修 R1–R4，随后复用底层能力：
 
-- `RoomExecutor` 返回完整 RoomResult；战斗清理、清房后安全、可选拾取和终态各有结果。拾取不可达/收益不足可以 skip；死亡、断线、未知强制构筑或控制失效必须阻断后续路线。
+- `RoomExecutor.results` 提供完整房间终态，FloorDirector 通过 RoomResult 校验；战斗清理、清房后安全、可选拾取和终态各有结果。拾取不可达/收益不足可以 skip；死亡、断线、未知强制构筑或控制失效必须阻断后续路线。
 - 清房后的 collection 返回最新 snapshot，必须被调用者消费。结算后若仍有敌人/危险或玩家未恢复，不能返回“可离房”。即使 finally 的模式恢复或存储失败，也要尽力生成包含 cleanup_error 的本地结果。
 - 物品事务绑定完整目标与代价；库存与支出分别核实。同一 intent 重试不能再次消费；新实体、轮换 subtype、价格或构筑变化要求重新决定。免费资源也不能只根据 variant 放行。
 - 先支持普通资源及有限回血；金色炸弹/钥匙、巨型炸弹、特殊心、轮换底座和复杂选择组保持明确不支持，直到有独立后置条件。
@@ -115,7 +115,7 @@ Boss adapter 输出未来威胁、可攻击性、带截止帧的已证实等待�
 4. 在 Boss 已完成上下文中，授权并接近已分类的正常出口，观察到实际主线楼层推进、floor_instance 变化、run 不变。
 5. 新层连续收到新鲜快照、角色存活或复活已完成；在安全起点执行一个有界正常移动并观察到响应，再释放输入、恢复 MANUAL。角色仍在下楼动画中时不能算 actionable。
 
-普通非 XL 首层的主线预期进度为下一层；通用判定接口使用配置化进度关系，未来 XL 不按“恰好 stage+1”硬套。当前 XL 不支持则明确终止，不能少打一个 Boss 后判成功。道具传送、重开、特殊楼梯、未知维度跳转均不能替代正常离层证据。
+普通非 XL 首层的主线预期进度为下一层；通用判定接口使用配置化进度关系，后续进度策略扩展时，XL 不按“恰好 stage+1”硬套。当前 XL 不支持则明确终止，不能少打一个 Boss 后判成功。道具传送、重开、特殊楼梯、未知维度跳转均不能替代正常离层证据。
 
 ## 7. 监督与预算
 
@@ -137,11 +137,11 @@ Boss adapter 输出未来威胁、可攻击性、带截止帧的已证实等待�
 
 DeepSeek 统一 RequestBudget 下沉到 `DeepSeekClient.complete` 外围：一次真实 HTTP 请求占一个额度，工具往返、JSON 修复、重试也计入。初始配置建议整层最多 6 请求，其中常规最多 4、保留诊断额度 2；总输入 60,000 token、输出 12,000 token，单请求输出上限受剩余预算限制。无可靠 tokenizer 时采用保守估算并标记，响应 usage 对账；费用只有配置真实费率才计算，缺费率不能报 0 元。
 
-规则模式请求预算为 0；先本地打通，再一次必要 LLM 闭环。入房不强制每房两轮：已有兼容 RoomPlanTemplate 可在宿主检查后绑定新 ContextRef；新机制/严重失败才请求。模板复用不复用旧 run/visit/帧租约。初次规划墙钟上限建议 45 秒，战中诊断 20 秒；累计暂停受整层墙钟约束。预算耗尽使用兼容本地计划或明确失败，不能静默超支。
+规则模式请求预算为 0；先本地打通，再必要 LLM 闭环。首层直接输出计划，关闭工具轮次；不强制每房两轮：已有兼容 RoomPlanTemplate 可在宿主检查后绑定新 ContextRef；新机制/严重失败才请求。模板复用不复用旧 run/visit/帧租约。初次规划墙钟上限为 45 秒，战中诊断 20 秒；累计暂停受整层墙钟约束。预算耗尽使用兼容本地计划或明确失败，不能静默超支。
 
 ## 8. 实施顺序、提交和完成条件
 
-建议开发分支 `codex/phase2-floor-controller`，开始实际实施时创建；计划本身不创建空分支。A0–A7 逐步提交，旧首房入口保持可用。
+实施分支为 `codex/phase2-floor-controller`。A0 为 `2dd71a7`，A1 为 `fb46ef6`，A2–A6 核心为 `d5956e8`，实机边界修复为 `7931a1c`/`174d40f`，A7 入口为 `805fb02`。旧首房入口保持可用；最新验证见 [M2-A 证据](evidence/phase-2a-validation.zh-CN.md)。
 
 | 工作包 | 修改范围与建议提交 | 完成条件与验证 |
 |---|---|---|
@@ -153,7 +153,7 @@ DeepSeek 统一 RequestBudget 下沉到 `DeepSeekClient.complete` 外围：一�
 | A4 有限掉落与恢复 | 子型策略、生命拾取、清房后决策；`feat: collect supported floor resources with explicit costs` | 普通资源、普通红/魂心前后态确认，满容量跳过，未知物品避让；损失与消费不被增益抵消 |
 | A5 规划复用与预算 | planner/client、campaign/budget；`feat: bound floor planning requests and reuse compatible tactics` | 假客户端覆盖工具/修复/重试计费、并发额度占用、超时/取消、额度耗尽、模板过期；0 付费测试 |
 | A6 Boss 与离层判定 | Boss 适配、ExitExecutor、FloorJudge；`feat: verify boss completion and normal floor exit` | 多阶段/延迟子体、残留危险、错误出口、相同 run 重建层、死亡与离层同时发生等负例；单房 clear 不能伪装层成功 |
-| A7 入口与可行性 | 计划入口 run_floor.py、报告和手册；`feat: add first-floor runner and feasibility evidence` | 本地规则真实完整首层；再必要一次 DeepSeek 首层完整流程，记录实际采用模型计划及本地降级；全部尝试保留 |
+| A7 入口与可行性 | 计划入口 run_floor.py、报告和手册；`feat: add first-floor runner and feasibility evidence` | 本地规则真实完整首层；再必要一次 DeepSeek 首层完整流程，可复用已记录随机种子验证接入并明确标为回放，不增加独立样本量；记录实际采用模型计划及本地降级，全部尝试保留 |
 
 A1/A2 可在 A0 进行时设计接口；A3 必须依赖修复后的 RoomResult，A6 依赖 A1/A3，A7 在 A0–A6 相关检查通过后进行。A4 不自动扩大收藏品白名单；M2-A 不顺手加入模型编程、更多角色或大量特殊入口。
 
@@ -172,6 +172,6 @@ A1/A2 可在 A0 进行时设计接口；A3 必须依赖修复后的 RoomResult�
 
 ## 10. 为 M2-B/M3 留下的扩展点
 
-FloorDirector 不假定“只运行一次”、RoomKey 不用裸房间索引、ExitReceipt 不假定每次 stage+1、成本意图不绑定单一道具，避免连续六层时重写框架。跨层生成新图，保留健康、库存、资源、经验、请求总账和 run 目标。
+RoomKey 不用裸房间索引，房间控制与连接可连续复用，成本意图不绑定单一道具。当前 FloorJudge 只验第一层到第二层；M3 应替换/配置目标进度策略，不能直接把首层成功条件复制到每一层或 XL。跨层生成新图，保留健康、库存、资源、经验、请求总账和 run 目标。
 
 M2-B 机制程序只能替换已定义计算/时序模块，不能修改 FloorJudge、预算、权限或输入安全内核。若新增武器需要改所有七个策略槽，说明接口仍有隐式耦合，应先补通用合同；不要靠一个武器专属整套控制器绕过它。Mom 长途规划、Eden、主动实验与统计竞速评估均由各自里程碑承担。

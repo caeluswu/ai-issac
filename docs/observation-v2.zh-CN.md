@@ -29,7 +29,7 @@ V2 保留 V1 的 room、layout、player、stats、health、inventory、敌人及
 
 `floor.instance_id` 由 run 和地图生成计数构成，`MC_POST_NEW_LEVEL` 更新地图实例并独立释放输入、回到 MANUAL。房间变化同时比较地图生成序号、当前房间 ListIndex 与入口索引，避免同索引的不同实例复用 room visit。
 
-计划 `ContextRef` 增加可空 floor_instance_id，目录修订可为正整数或非空版本字符串。运行器、规划器与求解器均绑定楼层身份、构筑和经验修订；显式过期提案或缺少当前 V2 楼层身份的计划不可执行。BuildResolver 根据实际观测发布构筑修订，不依赖描述文字加算属性。
+`ContextRef` 包含可空 floor_instance_id，目录修订可为正整数或非空版本字符串。运行器、规划器与求解器均绑定楼层身份、构筑和经验修订；显式过期提案或缺少当前 V2 楼层身份的计划不可执行。BuildResolver 根据实际观测发布构筑修订，不依赖描述文字加算属性。
 
 `inventory.queued_collectible_id` 为原版 `player.QueuedItem.Item.ID` 的可选读数：0 表示无队列，缺失表示 API 不可用。收藏品接触后底座可能先清空，动画结束才入库；队列只证明待交付，不证明拥有。拾取执行器默认接近预算 90 更新，消费后确认预算 30 更新；明确观察到对应待入库项时确认预算为 90 更新，总循环不超过 180 次。等待期间释放移动射击，仍检查新威胁、失血、换房、断线及事务期限；成功必须有实际库存增量。依据见 [EntityPlayer 队列说明](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html#queueditem)，J835 验证见 [P3–P6 报告](evidence/phase-2a-preparation-validation.zh-CN.md)。
 
@@ -51,3 +51,11 @@ Set-Location SocketBridge/python
 探针监听本机桥接，将模式恢复 MANUAL，采集快照后断开，输出本地 trace 与 summary；不启动/重开游戏、不控制移动射击、不调用模型。失败和已采样内容保留，不能将超时改为通过。原始产物位于忽略 Git 的 `artifacts/runs/`。
 
 API 依据：[ItemConfig](https://wofsauge.github.io/IsaacDocs/rep/ItemConfig.html)、[WeaponType](https://wofsauge.github.io/IsaacDocs/rep/enums/WeaponType.html)、[TemporaryEffects](https://wofsauge.github.io/IsaacDocs/rep/TemporaryEffects.html)、[RoomDescriptor](https://wofsauge.github.io/IsaacDocs/rep/RoomDescriptor.html)。资料接口与目标 J835 的实际可读范围分别记录，不能将文档说明等同于全机制实测。
+
+## M2-A 可选楼层能力
+
+V2 增加可选 `floor_progress` 与 `exit_observations`。旧 V2 轨迹可继续读取；首层入口必须确认 `floor_progress.capability_version=1`、已知 curses、当前 dimension 和 room_list_index，不把缺失当零。
+
+`floor_progress` 包含 curses、can_pick_red/can_pick_soul、controls_enabled、extra_animation_finished；原版 API 缺失或类型错误保留 null。`exit_observations` 保存当前房间的网格实例身份、grid_index、type/variant/state/collision 和位置；17/18/23 只是基础网格事实，不直接声明合法出口。门新增可选 target_list_index，用当前可见门的目标描述符确认大房归并身份，不读取目标内部实体、物品或 RNG。NPC 的 is_boss 为可空兼容字段；缺失不能用于证明 Boss 已出现。
+
+Boss 入场或下楼可能只收到 paused 心跳。它们只有在门口/已授权出口附近生成对应过渡等待后，才能延长取帧等待至最多 15 秒；动作租约仍按真实观测帧检查，不能靠等待凭证发送旧输入。出处：[EntityPlayer API](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html)、[GridEntity API](https://wofsauge.github.io/IsaacDocs/rep/GridEntity.html)。

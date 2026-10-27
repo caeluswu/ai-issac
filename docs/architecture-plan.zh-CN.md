@@ -16,7 +16,7 @@
 | 观测与身份 | WorldSnapshot、run/floor/visit/实体身份、未知字段与新鲜度 | 缺失不当作零，临时无敌不当作死亡 |
 | 构筑与账本 | BuildResolver、健康/资源状态、机制签名、校准与修订 | 实际面板优先；描述不重复加成；未知机制不伪装普通泪弹 |
 | 实时控制 | geometry/motion/threats、七策略槽、联合动作求解、进展监督 | 纯计算与有限状态；不联网、不写知识库、不直接发键 |
-| 执行与任务 | CombatSession 唯一发送者，RoomExecutor；M2-A 增 FloorDirector，M3 增 RunDirector | 房间结束不结束连接；目标与动作分别管理 |
+| 执行与任务 | CombatSession 唯一发送者，RoomExecutor、FloorDirector；M3 增 RunDirector | 房间结束不结束连接；目标与动作分别管理 |
 | 知识与规划 | 独立 EID SDK、智能体经验、DeepSeek 评估与 BattlePlan | 来源是数据，输出经宿主验证；知识缺失不阻塞逐帧控制 |
 | 验证与演进 | 独立 Judge/记录、后续模型候选验证和发布 | 模型不修改成功标准、资源权限或安全内核 |
 

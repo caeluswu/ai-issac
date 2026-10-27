@@ -76,7 +76,7 @@ KnowledgeGateway 加载 `configs/knowledge/eid-package.json`，检查固定 data
 | local_claims/counterexamples/hypotheses/support_limits | 智能体经验、反例、假设与范围；当前 hypotheses 预留为空 |
 | truncated/usable_for_build_compilation | 上下文截断及可执行事实可用性；当前说明包不能编译机制 |
 
-当前 Gateway 会检查数据库经验版本与 BuildProfile 已采用版本一致；M2-A 将采用事务集中到安全边界，并让交给模型的经验遵守同样的来源模式过滤。一个新测量写入数据库，不代表可以在控制循环中立即切换所有计划。
+当前 Gateway 会检查数据库经验版本与 BuildProfile 已采用版本一致；M2-A 在安全边界采用经验，并让交给模型的经验遵守同样的来源模式和样本身份过滤。一个新测量写入数据库，不代表可以在控制循环中立即切换所有计划。
 
 用途分流：实际面板进入 BuildResolver；来源说明和有范围的经验进入战术/开发输入；未知能力生成 learning_task；只有宿主已发布的能力映射进入实时控制。模型输出的“建议拿”必须再通过目标/成本/能力授权，不直接变成输入。
 

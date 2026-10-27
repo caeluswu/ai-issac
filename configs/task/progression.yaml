@@ -1,9 +1,9 @@
-# 阶段任务契约；对应 docs/task-contract.zh-CN.md v0.5。
+# 阶段任务契约；对应 docs/task-contract.zh-CN.md v0.6。
 # draft：正式 M1/M2/M3 的场景与数值门槛待冻结；首房工程验收见 phase_one_validation。
 schema_version: 1
-contract_version: 5
+contract_version: 6
 status: draft
-contract_date: 2026-10-25
+contract_date: 2026-10-27
 contract_doc: docs/task-contract.zh-CN.md
 
 environment:
@@ -11,7 +11,7 @@ environment:
   build: "1.7.9b.J835"
   platform: windows
   executable_sha256: BB9FDA2535D94AE72E7FD4CD7D4A87DC9BFC27417E86F8F9190BFEEB8C9F10C2
-  mod_main_lua_sha256: FA62F8CFBDCD5B8F6570CDC06448D01A87466013C5B8B4746379B5425D0E6D7B
+  mod_main_lua_sha256: B866FCA6613D3AA66C30B00929BEC3667BB0E05058F1E2694B73F5C5ABD6361D
   launch_args: ["--luadebug"]
   verify_hashes_before_evaluation: true
   # 初始化时备份并配置；正式动作开始前核对，计时期间保持不变。
@@ -86,7 +86,8 @@ controller:
     timeout_ms: null
     per_run_call_budget: null
     credential_source: environment_or_secret_store
-    compare_against_rule_upper: true
+    compare_against_rule_upper: false
+    comparison_status: deferred_research
 
 milestones:
   - task_id: m1-single-room
@@ -220,3 +221,15 @@ phase_one_optimization_validation:
     - first_room_search_only_follows_ordinary_room_doors
     - normal_tears_live_support_only
     - llm_resource_and_total_time_advantage_not_established
+
+phase_two_a_validation:
+  status: engineering_feasibility_verified
+  report: docs/evidence/phase-2a-validation.zh-CN.md
+  evidence: artifacts/validation/m2a-validation.json
+  support_profile: j835-isaac-normal-tears-first-floor-v1
+  normal_random_seed: "3BYH A82R"
+  model_integration: same_recorded_seed_replay
+  model_validation_http_requests: 1
+  default_http_attempt_limit: 6
+  stable_win_rate: null
+  research_experiments_executed: false

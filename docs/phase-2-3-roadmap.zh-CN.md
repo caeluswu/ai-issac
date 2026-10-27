@@ -1,6 +1,6 @@
 # 第二、三阶段路线：首层、模型扩展与 Mom
 
-当前：M1 有单房可行性证据；P0–P6 已有基础，四项集成边界待修；M2-A 尚未实现。当前执行入口为 [M2-A 详细计划](phase-2a-plan.zh-CN.md)，问题与准入见 [准备审查](phase-2a-preparation.zh-CN.md)。本文件只维护里程碑与跨阶段取舍。
+当前：M1 有单房可行性证据；P0–P6 边界已修复，M2-A 已实现；首层可行性与覆盖见 [验收证据](evidence/phase-2a-validation.zh-CN.md)。当前执行入口为 [M2-A 详细计划](phase-2a-plan.zh-CN.md)，问题与准入见 [准备审查](phase-2a-preparation.zh-CN.md)。本文件只维护里程碑与跨阶段取舍。
 
 ## 1. 里程碑与独立成功证据
 
