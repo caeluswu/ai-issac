@@ -7,7 +7,7 @@ name = "isaac-knowledge"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = ["pydantic>=2,<3"]
-description = "Pinned EID importer and read-only Isaac knowledge SDK"
+description = "Pinned EID importer and Isaac knowledge SDK with per-item local storage"
 
 [tool.setuptools.packages.find]
 where = ["src"]

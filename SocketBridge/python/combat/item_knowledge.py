@@ -3,9 +3,8 @@ import asyncio
 from dataclasses import dataclass, asdict
 import json
 from copy import deepcopy
-from functools import lru_cache
 from pathlib import Path
-from isaac_knowledge import KnowledgePackage, LookupRequest
+from isaac_knowledge import KnowledgePackage, LookupRequest, QueriedItemStore
 from .agent_store import AgentStore
 from .builds import ITEM_SUPPORT, digest
 
@@ -37,19 +36,25 @@ class KnowledgeGateway:
 
     @classmethod
     def from_config(cls, root):
-        config = json.loads((Path(root)/"configs/knowledge/eid-package.json").read_text(encoding="utf-8"))
-        package = KnowledgePackage(Path(root)/config["path"])
+        root=Path(root).resolve()
+        config = json.loads((root/"configs/knowledge/eid-package.json").read_text(encoding="utf-8"))
+        cache=None
+        if config.get("local_knowledge_database"):
+            path=(root/config["local_knowledge_database"]).resolve()
+            if not path.is_relative_to(root) or path.suffix not in (".sqlite",".sqlite3",".db"):
+                raise ValueError("INVALID_LOCAL_KNOWLEDGE_DATABASE_PATH")
+            cache=QueriedItemStore(path)
+        package = KnowledgePackage(root/config["path"],usage_policy=config.get("usage_policy"),item_store=cache)
         if package.dataset_id != config["dataset_id"]: raise ValueError("KNOWLEDGE_DATASET_MISMATCH")
-        return cls(package, AgentStore(Path(root)/"artifacts/agent-state/agent.sqlite"))
+        return cls(package, AgentStore(root/"artifacts/agent-state/agent.sqlite"))
 
-    def lookup(self, kind, item_id, purpose="display"):
-        return deepcopy(self._lookup(kind,item_id,purpose))
+    def lookup(self, kind, item_id, purpose="display", *, language="zh-CN", refresh=False):
+        return deepcopy(self._lookup(kind,item_id,purpose,language,refresh))
 
-    @lru_cache(maxsize=512)
-    def _lookup(self, kind, item_id, purpose):
+    def _lookup(self, kind, item_id, purpose, language, refresh):
         request = LookupRequest(request_id=f"local:{kind}:{item_id}",dataset_id=self.package.dataset_id,
-            subjects=[{"kind":kind,"id":item_id}],purpose=purpose)
-        return self.package.lookup(request)
+            subjects=[{"kind":kind,"id":item_id}],purpose=purpose,language=language)
+        return self.package.lookup(request,refresh=refresh)
 
     def decide(self, s, build, pickup, *, reserve_coins=0):
         encounter = digest([s.run_id, s.room_visit_id, pickup.instance_id, pickup.sub_type])
@@ -121,7 +126,9 @@ class KnowledgeGateway:
         modes = getattr(self, "evidence_modes", {"normal_play", "development_initialization"})
         for key in ("local_claims", "counterexamples"):
             experience[key] = [c for c in experience[key] if c.get("source_mode") in modes and c.get("sample_identity_verified") is True]
-        return {"bundle_schema_version":2,"bundle_id":digest([self.package.dataset_id,experience["experience_revision"],s.snapshot_id,subjects,purpose]),
+        usage=self.package.usage_metadata()
+        return {"bundle_schema_version":2,"bundle_id":digest([self.package.dataset_id,experience["experience_revision"],s.snapshot_id,subjects,purpose,usage]),
+            "local_usage_policy":usage,
             "dataset_id":self.package.dataset_id,"knowledge_revision":1,
             "context_ref":{"run_id":s.run_id,"floor_instance_id":s.floor.instance_id if s.floor else None,"room_visit_id":s.room_visit_id,
                            "snapshot_id":s.snapshot_id,"build_revision":build.revision,"catalog_revision":current_revision(),"experience_revision":build.experience_revision},

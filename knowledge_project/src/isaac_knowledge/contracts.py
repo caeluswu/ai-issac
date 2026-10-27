@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, model_validator
 
 
 class Contract(BaseModel):
@@ -37,6 +37,28 @@ class QueryPolicy(Contract):
     version_match: Literal["exact_only", "exact_or_reviewed_compatible"] = "exact_only"
     include_unreviewed: bool = True
     include_evidence_text: bool = False
+
+
+class LocalUsagePolicy(Contract):
+    """Trusted host configuration, never a permission in a lookup request.
+
+    Project authorization does not change the source's rights metadata.
+    """
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False, frozen=True)
+    schema_version: Literal[1] = 1
+    policy_id: str = Field(min_length=1, max_length=128)
+    provider_id: Literal["eid_snapshot"] = "eid_snapshot"
+    dataset_id: str = Field(min_length=1, max_length=128)
+    allow_local_storage: StrictBool = False
+    allow_ai_input: StrictBool = False
+    purposes: tuple[Literal["display", "planning", "component_development"], ...] = (
+        "display", "planning", "component_development")
+    authorization_basis: str = Field(min_length=1, max_length=1000)
+
+    @model_validator(mode="after")
+    def unique_purposes(self):
+        if len(self.purposes) != len(set(self.purposes)): raise ValueError("Repeated policy purposes")
+        return self
 
 
 class Page(Contract):

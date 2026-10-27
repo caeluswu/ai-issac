@@ -6,6 +6,17 @@
   "build": "1.7.9b.J835",
   "parser_version": "eid-literals-1",
   "active_experiments": false,
+  "local_knowledge_database": "artifacts/knowledge/queried-items.sqlite",
+  "usage_policy": {
+    "schema_version": 1,
+    "policy_id": "issac-eid-project-use-v1",
+    "provider_id": "eid_snapshot",
+    "dataset_id": "eid-16b584b65a6e506666e0cf71",
+    "allow_local_storage": true,
+    "allow_ai_input": true,
+    "purposes": ["display", "planning", "component_development"],
+    "authorization_basis": "project_owner_authorized_eid_queries_local_knowledge_and_llm_assistance"
+  },
   "source_hashes": {
     "descriptions/ab+/en_us.lua": "e3d1dc30ba86c25b27897fb3d5951502c6fa8c52baad140260b97e263b010210",
     "descriptions/rep/en_us.lua": "df13f66960ae30004834e52efbf729d17a3cf2607c167e0170ea89dc3c114906",

@@ -29,6 +29,12 @@ def skill_request(root,task):
             any(inventory.get("trinkets") or []) or any(inventory.get(k,0) for k in ("trinket_0","trinket_1"))):
         raise ValueError("UNSUPPORTED_DEVELOPMENT_COMBINATION")
     eid=gateway.lookup("collectible",69,purpose="component_development")
+    if eid.get("status")=="error" or not any(record.get("summary",{}).get("text")
+            for result in eid.get("results",[]) for record in result.get("records",[])):
+        raise ValueError("DEVELOPMENT_EID_TEXT_UNAVAILABLE")
+    # Operational hit/miss counters must not change immutable model requests
+    # when the same knowledge is loaded in a subsequent process.
+    eid.pop("local_knowledge",None)
     local_ref="local:"+calibration["calibration_id"]
     refs={local_ref}
     for result in eid.get("results",[]):
