@@ -1,5 +1,7 @@
 """Host geometry/safety wrapper for a model-authored WeaponTiming program."""
 import math
+import json
+from pathlib import Path
 from combat.builds import NormalTearsBuild, collectibles, observed_build, digest
 from combat.component_contracts import AttackProposal, CapabilitySet, WaitEvidence
 from combat.components import NormalTears, PredictiveAim
@@ -54,8 +56,8 @@ class ProgramWeapon(NormalTears):
     capabilities=CapabilitySet(FAMILY,moving_attack=True,break_plain_poop=False)
 
     def __init__(self,params,program,calibration):
-        from .validation import validate_calibration
-        validate_calibration(calibration)
+        from .calibration import validate_runtime_calibration
+        validate_runtime_calibration(calibration)
         super().__init__({"min_hit_score":0})
         self.program,self.calibration=program,calibration
         self.runtime=TimingRuntime(program)
@@ -140,3 +142,52 @@ def register_program(program,calibration):
         CATALOG[aim]=ComponentSpec(aim,CATALOG["aim.predictive"].parameters,"charged tear trajectory",("target","build"),weapons=(FAMILY,))
     FAMILY_DEFAULTS[FAMILY]=(aim,fire)
     return fire
+
+
+class AdaptiveChargedBuild(ChargedBuild):
+    """Keep the original program immutable; bind a current measured/prior profile."""
+    def __init__(self,program,baseline,cache_directory=None):
+        super().__init__(program,baseline)
+        self.baseline=baseline;self.allow_piercing=False
+        self.cache_directory=Path(cache_directory) if cache_directory else None
+        self.measurements={};self.cached=set();self.current_calibration=baseline
+
+    def supports_pickup(self,s,pickup):
+        from combat.item_capabilities import resolve_items
+        if pickup.variant!=100 or pickup.sub_type is None:return False
+        future=s.model_copy(deep=True);items=dict(collectibles(s));items[str(pickup.sub_type)]=items.get(str(pickup.sub_type),0)+1
+        future.inventory["collectibles"]=items
+        try:resolve_items(future,charge=True,piercing=self.allow_piercing)
+        except ValueError:return False
+        return True
+
+    def adopt(self,calibration):
+        from .calibration import validate_runtime_calibration
+        validate_runtime_calibration(calibration)
+        key=calibration["scope_key"];self.measurements[key]=calibration;self.cached.discard(key)
+        if self.cache_directory:
+            self.cache_directory.mkdir(parents=True,exist_ok=True)
+            path=self.cache_directory/(key+".json");temp=path.with_suffix(".tmp")
+            temp.write_text(json.dumps(calibration,ensure_ascii=False,allow_nan=False),encoding="utf-8");temp.replace(path)
+
+    def update(self,s):
+        from combat.item_capabilities import resolve_items
+        from .calibration import calibration_key,estimated_calibration,validate_runtime_calibration
+        capabilities=resolve_items(s,charge=True,piercing=self.allow_piercing)
+        if capabilities.family!=FAMILY:raise ValueError("UNSUPPORTED_BUILD: charge item missing")
+        key=calibration_key(s)
+        if key not in self.measurements and self.cache_directory and (self.cache_directory/(key+".json")).exists():
+            value=json.loads((self.cache_directory/(key+".json")).read_text(encoding="utf-8"));validate_runtime_calibration(value)
+            if value["scope_key"]!=key:raise ValueError("CHARGE_CALIBRATION_SCOPE_MISMATCH")
+            self.measurements[key]=value;self.cached.add(key)
+        calibration=self.measurements.get(key) or estimated_calibration(s,self.baseline)
+        self.current_calibration=calibration
+        neutral=s.model_copy(deep=True);neutral.inventory["collectibles"]={k:v for k,v in collectibles(s).items() if int(k) not in (69,48)}
+        p=self.base.update(neutral);p.family=FAMILY;p.modifiers=list(capabilities.modifiers)
+        p.signature=digest([observed_build(s),self.program.sha256,calibration["calibration_id"]]);p.calibration_key=key
+        p.calibrated=calibration["source"]=="observed"
+        p.calibration_source="experience" if key in self.cached else "observed" if p.calibrated else "prior"
+        p.calibration_state="ready" if p.calibrated else "needs_probe"
+        p.calibration_samples=len(calibration["observations"]);p.calibration_observations=[]
+        p.tear_speed=calibration["tear_speed"];p.experience_revision=self.experience_revision
+        return p

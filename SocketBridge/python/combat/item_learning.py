@@ -57,6 +57,8 @@ class ItemLearning:
             self.attempted.add((pickup.instance_id,pickup.sub_type,pickup.price))
             result = await self.pickups.execute(session,current,build,pickup,decision)
             current = await session.next_snapshot(after=current.snapshot_id)
+            if result["result"]=="confirmed" and hasattr(session,"prepare_item_capabilities"):
+                current=await session.prepare_item_capabilities(current)
             if result["result"] != "confirmed" and (current.blocking_combat or not current.alive or boundary_danger(current)): break
         return current
 

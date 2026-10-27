@@ -532,6 +532,7 @@ class CombatSession:
         raise TimeoutError("RESUME_NOT_CONFIRMED")
 
     async def configure_room(self, s):
+        s=await self.prepare_item_capabilities(s)
         frozen, began = s, None
         try:
             frozen, began = await self.pause_for_plan(s)
@@ -568,6 +569,29 @@ class CombatSession:
         # say MANUAL. Wait for an update produced after that acknowledgement.
         stamp = self.observation.latest.snapshot_id
         return await self.next_snapshot(after=stamp)
+
+    async def prepare_item_capabilities(self,s):
+        """Boundary-only binding; no source generation or probes on control ticks."""
+        adaptation=getattr(self,"item_adaptation",None)
+        if adaptation:s=await adaptation.prepare(self,s)
+        from mechanisms.weapon import AdaptiveChargedBuild,register_program
+        adapter=self.build_resolver.mechanism_adapter
+        if isinstance(adapter,AdaptiveChargedBuild) and (s.inventory.get("collectibles") or {}).get("69"):
+            profile=self.build_resolver.update(s)
+            if profile.calibration_state=="needs_probe":
+                from mechanisms.calibration import probe_charge
+                try:
+                    measured,s=await probe_charge(self,s,adapter.baseline)
+                    if measured:adapter.adopt(measured)
+                except (RuntimeError,TimeoutError) as exc:
+                    self.log("charge_probe_inconclusive",error=str(exc),scope_key=profile.calibration_key)
+                    s=self.observation.latest or s
+                self.build_resolver.update(s)
+            calibration=adapter.current_calibration
+            register_program(adapter.program,calibration)
+            self.log("charge_binding",program_sha256=adapter.program.sha256,calibration_id=calibration["calibration_id"],
+                source=calibration["source"],scope_key=calibration["scope_key"])
+        return s
 
     async def navigate(self, s):
         initial_run = s.run_id
@@ -766,6 +790,7 @@ class CombatSession:
         if on_ready:
             await on_ready(self)
             initial = await self.next_snapshot(after=initial.snapshot_id)
+        initial=await self.prepare_item_capabilities(initial)
         return initial
 
     async def close(self):
