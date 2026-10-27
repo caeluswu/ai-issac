@@ -813,6 +813,7 @@ class CombatSession:
                 self.log("cleanup_error",error=str(exc))
         if self.pause_owned: self.cleanup_errors.append("PAUSE_OWNERSHIP_NOT_RELEASED")
         await self.bridge.stop()
+        if getattr(self,"item_adaptation",None):await self.item_adaptation.close()
         self.opened = False
         await asyncio.to_thread(self.log.damage.finish,"session_closed")
         if not self.log.file.closed:self.log("damage_capture_finished",episodes=len(self.log.damage.index),errors=list(self.log.damage.errors))

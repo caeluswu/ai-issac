@@ -21,11 +21,14 @@ class TestItemCapabilities(unittest.TestCase):
         self.assertNotEqual(old.signature,new.signature)
 
     def test_mechanisms_require_actual_component_binding(self):
-        s=snapshot();s.inventory["collectibles"]["48"]=1
+        from combat.models import WeaponObservation
+        s=snapshot();s.inventory["collectibles"]["114"]=1
         with self.assertRaises(ValueError):resolve_items(s)
-        self.assertEqual(resolve_items(s,piercing=True).modifiers,("piercing",))
+        with self.assertRaises(ValueError):resolve_items(s,knife=True)
+        s.stats["weapon_type"]=-1;s.weapons=WeaponObservation(status="known",types=[4],unknowns=[])
+        self.assertEqual(resolve_items(s,knife=True).family,"knife")
         s.inventory["collectibles"]["69"]=1
-        self.assertEqual(resolve_items(s,piercing=True,charge=True).family,"charged_tears")
+        with self.assertRaisesRegex(ValueError,"synergy"):resolve_items(s,knife=True,charge=True)
 
     def test_pickup_preview_does_not_mutate_build(self):
         s=snapshot();r=BuildResolver();old=r.update(s)

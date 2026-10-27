@@ -40,7 +40,7 @@ def proof_from_trace(directory,program_sha):
     with (directory/"trace.jsonl").open(encoding="utf-8") as stream:
         for line in stream:
             row=json.loads(line)
-            if row["kind"]=="mechanism_initialization_complete":
+            if row["kind"] in ("mechanism_initialization_complete","item_matrix_initialization_complete"):
                 initialized=True;initial_frame=row["frame"]
             if not initialized:continue
             if row["kind"]=="action_sent":

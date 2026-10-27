@@ -219,6 +219,7 @@ class RoomExecutor:
                 session.pending = asyncio.create_task(asyncio.wait_for(session.planner.plan(s, build.model_copy(deep=True), session.revision, feedback), 20))
                 session.log("replan_started", frame=s.frame, reasons=reasons)
             solve_started = time.perf_counter()
+            session.solver.attack_model=session.build_resolver.attack_model
             action = await asyncio.to_thread(session.solver.solve, s, session.plan, build.model_copy(deep=True))
             decision_wall_ms = (time.perf_counter()-solve_started)*1000
             action.diagnostics["decision_wall_ms"] = decision_wall_ms

@@ -43,6 +43,7 @@ class ItemLearning:
     async def collect(self, session, snapshot):
         current = snapshot
         if current.blocking_combat or current.hostiles or boundary_danger(current): return current
+        if hasattr(session,"prepare_item_capabilities"):current=await session.prepare_item_capabilities(current)
         # Learning may inspect many candidates, but only a bounded number are
         # approached in one clear-room boundary. No active item actions exist.
         for _ in range(4):

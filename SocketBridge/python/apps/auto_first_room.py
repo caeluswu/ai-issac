@@ -33,6 +33,9 @@ async def main(args):
                             require_baseline=not args.local_only and not args.startup_only)
     session = CombatSession(SocketBridge(), planner, pause, log,
                             ready_timeout=args.ready_timeout, new_run=True, seed=args.seed,learning=learning,skill_store=ROOT/"skills")
+    if learning:
+        from mechanisms.item_adaptation import ItemAdaptation
+        session.item_adaptation=ItemAdaptation(ROOT,learning.gateway,allow_generate=getattr(args,"learn_items",False))
     print(f"Run artifacts: {log.directory}", flush=True)
     async def freeze_seeds(current):
         if not args.prepare_seeds: return
@@ -68,11 +71,15 @@ def cli():
     parser.add_argument("--local-only", action="store_true")
     parser.add_argument("--startup-only", action="store_true", help="verify startup, snapshot and native pause; no combat")
     parser.add_argument("--with-items",action="store_true",help="enable pinned EID decisions, bounded pickups and passive experience")
+    parser.add_argument("--learn-items",action="store_true",help="allow budgeted model AttackModel development at clear boundaries; implies --with-items")
     parser.add_argument("--seed", help="debug replay seed, XXXX XXXX; omitted means a new random run")
     parser.add_argument("--output-dir", type=Path, help="new artifact directory; existing directories are never overwritten")
     parser.add_argument("--prepare-seeds", type=Path, help="write a new precommitted seed list; requires --startup-only")
     parser.add_argument("--seed-count", type=int, default=10)
     args = parser.parse_args()
+    if args.learn_items:
+        if args.local_only or args.startup_only:parser.error("learn-items requires API mode and a combat run")
+        args.with_items=True
     if args.seed and not re.fullmatch(r"[A-Z0-9]{4} [A-Z0-9]{4}", args.seed): parser.error("seed format is XXXX XXXX")
     if args.ready_timeout <= 0: parser.error("ready-timeout must be positive")
     if not 1 <= args.seed_count <= 100: parser.error("seed-count must be 1..100")
