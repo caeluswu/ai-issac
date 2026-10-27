@@ -35,7 +35,8 @@ def load_env(path: Path, *, override=False):
 
 
 class DeepSeekClient:
-    def __init__(self, timeout=45):
+    def __init__(self, timeout=45, budget=None):
+        self.budget = budget
         self.key = os.environ.get("DEEPSEEK_API_KEY", "")
         self.model = os.environ.get("DEEPSEEK_MODEL", "")
         self.base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
@@ -58,10 +59,13 @@ class DeepSeekClient:
                 try:
                     # Cancellation unwinds the request socket; app cleanup also
                     # closes the shared pool. No urllib worker tail survives.
+                    ticket = self.budget.reserve(messages) if self.budget else None
+                    if ticket: body["max_tokens"] = ticket["output"]
                     response = await self.http.post(self.base_url+"/chat/completions", json=body, headers=headers,
                                                     timeout=max(.1, deadline-time.monotonic()))
                     response.raise_for_status()
                     data = response.json()
+                    if ticket: self.budget.settle(ticket,data.get("usage",{}))
                     break
                 except httpx.HTTPStatusError as exc:
                     if exc.response.status_code not in (429, 500, 502, 503, 504) or attempt == 2: raise
@@ -115,6 +119,7 @@ class KnowledgeStore:
 class Planner:
     def __init__(self, client, knowledge, log):
         self.client, self.knowledge, self.log = client, knowledge, log
+        self.compact_context = False
 
     def context(self, s, build, revision, feedback):
         ref = ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id,
@@ -127,6 +132,11 @@ class Planner:
                 "snapshot": s.model_dump(), "build": build.model_dump(), "catalog": specs(), "feedback": feedback,
                 "derived": {"walkable_cells": len(g.walkable), "shootable_cells": len(g.shootable),
                             "target_distance": {e.instance_id: s.player.pos.distance(e.pos) for e in s.hostiles}}}
+        if self.compact_context:
+            data["snapshot"] = s.model_dump(exclude={"layout","movement_inheritance","projectiles","knowledge_bundle"})
+            data["snapshot"]["layout"] = {"width":s.layout["width"],"grid":s.layout["grid"],"doors":s.layout["doors"],
+                "walkable_cell_ids":sorted(g.walkable),"cell_coordinates":"grid 40px; inspect_room_region for exact coordinates"}
+            data["build"].pop("calibration_observations",None)
         return ref, data
 
     async def tool(self, name, args, s, build, ref):
@@ -197,6 +207,12 @@ class Planner:
                     "validation_error": str(exc), "valid_shape_example": example}, ensure_ascii=False)})
 
     async def plan(self, s, build, revision=0, feedback=None):
+        from campaign.budget import diagnostic_request
+        token = diagnostic_request.set(bool(feedback))
+        try: return await self._plan(s,build,revision,feedback)
+        finally: diagnostic_request.reset(token)
+
+    async def _plan(self, s, build, revision=0, feedback=None):
         ref, context = self.context(s, build, revision, feedback)
         if feedback:
             return await self.stage("plan", BattlePlan.model_json_schema(), default_plan(ref).model_dump(),

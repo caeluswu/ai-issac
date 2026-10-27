@@ -9,6 +9,7 @@ class ItemLearning:
     def __init__(self, gateway, *, source_mode="normal_play"):
         self.gateway = gateway
         self.active_pickup = None
+        self.authorized_exit = None
         self.decisions = {}
         self.scope = None
         self.pickups = PickupExecutor(self)
@@ -22,6 +23,8 @@ class ItemLearning:
         s.pickup_exclusions = [
             {"id":p.instance_id,"x":p.pos.x,"y":p.pos.y,"radius":p.collision_radius}
             for p in s.pickups or [] if p.is_empty is not True and allowed != (p.instance_id,p.sub_type,p.price)]
+        s.pickup_exclusions += [{"id":e.instance_id,"x":e.pos.x,"y":e.pos.y,"radius":18}
+            for e in s.exit_observations or [] if e.instance_id != self.authorized_exit]
 
     async def prepare_room(self, s, build):
         scope = (s.run_id,s.room_visit_id)
@@ -42,6 +45,7 @@ class ItemLearning:
         # approached in one clear-room boundary. No active item actions exist.
         for _ in range(4):
             build = session.build_resolver.update(current)
+            build = await self.apply(current,session.build_resolver,build)
             await self.prepare_room(current,build)
             choice = next(((p,self.decisions[(p.instance_id,p.sub_type,p.price)]) for p in current.pickups or []
                           if self.decisions[(p.instance_id,p.sub_type,p.price)].decision=="take"),None)

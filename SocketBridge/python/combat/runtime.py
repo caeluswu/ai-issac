@@ -58,9 +58,10 @@ class RunLog:
     def manifest(self, root, model):
         files = (list((root/"SocketBridge/python/combat").glob("*.py"))+
                  list((root/"SocketBridge/python/apps").glob("*.py"))+
+                 list((root/"SocketBridge/python/campaign").glob("*.py"))+
                  [root/"SocketBridge/main.lua", root/"SocketBridge/python/facade.py",
                   root/"SocketBridge/python/connection/server.py", root/"run_first_room.py",
-                  root/"run-first-room.ps1"])
+                  root/"run-first-room.ps1",root/"run_floor.py"])
         files = [p for p in files if p.is_file()]
         value = {"schema_version": 1, "platform": platform.platform(), "python": platform.python_version(),
                  "dependencies": {name: importlib.metadata.version(name) for name in ("pydantic", "httpx", "numpy")},
@@ -306,6 +307,7 @@ class CombatSession:
         self.timings = deque(maxlen=4096)
         self.visited = set()
         self.latest_acted = None
+        self.action_auditors = []
         self.started_at = time.monotonic()
         self.task_judge = CombatJudge()
         self.resources = ResourceLedger()
@@ -412,6 +414,7 @@ class CombatSession:
         self.log("action_sent", action_id=self.actions, sent=sent, frame=s.frame,
                  room_visit_id=s.room_visit_id, move=move, shoot=shoot, metadata=metadata)
         if not sent: raise ConnectionError("INPUT_SEND_FAILED")
+        for auditor in self.action_auditors: auditor(s,move,shoot,self.actions)
 
     async def pause_for_plan(self, s):
         await self.release()
@@ -490,8 +493,10 @@ class CombatSession:
                 await self.learning.prepare_room(frozen,build)
             if self.planner is None: raise ValueError("Local-only run requested")
             self.plan = await asyncio.wait_for(self.planner.plan(frozen, build, self.revision), 180)
-            self.llm_configured = True
-            self.log("plan_installed", source="deepseek", plan=self.plan.model_dump())
+            source = getattr(self.planner,"last_source","deepseek")
+            if source in ("deepseek","deepseek_template"): self.llm_configured = True
+            else: self.fallbacks += 1
+            self.log("plan_installed", source=source, plan=self.plan.model_dump())
         except Exception as exc:
             self.fallbacks += 1
             self.plan = default_plan(self.context_ref(frozen, self.build_resolver.update(frozen)))

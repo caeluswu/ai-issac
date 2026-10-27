@@ -63,6 +63,9 @@ class KnowledgeGateway:
         elif pickup.identity_visibility != "visible" or pickup.sub_type is None:
             reasons.append("IDENTITY_NOT_AVAILABLE")
         elif pickup.wait is None or pickup.price is None: reasons.append("INTERACTION_FACTS_UNKNOWN")
+        elif pickup.options_pickup_index not in (None,0): reasons.append("CHOICE_GROUP_NOT_SUPPORTED")
+        elif pickup.price > 0 and getattr(self,"purchase_budget",None) is not None and pickup.price > self.purchase_budget:
+            reasons.append("PURCHASE_BUDGET_EXCEEDED")
         elif pickup.wait > 0:
             decision="defer"; reasons.append("PICKUP_NOT_READY")
         elif pickup.variant == 100:
@@ -79,12 +82,16 @@ class KnowledgeGateway:
                     else: reasons.append("INSUFFICIENT_COINS_OR_RESERVE")
                 else: decision="take"; cost=pickup.price; reasons.append("SUPPORTED_ITEM_WITH_DESCRIPTION")
                 benefits = [r["summary"]["text"] for r in records if r["summary"]["text"]]
-        elif pickup.variant == 20 and pickup.sub_type in (1, 2, 3, 5) and pickup.price == 0:
+        elif pickup.variant == 20 and pickup.sub_type in (1, 2, 3, 5) and pickup.price == 0 and (s.inventory.get("coins") or 0) < 99:
             decision="take"; reasons.append("FREE_COIN")
-        elif pickup.variant == 30 and pickup.sub_type in (1, 3) and pickup.price == 0:
+        elif pickup.variant == 30 and pickup.sub_type in (1, 3) and pickup.price == 0 and (s.inventory.get("keys") or 0) < 99:
             decision="take"; reasons.append("FREE_KEY")
-        elif pickup.variant == 40 and pickup.sub_type in (1, 2) and pickup.price == 0:
+        elif pickup.variant == 40 and pickup.sub_type in (1, 2) and pickup.price == 0 and (s.inventory.get("bombs") or 0) < 99:
             decision="take"; reasons.append("FREE_BOMB_PICKUP")
+        elif pickup.variant == 10 and pickup.sub_type in (1,2,3) and pickup.price == 0:
+            eligible = s.floor_progress and (s.floor_progress.can_pick_soul if pickup.sub_type == 3 else s.floor_progress.can_pick_red)
+            if eligible is True: decision="take"; reasons.append("SUPPORTED_FREE_HEALTH")
+            else: reasons.append("HEALTH_CAPACITY_FULL_OR_UNKNOWN")
         else: reasons.append("PICKUP_STRATEGY_NOT_IMPLEMENTED")
         value = PickupDecision(encounter,decision,tuple(reasons),build.revision,
             tuple(r["record_id"] for r in records),tuple(benefits),cost,s.frame+90,decision_id,reserve_coins,pickup_authority(s,build,pickup))

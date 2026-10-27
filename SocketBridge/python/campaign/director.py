@@ -1,0 +1,280 @@
+"""A bounded first-floor task; CombatSession remains the only input writer."""
+import asyncio
+import time
+from combat.builds import digest
+from combat.catalog import default_plan
+from combat.controller import JointActionSolver
+from combat.models import Vec
+from combat.navigation import DoorNavigator
+from combat.supervision import ProgressSupervisor
+from .graph import FloorGraph
+from .judge import FloorJudge, clear_of_threats
+from .models import FloorContext, FloorReport, FloorObjective, RoomKey, TransitionReceipt
+
+
+class FloorDirector:
+    def __init__(self,session,budget=None,wall_limit=1800,game_limit=900*30):
+        self.session,self.budget = session,budget
+        self.wall_limit,self.game_limit = wall_limit,game_limit
+        self.graph,self.judge = FloorGraph(),FloorJudge()
+        self.context = None
+        self.start = None
+        self.state = "WAIT_READY"
+        self.transitions = []
+        self.rooms = []
+        self.exit_executing = False
+        self.displacement_errors = 0
+        self.began = time.monotonic()
+        session.floor_mode = True
+        session.bridge.on_message(self.judge.on_raw)
+        session.action_auditors.append(self.judge.action)
+
+    def enter_state(self,state,s,**details):
+        self.state = state
+        self.session.log("floor_state",state=state,snapshot_id=s.snapshot_id,**details)
+
+    def check(self,s):
+        if self.judge.failure: raise RuntimeError(self.judge.failure)
+        if not self.session.bridge.connected: raise ConnectionError("DISCONNECTED")
+        if time.monotonic()-self.session.observation.received_at > 2:
+            heartbeat = self.session.heartbeat
+            if not (self.session.pause_owned and heartbeat and heartbeat.get("paused") and time.monotonic()-self.session.heartbeat_at < 1):
+                raise TimeoutError("STALE_OBSERVATION")
+        if s.run_id != self.start.run_id: raise RuntimeError("RUN_CHANGED")
+        if s.frame-self.start.frame >= self.game_limit: raise TimeoutError("FLOOR_GAME_TIMEOUT")
+        if time.monotonic()-self.began >= self.wall_limit: raise TimeoutError("FLOOR_WALL_TIMEOUT")
+        if s.floor.instance_id != self.start.floor.instance_id and not self.exit_executing:
+            raise RuntimeError("UNAUTHORIZED_FLOOR_CHANGE")
+        if self.session.death_observed: raise RuntimeError("DEAD")
+
+    async def next(self,s):
+        fresh = await self.session.next_snapshot(after=s.snapshot_id)
+        self.check(fresh)
+        return fresh
+
+    async def acquire(self,s):
+        await self.session.set_mode("FORCE_AI")
+        stamp = self.session.observation.latest
+        fresh = await self.next(stamp)
+        if fresh.mode != "FORCE_AI": raise RuntimeError("CONTROL_MODE_NOT_CONFIRMED")
+        return fresh
+
+    async def settle(self,s,ticks=3):
+        began,stable = s.frame,None
+        solver = JointActionSolver()
+        s = await self.acquire(s)
+        while s.frame-began <= max(120,ticks+30):
+            if s.mode == "MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
+            if s.blocking_combat: return s
+            if clear_of_threats(s):
+                if stable is None: stable = s.frame
+                if s.frame-stable >= ticks:
+                    await self.session.release()
+                    return s
+            else:
+                stable = None
+                build = self.session.build_resolver.update(s)
+                action = await asyncio.to_thread(solver.solve,s,default_plan(self.session.context_ref(s,build)),build,True)
+                await self.send(s,action.move,action.model_dump())
+            s = await self.next(s)
+        raise TimeoutError("POST_CLEAR_UNSAFE")
+
+    async def send(self,s,move,metadata=None):
+        try: await self.session.send_action(s,move,(0,0),metadata)
+        except TimeoutError as exc:
+            if "STALE_ACTION" not in str(exc): raise
+            self.session.log("floor_stale_action",state=self.state,frame=s.frame)
+
+    def objective(self,s,kind,target,ttl=750,cost=0):
+        build = self.session.build_resolver.update(s)
+        value = FloorObjective(objective_id=digest([s.snapshot_id,kind,target]),
+            context_ref=self.session.context_ref(s,build),kind=kind,target=target,
+            deadline_frame=s.frame+ttl,cost_keys=cost)
+        self.session.log("floor_objective",objective=value.model_dump())
+        return value
+
+    async def door(self,s,slot,door):
+        source,prior = RoomKey.from_snapshot(s),s
+        cost = int(door.is_locked)
+        intent = self.objective(s,"enter_room",door.model_dump(),cost=cost)
+        before = s.inventory.get("keys")
+        if cost and (before is None or before < cost or door.target_room_type != 4):
+            raise ValueError("DOOR_COST_NOT_AUTHORIZED")
+        s = await self.acquire(s)
+        if not cost:
+            s,prior = await asyncio.wait_for(self.session.navigate_door(s,slot,door.model_dump(),s.run_id),30)
+        else:
+            navigator,watcher,previous = DoorNavigator(slot,door.model_dump()),ProgressSupervisor(),None
+            while s.room_visit_id == prior.room_visit_id:
+                if s.mode == "MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
+                if s.frame > intent.deadline_frame: raise TimeoutError("DOOR_NAVIGATION_TIMEOUT")
+                if s.blocking_combat: return s
+                if s.inventory.get("keys") not in (before,before-cost): raise RuntimeError("DOOR_BUDGET_CHANGED")
+                failure = watcher.observe(s,previous,require_progress=True)
+                if failure: raise TimeoutError("DOOR_"+failure)
+                build = self.session.build_resolver.update(s)
+                model = s.model_copy(deep=True)
+                selected = (model.layout["doors"] or {}).get(str(slot))
+                if selected is None or selected["target_room"] != door.target_room: raise RuntimeError("DOOR_TARGET_CHANGED")
+                selected.update(is_open=True,is_locked=False)  # only the explicitly authorized key door
+                action = await asyncio.to_thread(navigator.step,model,default_plan(self.session.context_ref(s,build)),build)
+                await self.send(s,action.move,action.model_dump())
+                previous = action
+                s = await self.next(s)
+        await self.session.release()
+        if s.room_visit_id == prior.room_visit_id: return s
+        self.check(s)
+        target = self.graph.confirm(source,slot,s)
+        matched = s.room["room_idx"] == door.target_room or (door.target_list_index is not None and target.index == door.target_list_index)
+        spent = before-s.inventory["keys"] if before is not None and s.inventory.get("keys") is not None else 0
+        if spent != cost: raise RuntimeError("DOOR_COST_NOT_CONFIRMED")
+        if not matched:
+            self.displacement_errors += 1
+            if self.displacement_errors > 2: raise RuntimeError("REPEATED_UNEXPECTED_DOOR_DESTINATION")
+        receipt = TransitionReceipt(intent_id=intent.objective_id,source=source.text(),target=target.text(),
+            slot=slot,from_visit=prior.room_visit_id,to_visit=s.room_visit_id,keys_spent=spent,
+            applied_action_id=prior.applied_action_id,matched_expected=matched,completed_frame=s.frame)
+        self.transitions.append(receipt)
+        self.session.log("floor_transition",**receipt.model_dump())
+        return s
+
+    async def exit(self,s):
+        choices = [e for e in s.exit_observations or [] if e.type == 17 and e.variant == 0]
+        if not choices: raise RuntimeError("NORMAL_EXIT_NOT_OBSERVED")
+        found = min(choices,key=lambda e:s.player.pos.distance(e.pos))
+        intent = self.objective(s,"leave_floor",found.model_dump(),ttl=300)
+        self.judge.arm_exit(found.instance_id)
+        if self.session.learning:
+            self.session.learning.authorized_exit = found.instance_id
+            self.session.learning.mask(s)
+        self.exit_executing = True
+        s = await self.acquire(s)
+        began,wall = s.frame,time.monotonic()
+        solver,watcher,previous = JointActionSolver(),ProgressSupervisor(),None
+        while s.floor.instance_id == self.start.floor.instance_id:
+            if s.mode == "MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
+            if s.frame-began > 300 or time.monotonic()-wall > 15: raise TimeoutError("FLOOR_EXIT_TIMEOUT")
+            if not clear_of_threats(s): raise RuntimeError("EXIT_NEW_THREAT")
+            if not any(e.instance_id == found.instance_id and e.type == 17 and e.variant == 0 for e in s.exit_observations or []):
+                raise RuntimeError("EXIT_TARGET_CHANGED")
+            failure = watcher.observe(s,previous,require_progress=True)
+            if failure: raise TimeoutError("EXIT_"+failure)
+            build = self.session.build_resolver.update(s)
+            action = await asyncio.to_thread(solver.solve,s,default_plan(self.session.context_ref(s,build)),build,True,found.pos)
+            await self.send(s,action.move,action.model_dump())
+            previous = action
+            s = await self.next(s)
+        if not self.judge.departure: raise RuntimeError("NORMAL_EXIT_NOT_PROVEN")
+        self.session.log("normal_exit_observed",intent_id=intent.objective_id,**self.judge.departure)
+        self.enter_state("VERIFY_ACTIONABLE",s)
+        await self.session.release()
+        began,wall = s.frame,time.monotonic()
+        while not (s.floor_progress.controls_enabled is True and s.floor_progress.extra_animation_finished is True and clear_of_threats(s)):
+            if s.frame-began > 300 or time.monotonic()-wall > 15: raise TimeoutError("NEXT_FLOOR_ANIMATION_TIMEOUT")
+            s = await self.next(s)
+        s = await self.acquire(s)
+        solver = JointActionSolver()
+        origin = s.player.pos.model_copy()
+        goal = origin+Vec(x=40,y=0)
+        while not self.judge.success:
+            if s.frame-began > 300 or time.monotonic()-wall > 15: raise TimeoutError("NEXT_FLOOR_NOT_ACTIONABLE")
+            if not clear_of_threats(s): raise RuntimeError("NEXT_FLOOR_NOT_SAFE")
+            build = self.session.build_resolver.update(s)
+            action = await asyncio.to_thread(solver.solve,s,default_plan(self.session.context_ref(s,build)),build,True,goal)
+            await self.send(s,action.move,action.model_dump())
+            s = await self.next(s)
+        return s
+
+    async def execute(self,s):
+        self.start = s
+        self.judge.begin(s)
+        self.context = FloorContext(run_id=s.run_id,floor_instance_id=s.floor.instance_id,
+            stage=s.floor.stage,stage_type=s.floor.stage_type,dimension=s.floor.dimension,
+            curses=s.floor_progress.curses,initial_snapshot_id=s.snapshot_id)
+        while True:
+            self.check(s)
+            damage_before = self.session.task_judge.health.damage
+            self.enter_state("CLASSIFY",s)
+            if len(self.rooms) >= 128: raise RuntimeError("FLOOR_VISIT_LIMIT")
+            for _ in range(3): s = await self.next(s)
+            self.graph.observe(s)
+            if s.blocking_combat:
+                self.enter_state("RESOLVE_ROOM",s)
+                result = await self.session.execute_room(s)
+                self.rooms.append({"room_key":RoomKey.from_snapshot(s).text(),**self.session.room_executor.results[-1]})
+                if result != "CLEARED": raise RuntimeError(result)
+                s = self.session.observation.latest
+            elif not s.room["is_clear"]:
+                self.enter_state("RESOLVE_ENVIRONMENT",s)
+                s = await self.session.resolve_environment(s)
+                if s.blocking_combat: continue
+            self.enter_state("POST_CLEAR",s)
+            s = await self.settle(s,45 if s.room["room_type"] == 5 else 3)
+            if s.blocking_combat: continue
+            if self.session.learning:
+                s = await self.session.learning.collect(self.session,s)
+                self.check(s)
+                if not clear_of_threats(s): raise RuntimeError("POST_CLEAR_INTERACTION_UNSAFE")
+            self.graph.observe(s)
+            if not self.rooms or self.rooms[-1]["room_visit_id"] != s.room_visit_id:
+                build = self.session.build_resolver.update(s)
+                row = {"room_key":RoomKey.from_snapshot(s).text(),"room_visit_id":s.room_visit_id,
+                    "result":"CLEARED","combat_result":"NOT_REQUIRED","post_clear_result":"SAFE",
+                    "terminal_snapshot_id":s.snapshot_id,"alive":s.alive,"actionable":True,
+                    "damage_since_classification":self.session.task_judge.health.damage-damage_before,
+                    "build_revision":build.revision,"experience_revision":build.experience_revision}
+                self.rooms.append(row)
+                if self.session.learning: await self.session.learning.record_room(s,build,row)
+                self.session.log("empty_room_finished",**row)
+            self.enter_state("SELECT_OBJECTIVE",s)
+            if self.judge.completed_boss and self.judge.completed_boss["room_key"] == RoomKey.from_snapshot(s).text():
+                self.enter_state("EXECUTE_EXIT",s)
+                s = await self.exit(s)
+                self.enter_state("COMPLETE",s)
+                return
+            choice = self.graph.choose(s)
+            if choice is None: raise RuntimeError("FLOOR_ROUTE_EXHAUSTED")
+            slot,door = choice
+            self.enter_state("EXECUTE_DOOR",s,slot=slot)
+            try: s = await self.door(s,slot,door)
+            except TimeoutError as exc:
+                if "STALL" in str(exc) or "STALE" in str(exc): raise
+                self.graph.failed(RoomKey.from_snapshot(s),slot)
+                self.session.log("door_attempt_failed",slot=slot,error=str(exc))
+                await self.session.release()
+                s = await self.next(self.session.observation.latest)
+
+    async def supervised(self,s):
+        task = asyncio.create_task(self.execute(s))
+        try:
+            while not task.done():
+                await asyncio.sleep(.05)
+                if self.start is not None: self.check(self.session.observation.latest)
+            return await task
+        finally:
+            if not task.done(): task.cancel()
+            await asyncio.gather(task,return_exceptions=True)
+
+    async def run(self,bootstrap=None):
+        result,error,cleanup = "FAILED",None,[]
+        try:
+            s = await self.session.open(bootstrap=bootstrap)
+            await self.supervised(s)
+            result = "FLOOR_COMPLETED" if self.judge.success else "FLOOR_NOT_PROVEN"
+        except (Exception,asyncio.CancelledError) as exc:
+            error = type(exc).__name__+": "+str(exc)
+            result = "CANCELLED" if isinstance(exc,asyncio.CancelledError) else "FAILED"
+            self.session.log("floor_failed",state=self.state,error=error)
+        finally:
+            try: await self.session.close()
+            except Exception as exc: cleanup.append(str(exc))
+        if cleanup: result = "CLEANUP_FAILED"
+        last = self.session.observation.latest
+        return FloorReport(result=result,success=result == "FLOOR_COMPLETED",error=error,
+            seed=self.start.seed if self.start else None,context=self.context,rooms=self.rooms,
+            transitions=self.transitions,evidence=self.judge.evidence(),
+            damage_half_hearts=self.session.task_judge.health.damage,bones_lost=self.session.task_judge.health.bones_lost,
+            resources_spent=self.session.resources.spent,game_ticks=last.frame-self.start.frame if last and self.start else 0,
+            wall_seconds=time.monotonic()-self.began,pause_seconds=self.session.pause_seconds,
+            llm_configured=self.session.llm_configured,fallback_count=self.session.fallbacks,
+            request_budget=self.budget.report() if self.budget else {"requests":0,"cost":0},cleanup_errors=cleanup)
