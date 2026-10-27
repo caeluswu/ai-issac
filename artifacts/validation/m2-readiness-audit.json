@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "source_mode": "synthetic_audit",
+  "paid_api_calls": 0,
+  "game_launched": false,
+  "findings": [
+    {
+      "id": "R1",
+      "scenario": "bomb_subtype_policy",
+      "observed": {
+        "1": "take",
+        "3": "take",
+        "4": "take",
+        "5": "take",
+        "6": "take",
+        "7": "take"
+      },
+      "issue_present": true
+    },
+    {
+      "id": "R2",
+      "scenario": "publish_without_new_samples",
+      "observed": {
+        "sample_count": 3,
+        "claims_before": 1,
+        "claims_after": 2,
+        "revision_before": 1,
+        "revision_after": 2
+      },
+      "issue_present": true
+    },
+    {
+      "id": "R3",
+      "scenario": "death_during_post_clear_collection",
+      "observed": {
+        "room_result": "CLEARED",
+        "recorded_result": "CLEARED",
+        "dead_after_collection": true
+      },
+      "issue_present": true
+    },
+    {
+      "id": "R4",
+      "scenario": "decision_target_binding",
+      "observed": {
+        "authorized_item": 1,
+        "requested_item": 149,
+        "input_attempts": 1,
+        "result_reason": "AUDIT_STOP_BEFORE_ANY_GAME_IO"
+      },
+      "issue_present": true
+    }
+  ]
+}
