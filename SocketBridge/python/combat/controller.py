@@ -311,6 +311,8 @@ class JointActionSolver:
                 if not s.hostiles and move != (0, 0): utility -= .08
                 if wall: utility -= 100
                 candidates.append({"move": move, "shoot": shot, "safe": safety.safe,
+                                   "prediction_origin_snapshot_id":s.snapshot_id,"prediction_frame_offset":1,
+                                   "predicted_next_position":[trajectory[1].x,trajectory[1].y] if len(trajectory)>1 else None,
                                    "clearance": clearance, "wall": wall, "hit": hit, "escape": escape,
                                    "escape_slack": slack, "escape_directions": exit_directions,
                                    "early_risk": max(0, -early_clearance), "first_contact": first_contact, "blocked_steps": blocked_steps,

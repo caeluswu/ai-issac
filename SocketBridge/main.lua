@@ -757,6 +757,9 @@ SensorRegistry:register("BOMBS", {
         }
         return {
             id = entity.Index, type = entity.Type,
+            instance_id = tostring(entity.InitSeed) .. ":" .. tostring(entity.Index),
+            owner_type = entity.SpawnerType,
+            owner_instance_id = entity.SpawnerEntity and (tostring(entity.SpawnerEntity.InitSeed) .. ":" .. tostring(entity.SpawnerEntity.Index)),
             variant = entity.Variant,
             variant_name = BOMB_VARIANTS[entity.Variant] or ("UNKNOWN_" .. entity.Variant),
             sub_type = entity.SubType,
@@ -1126,11 +1129,14 @@ function CustomCollectors.PROJECTILES()
             local proj = entity:ToProjectile()
             table.insert(data.enemy_projectiles, {
                 id = entity.Index,
+                instance_id = tostring(entity.InitSeed) .. ":" .. tostring(entity.Index),
+                type = entity.Type,
                 pos = Helpers.vectorToTable(entity.Position),
                 vel = Helpers.vectorToTable(entity.Velocity),
                 variant = entity.Variant, collision_radius = entity.Size,
                 owner_type = entity.SpawnerType,
                 owner_seed = entity.SpawnerEntity and entity.SpawnerEntity.InitSeed,
+                owner_instance_id = entity.SpawnerEntity and (tostring(entity.SpawnerEntity.InitSeed) .. ":" .. tostring(entity.SpawnerEntity.Index)),
                 height = proj and proj.Height or 0,
                 falling_speed = proj and proj.FallingSpeed or 0,
                 falling_accel = proj and proj.FallingAccel or 0,
@@ -1160,6 +1166,10 @@ function CustomCollectors.PROJECTILES()
             if laser then
                 table.insert(data.lasers, {
                     id = entity.Index,
+                    instance_id = tostring(entity.InitSeed) .. ":" .. tostring(entity.Index),
+                    type = entity.Type, variant = entity.Variant,
+                    owner_type = entity.SpawnerType,
+                    owner_instance_id = entity.SpawnerEntity and (tostring(entity.SpawnerEntity.InitSeed) .. ":" .. tostring(entity.SpawnerEntity.Index)),
                     pos = Helpers.vectorToTable(entity.Position),
                     angle = laser.Angle, max_distance = laser.MaxDistance,
                     is_enemy = not (entity.SpawnerType == EntityType.ENTITY_PLAYER or
@@ -1440,7 +1450,9 @@ end
 
 function EventSystem.flush()
     for _, event in ipairs(EventSystem.pendingEvents) do
-        Network.send(Protocol.createEventMessage(event.type, event.data))
+        local message = Protocol.createEventMessage(event.type, event.data)
+        message.frame = event.frame
+        Network.send(message)
     end
     EventSystem.pendingEvents = {}
 end
@@ -1987,9 +1999,25 @@ end)
 mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, entity, amount, flags, source)
     if entity.Type ~= EntityType.ENTITY_PLAYER then return end
     local player = entity:ToPlayer()
+    local function optional(fn) local ok,value=pcall(fn); if ok then return value end end
+    local origin = optional(function() return source.Entity end)
+    local sourceEntity = origin and optional(function()
+        local owner = origin.SpawnerEntity
+        return {instance_id=tostring(origin.InitSeed)..":"..tostring(origin.Index),
+            type=origin.Type, variant=origin.Variant, subtype=origin.SubType,
+            pos=Helpers.vectorToTable(origin.Position), vel=Helpers.vectorToTable(origin.Velocity),
+            collision_radius=origin.Size, owner_type=origin.SpawnerType,
+            owner_instance_id=owner and (tostring(owner.InitSeed)..":"..tostring(owner.Index))}
+    end)
+    State.damageEventSequence = (State.damageEventSequence or 0)+1
     EventSystem.emit("PLAYER_DAMAGE_ATTEMPT", {
+        schema_version=2, event_id=State.runId..":damage:"..State.damageEventSequence,
+        callback_frame=State.updateCount, run_id=State.runId,
+        room_visit_id=State.runId..":"..tostring(State.roomVisit),
         amount = amount, flags = flags,
         source_type = source and source.Type or -1,
+        source_entity=sourceEntity,
+        source_entity_status=sourceEntity and "observed" or "unavailable",
         hp_before = player:GetHearts() + player:GetSoulHearts(),
     })
 end)

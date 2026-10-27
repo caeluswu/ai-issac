@@ -25,6 +25,10 @@ class AgentStore:
                 CREATE TABLE IF NOT EXISTS claims(id TEXT PRIMARY KEY,signature TEXT,metric TEXT,body TEXT NOT NULL,active INTEGER);
                 CREATE TABLE IF NOT EXISTS counterexamples(id TEXT PRIMARY KEY,claim_id TEXT,body TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS learning_tasks(id TEXT PRIMARY KEY,body TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS damage_episodes(id TEXT PRIMARY KEY,body TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS damage_analyses(id TEXT PRIMARY KEY,body TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS damage_summaries(id TEXT PRIMARY KEY,body TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS damage_reviews(id TEXT PRIMARY KEY,body TEXT NOT NULL);
                 INSERT OR IGNORE INTO metadata VALUES('schema_version','1');
                 INSERT OR IGNORE INTO metadata VALUES('experience_revision','0');
             """)
@@ -45,7 +49,9 @@ class AgentStore:
 
     def record(self, kind, identity, body):
         tables = {"encounter":("encounters","id"),"decision":("decisions","encounter_id"),
-                  "pickup":("pickup_results","intent_id"),"room":("room_results","id"),"task":("learning_tasks","id")}
+                    "pickup":("pickup_results","intent_id"),"room":("room_results","id"),"task":("learning_tasks","id"),
+                    "damage_episode":("damage_episodes","id"),"damage_analysis":("damage_analyses","id"),
+                    "damage_summary":("damage_summaries","id"),"damage_review":("damage_reviews","id")}
         table, column = tables[kind]
         encoded = json.dumps(body,ensure_ascii=False,allow_nan=False,sort_keys=True)
         with self.connect() as db:
@@ -53,7 +59,9 @@ class AgentStore:
 
     def get(self, kind, identity):
         table, column = {"encounter":("encounters","id"),"decision":("decisions","encounter_id"),
-                         "pickup":("pickup_results","intent_id"),"room":("room_results","id"),"task":("learning_tasks","id")}[kind]
+                         "pickup":("pickup_results","intent_id"),"room":("room_results","id"),"task":("learning_tasks","id"),
+                         "damage_episode":("damage_episodes","id"),"damage_analysis":("damage_analyses","id"),
+                         "damage_summary":("damage_summaries","id"),"damage_review":("damage_reviews","id")}[kind]
         with self.connect() as db: row = db.execute(f"SELECT body FROM {table} WHERE {column}=?", (identity,)).fetchone()
         return json.loads(row[0]) if row else None
 

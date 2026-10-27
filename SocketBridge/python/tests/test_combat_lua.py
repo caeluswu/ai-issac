@@ -119,6 +119,24 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(e.data.hp_before, 6)
         self.assertIsNone(e.data.hp_after)
 
+    def test_damage_source_identity_and_callback_frame_survive_flush(self):
+        self.lua.execute('''
+            api.State.updateCount=10
+            local p={GetHearts=function() return 6 end,GetSoulHearts=function() return 0 end}
+            local origin={Type=9,Variant=2,SubType=0,InitSeed=123,Index=7,Size=5,
+                Position={X=100,Y=200},Velocity={X=1,Y=2},SpawnerType=10,
+                SpawnerEntity={InitSeed=456,Index=8}}
+            callbacks[ModCallbacks.MC_ENTITY_TAKE_DMG](nil,{Type=EntityType.ENTITY_PLAYER,ToPlayer=function() return p end},1,0,{Type=9,Entity=origin})
+            api.State.updateCount=12
+            fakeMod.EventSystem.flush()
+        ''')
+        message=self.lua.globals().lastSent
+        self.assertEqual(message.frame,10)
+        self.assertEqual(message.data.callback_frame,10)
+        self.assertEqual(message.data.source_entity.instance_id,"123:7")
+        self.assertEqual(message.data.source_entity.owner_instance_id,"456:8")
+        self.assertEqual(message.data.room_visit_id,"boot:0")
+
     def test_reconnect_while_paused_uses_render_clock(self):
         self.lua.execute('''
             paused=true; attempts=0; api.State.connected=false

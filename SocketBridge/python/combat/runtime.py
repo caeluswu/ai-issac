@@ -36,26 +36,41 @@ class RunLog:
         self.window = deque(maxlen=90)
         self.capture_until = -1
         self.last_trigger = {}
+        from .damage import DamageCapture
+        self.damage = DamageCapture(directory,external_snapshots=True)
+        self("damage_capture_started",schema_version=1)
 
     def __call__(self, kind, **value):
         self.sequence += 1
         self.file.write(json.dumps({"sequence": self.sequence, "wall_monotonic": time.monotonic(),
                                     "kind": kind, **value}, ensure_ascii=False, allow_nan=False)+"\n")
         self.file.flush()
+        try:self.damage.consume({"sequence":self.sequence,"kind":kind,**value})
+        except Exception as exc:self.damage.errors.append(type(exc).__name__+": "+str(exc))
 
     def candidates(self, frame, candidates):
         row = {"frame": frame, "candidates": candidates}
         self.window.append(row)
+        while self.window and self.window[0]["frame"]<frame-90:self.window.popleft()
+        try:self.damage.candidates(frame,candidates,self.sequence)
+        except Exception as exc:self.damage.errors.append(type(exc).__name__+": "+str(exc))
         if frame <= self.capture_until: self("candidate_window", **row)
 
     def trigger(self, frame, reason):
         key = json.dumps(reason, sort_keys=True)
-        if frame-self.last_trigger.get(key, -1000) < 90: return
+        if "confirmed_damage" not in reason and frame-self.last_trigger.get(key, -1000) < 90: return
         self.last_trigger[key] = frame
         self("debug_trigger", frame=frame, reason=reason, preceding_candidates=list(self.window))
-        self.capture_until = frame+30
+        self.capture_until = max(self.capture_until,frame+30)
+
+    def damage_observe(self,s,delta):
+        try:self.damage.snapshot(s,self.sequence)
+        except Exception as exc:self.damage.errors.append(type(exc).__name__+": "+str(exc))
+        self("damage_health_delta",delta=delta,health_point={"frame":s.frame,"run_id":s.run_id,
+            "room_visit_id":s.room_visit_id,"health":dict(s.health)})
 
     def manifest(self, root, model):
+        self.damage.store_path=Path(root)/"artifacts/agent-state/agent.sqlite"
         files = (list((root/"SocketBridge/python/combat").glob("*.py"))+
                  list((root/"SocketBridge/python/apps").glob("*.py"))+
                  list((root/"SocketBridge/python/campaign").glob("*.py"))+
@@ -81,6 +96,7 @@ class RunLog:
         self("report", **report.model_dump())
         (self.directory/"report.json").write_text(report.model_dump_json(indent=2), encoding="utf-8")
         self.file.close()
+        self.damage.finish()
 
 
 class NativePause:
@@ -361,7 +377,10 @@ class CombatSession:
                     self.combat_room, self.combat_start_frame = s.room_visit_id, s.frame
                     self.combat_previous_hp = self.task_judge.previous.hp if self.task_judge.previous else s.hp
                 previous_damage = self.task_judge.health.damage
+                before_loss={k:getattr(self.task_judge.health,k) for k in ("damage","bones_lost","voluntary_spend","container_loss")}
                 self.task_judge.observe(s)
+                delta={k:getattr(self.task_judge.health,k)-v for k,v in before_loss.items()}
+                self.log.damage_observe(s,delta)
                 if s.room_visit_id == self.combat_room:
                     self.combat_damage_recorded += self.task_judge.health.damage-previous_damage
                     self.combat_last_frame = s.frame
@@ -768,6 +787,7 @@ class CombatSession:
         if self.pause_owned: self.cleanup_errors.append("PAUSE_OWNERSHIP_NOT_RELEASED")
         await self.bridge.stop()
         self.opened = False
+        await asyncio.to_thread(self.log.damage.finish,"session_closed")
 
     async def run(self, bootstrap=None, startup_only=False, on_ready=None):
         result, error = "ABORTED", None
