@@ -90,7 +90,7 @@ class ItemLearning:
 
     async def apply(self, s, resolver, build):
         evidence = await asyncio.to_thread(self.restore,build)
-        adapter = resolver.adapters.get(s.stats["weapon_type"])
+        adapter = resolver.adapter_for(s) if hasattr(resolver,"adapter_for") else resolver.adapters.get(s.stats["weapon_type"])
         if hasattr(adapter,"experience_revision"): adapter.experience_revision = evidence["experience_revision"]
         if hasattr(adapter,"clear_restored_calibration"): adapter.clear_restored_calibration()
         if evidence["calibration"] and hasattr(adapter,"restore_calibration"):

@@ -67,6 +67,9 @@ class AttackProposal:
     footprint: tuple[float, float, float, float, float] | None = None
     context: ProposalContext | None = None
     prediction_horizon_frames: int = 30
+    # Withdrawing a charged release may require continuing the observed hold.
+    # Zero input can itself fire. Trusted weapon adapters supply this action.
+    withdrawal_shoot: tuple[int, int] = (0, 0)
 
 
 class WeaponAdapter(Protocol):

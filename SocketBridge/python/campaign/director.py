@@ -68,7 +68,7 @@ class FloorDirector:
         if self.diagnostic_plan:
             try: return compile_plan(self.diagnostic_plan,self.session.context_ref(s,build))
             except ValueError: self.diagnostic_plan=None
-        return default_plan(self.session.context_ref(s,build))
+        return default_plan(self.session.context_ref(s,build),family=build.family)
 
     async def next(self,s):
         fresh = await self.session.next_snapshot(after=s.snapshot_id)
@@ -97,7 +97,7 @@ class FloorDirector:
             else:
                 stable = None
                 build = self.session.build_resolver.update(s)
-                action = await asyncio.to_thread(solver.solve,s,default_plan(self.session.context_ref(s,build)),build,True)
+                action = await asyncio.to_thread(solver.solve,s,default_plan(self.session.context_ref(s,build),family=build.family),build,True)
                 await self.send(s,action.move,action.model_dump())
             s = await self.next(s)
         raise TimeoutError("POST_CLEAR_UNSAFE")
@@ -140,7 +140,7 @@ class FloorDirector:
                 selected = (model.layout["doors"] or {}).get(str(slot))
                 if selected is None or selected["target_room"] != door.target_room: raise RuntimeError("DOOR_TARGET_CHANGED")
                 selected.update(is_open=True,is_locked=False)  # only the explicitly authorized key door
-                action = await asyncio.to_thread(navigator.step,model,default_plan(self.session.context_ref(s,build)),build)
+                action = await asyncio.to_thread(navigator.step,model,default_plan(self.session.context_ref(s,build),family=build.family),build)
                 await self.send(s,action.move,action.model_dump())
                 previous = action
                 s = await self.next(s)
@@ -210,7 +210,7 @@ class FloorDirector:
             if s.frame-began > 300 or time.monotonic()-wall > 15: raise TimeoutError("NEXT_FLOOR_NOT_ACTIONABLE")
             if not clear_of_threats(s): raise RuntimeError("NEXT_FLOOR_NOT_SAFE")
             build = self.session.build_resolver.update(s)
-            action = await asyncio.to_thread(solver.solve,s,default_plan(self.session.context_ref(s,build)),build,True,goal)
+            action = await asyncio.to_thread(solver.solve,s,default_plan(self.session.context_ref(s,build),family=build.family),build,True,goal)
             await self.send(s,action.move,action.model_dump())
             s = await self.next(s)
         return s

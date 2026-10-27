@@ -310,7 +310,7 @@ class JointActionSolver:
                                    "attack_target": attack_target.instance_id if attack_target else None,
                                    "wait": attack.wait.__dict__ if attack.wait else None})
                 if not postkill_safe:
-                    candidates.append({**candidates[-1], "shoot": (0, 0), "hit": 0.,
+                    candidates.append({**candidates[-1], "shoot": attack.withdrawal_shoot, "hit": 0.,
                                        "safe": not wall and clearance > 0 and slack >= 6,
                                        "utility": utility-offense, "risk": damage_risk, "fire_reason": "attack_safety_withdrawal"})
         # Safety is lexicographic. If every option is unsafe, minimize modelled
@@ -324,6 +324,8 @@ class JointActionSolver:
                 forward_override = True
         self.last_candidates = candidates
         component_failures = [failure for module in modules.values() if (failure := module.pop_failure())]
+        mechanism_status=getattr(modules["fire"],"diagnostics",None)
+        mechanism=mechanism_status() if mechanism_status else None
         self.previous_move = best["move"]
         self.last_risk = min(1., best["risk"]/30)
         return ActionFrame(frame=s.frame, room_visit_id=s.room_visit_id, move=best["move"], shoot=best["shoot"],
@@ -340,5 +342,5 @@ class JointActionSolver:
                                "near_risk_tolerance_px": 8,
                                "occlusion_reposition": repositioning,
                                "navigation_forward_override": forward_override, "first_route_progress": best["first_route_progress"],
-                               "component_failures": component_failures},
+                               "component_failures": component_failures,"mechanism":mechanism},
                            decision_ms=(time.perf_counter()-started)*1000)

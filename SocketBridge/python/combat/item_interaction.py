@@ -87,7 +87,7 @@ class PickupExecutor:
                     session.log("pickup_boundary",reason="PICKUP_NO_PROGRESS",frame=current.frame,progress=watcher.feedback())
                     raise RuntimeError("PICKUP_NO_PROGRESS")
                 self.learning.mask(current)
-                action = await asyncio.to_thread(solver.solve,current,default_plan(session.context_ref(current,build)),build,True,instance.pos)
+                action = await asyncio.to_thread(solver.solve,current,default_plan(session.context_ref(current,build),family=build.family),build,True,instance.pos)
                 try: await session.send_action(current,action.move,(0,0),action.model_dump())
                 except TimeoutError as exc:
                     if "STALE_ACTION" not in str(exc): raise

@@ -20,6 +20,7 @@ class ComponentSpec:
 TARGET = {"switch_margin": (.15, .05, .5), "min_hold_ticks": (10, 0, 30)}
 POSITION = {"min_range_ratio": (.45, .2, .95), "max_range_ratio": (.8, .2, .95)}
 CATALOG = {}
+FAMILY_DEFAULTS = {"normal_tears":("aim.predictive","fire.normal_tears")}
 
 
 def register(name, parameters, description, inputs):
@@ -88,12 +89,15 @@ def compile_plan(value, context: ContextRef, capabilities=("normal_tears",)) -> 
     return plan
 
 
-def default_plan(context: ContextRef):
-    choices = ("target.threat_first", "position.kite", "aim.predictive", "fire.normal_tears", "evade.max_clearance", "escape.keep_routes", "recovery.local_repath")
+def default_plan(context: ContextRef, *, family="normal_tears"):
+    if family not in FAMILY_DEFAULTS:raise ValueError("UNSUPPORTED_BUILD: no compatible default plan")
+    aim,fire=FAMILY_DEFAULTS[family]
+    choices = ("target.threat_first", "position.kite", aim, fire, "evade.max_clearance", "escape.keep_routes", "recovery.local_repath")
     return compile_plan({"schema_version": 2, "context_ref": context.model_dump(), "default_profile": "safe",
         "profiles": {"safe": {x.split('.')[0]: {"component": x, "params": {}} for x in choices}},
         "switch_rules": [], "replan_on": ["confirmed_damage", "no_progress", "new_enemy_mechanism", "repeated_recovery", "invalid_profile"],
-        "rationale": {"summary": "Local deterministic fallback; not an LLM decision", "evidence_refs": []}}, context)
+        "required_capabilities":[family],
+        "rationale": {"summary": "Local deterministic fallback; not an LLM decision", "evidence_refs": []}}, context,capabilities=(family,))
 
 
 def specs():

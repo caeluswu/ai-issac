@@ -133,10 +133,16 @@ class NormalTearsBuild:
 
 
 class BuildResolver:
-    def __init__(self, adapters=None):
+    def __init__(self, adapters=None, mechanism_adapter=None):
         self.adapters = {1: NormalTearsBuild()} if adapters is None else adapters
         self.weapon_type = None
         self.epoch = 0
+        self.mechanism_adapter=mechanism_adapter
+        self.previous_semantic=None
+        self.run_id=None
+
+    def adapter_for(self,s):
+        return self.mechanism_adapter if self.mechanism_adapter and collectibles(s).get("69") else self.adapters[s.stats["weapon_type"]]
 
     def update(self, s):
         weapon = s.stats["weapon_type"]
@@ -144,4 +150,10 @@ class BuildResolver:
         if self.weapon_type is not None and weapon != self.weapon_type:
             raise ValueError("UNSUPPORTED_BUILD: weapon transition needs a compatible published transaction")
         self.weapon_type = weapon
-        return self.adapters[weapon].update(s)
+        adapter=self.adapter_for(s)
+        profile=adapter.update(s)
+        if self.run_id!=s.run_id:self.epoch=0;self.previous_semantic=None;self.run_id=s.run_id
+        semantic=(profile.family,profile.signature)
+        if semantic!=self.previous_semantic:self.epoch+=1;self.previous_semantic=semantic
+        profile.revision=self.epoch
+        return profile

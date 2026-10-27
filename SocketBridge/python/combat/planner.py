@@ -153,7 +153,7 @@ class Planner:
             ids = args.get("cell_ids", [])[:24]
             return {str(i): s.layout["cells"].get(str(i)) for i in ids}
         if name == "preview_plan":
-            plan = compile_plan(args["plan"], ref)
+            plan = compile_plan(args["plan"], ref,capabilities=(build.family,))
             action = JointActionSolver().solve(s, plan, build)
             return {"valid": True, "model_preview_only": True, "action": action.model_dump()}
         raise ValueError("Unknown read-only tool")
@@ -207,7 +207,7 @@ class Planner:
                     if any(i not in {e.instance_id for e in s.enemies} for group in result.enemy_groups for i in group.entity_refs):
                         raise ValueError("assessment references an absent entity")
                     return result
-                return compile_plan(value, ref)
+                return compile_plan(value, ref,capabilities=(build.family,))
             except (ValueError, TypeError, KeyError) as exc:
                 self.log("llm_validation_error", stage=kind, error=str(exc), repair=repairs)
                 if repairs >= (1 if context.get("feedback") or self.single_stage else 2): raise ValueError(f"{kind} failed validation within repair budget") from exc
@@ -227,11 +227,11 @@ class Planner:
     async def _plan(self, s, build, revision=0, feedback=None):
         ref, context = self.context(s, build, revision, feedback)
         if feedback or self.single_stage:
-            return await self.stage("plan", BattlePlan.model_json_schema(), default_plan(ref).model_dump(),
+            return await self.stage("plan", BattlePlan.model_json_schema(), default_plan(ref,family=build.family).model_dump(),
                                     context, s, build, ref)
         example = {"context_ref": ref.model_dump(), "enemy_groups": [], "primary_dangers": [],
                    "terrain_constraints": [], "weapon_opportunities": [], "recommended_tactics": [],
                    "unknowns": ["Unverified enemy mechanics"]}
         assessment = await self.stage("assessment", BattleAssessment.model_json_schema(), example, context, s, build, ref)
-        return await self.stage("plan", BattlePlan.model_json_schema(), default_plan(ref).model_dump(),
+        return await self.stage("plan", BattlePlan.model_json_schema(), default_plan(ref,family=build.family).model_dump(),
                                 context, s, build, ref, assessment.model_dump())

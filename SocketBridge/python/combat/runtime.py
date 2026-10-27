@@ -467,7 +467,7 @@ class CombatSession:
             current = self.observation.latest
             if current and (current.hostiles or current.bombs or current.hazards) and current.frame > pressed_frame and current.room_visit_id == s.room_visit_id and not current.paused and self.observation.fresh() and self.latest_acted != current.snapshot_id:
                 build = self.build_resolver.update(current)
-                guard = await asyncio.to_thread(self.solver.solve, current, default_plan(self.context_ref(current, build)), build, True)
+                guard = await asyncio.to_thread(self.solver.solve, current, default_plan(self.context_ref(current, build),family=build.family), build, True)
                 try: await self.send_action(current, guard.move, (0, 0), guard.model_dump())
                 except TimeoutError:
                     self.log("entry_guard_discarded", frame=current.frame)
@@ -512,7 +512,7 @@ class CombatSession:
                 build = await self.learning.apply(frozen,self.build_resolver,build)
                 await self.learning.prepare_room(frozen,build)
             if self.planner is None:
-                self.plan = default_plan(self.context_ref(frozen,build))
+                self.plan = default_plan(self.context_ref(frozen,build),family=build.family)
                 source = "local"
             else:
                 self.plan = await asyncio.wait_for(self.planner.plan(frozen,build,self.revision),180)
@@ -522,7 +522,8 @@ class CombatSession:
             self.log("plan_installed", source=source, plan=self.plan.model_dump())
         except Exception as exc:
             self.fallbacks += 1
-            self.plan = default_plan(self.context_ref(frozen, self.build_resolver.update(frozen)))
+            fallback_build=self.build_resolver.update(frozen)
+            self.plan = default_plan(self.context_ref(frozen, fallback_build),family=fallback_build.family)
             self.log("fallback", error=type(exc).__name__+": "+str(exc), plan=self.plan.model_dump())
         finally:
             if self.pause_owned:
@@ -595,7 +596,7 @@ class CombatSession:
                 build = self.build_resolver.update(s)
                 if plan is None or plan.context_ref.build_revision != build.revision:
                     await self.release()
-                    plan = default_plan(self.context_ref(s, build))
+                    plan = default_plan(self.context_ref(s, build),family=build.family)
                 navigator.solver.recovery_level = watcher.recovery_level
                 for event in watcher.events:
                     self.log("navigation_boundary", boundary=event.__dict__, progress=watcher.feedback())
@@ -673,7 +674,7 @@ class CombatSession:
                     self.log("environment_replan_started", frame=s.frame, feedback=feedback)
                 build = self.build_resolver.update(s)
                 solver.recovery_level = 2 if s.frame-progress >= 120 else 1 if s.frame-progress >= 30 else 0
-                action = await asyncio.to_thread(solver.solve, s, default_plan(self.context_ref(s, build)), build,
+                action = await asyncio.to_thread(solver.solve, s, default_plan(self.context_ref(s, build),family=build.family), build,
                                                 True, objective.goal, objective.allowed_devices)
                 action.state = "ENVIRONMENT"
                 action.diagnostics["environment_objective"] = objective.kind

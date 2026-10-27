@@ -31,6 +31,10 @@ def validate_result(method, value, context, snapshot, max_wait_frames):
         result = []
         for attack in value:
             if not isinstance(attack, AttackProposal): raise ValueError("expected AttackProposal")
+            if (type(attack.withdrawal_shoot) is not tuple or len(attack.withdrawal_shoot)!=2 or
+                    any(type(x) is not int or x not in (-1,0,1) for x in attack.withdrawal_shoot) or
+                    sum(abs(x) for x in attack.withdrawal_shoot)>1):
+                raise ValueError("invalid withdrawal input")
             if (type(attack.shoot) is not tuple or len(attack.shoot) != 2 or
                     any(type(x) is not int or x not in (-1, 0, 1) for x in attack.shoot) or
                     sum(abs(x) for x in attack.shoot) > 1):

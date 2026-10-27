@@ -350,14 +350,14 @@ class ThreatField:
         return fraction, best_slack, count
 
     def attack_safe(self, target, build, positions, hit, footprint=None):
-        if target is None or hit <= 0: return True
-        affected = [target]
+        if footprint is None and (target is None or hit <= 0): return True
+        affected = [target] if target is not None and hit > 0 else []
         if footprint:
             ax, ay, bx, by, width = footprint
             for enemy in self.snapshot.hostiles:
                 adapter = self.adapters.resolve(enemy)
                 radius = adapter.death_radius(enemy)
-                if (radius or not adapter.attack_allowed(enemy, self.snapshot)) and enemy.instance_id != target.instance_id and distance_segment(enemy.pos.x, enemy.pos.y, ax, ay, bx, by) <= enemy.collision_radius+width+enemy.vel.length()*12:
+                if (radius or not adapter.attack_allowed(enemy, self.snapshot)) and (target is None or hit<=0 or enemy.instance_id != target.instance_id) and distance_segment(enemy.pos.x, enemy.pos.y, ax, ay, bx, by) <= enemy.collision_radius+width+enemy.vel.length()*12:
                     affected.append(enemy)
         # Keep the blast reserve throughout an attack sequence. Waiting until
         # the final hit is too late when earlier tears are already in flight.

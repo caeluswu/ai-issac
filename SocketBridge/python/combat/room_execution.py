@@ -84,7 +84,7 @@ class RoomExecutor:
             else:
                 stable=None
                 build=session.build_resolver.update(s)
-                action=await asyncio.to_thread(solver.solve,s,default_plan(session.context_ref(s,build)),build,True)
+                action=await asyncio.to_thread(solver.solve,s,default_plan(session.context_ref(s,build),family=build.family),build,True)
                 try:await session.send_action(s,action.move,(0,0),action.model_dump())
                 except TimeoutError as exc:
                     if "STALE_ACTION" not in str(exc):raise
@@ -174,7 +174,7 @@ class RoomExecutor:
                     session.pending.cancel(); await asyncio.gather(session.pending, return_exceptions=True)
                     session.pending = None
                 session.revision += 1
-                session.plan = default_plan(session.context_ref(s, build))
+                session.plan = default_plan(session.context_ref(s, build),family=build.family)
                 session.previous_action = None
                 session.log("build_transaction", revision=build.revision, signature=build.signature,
                          changed_domains=build.changed_domains, plan=session.plan.model_dump())
@@ -196,7 +196,7 @@ class RoomExecutor:
                     value = session.pending.result()
                     if session.pending_reasons <= {"idle", "blocked", "stall", "no_progress", "oscillation"} and session.supervisor.last_progress > session.pending_started_frame:
                         raise ValueError("REPLAN_EVENT_RESOLVED: local recovery already made progress")
-                    session.plan = compile_plan(value, session.context_ref(s, build))
+                    session.plan = compile_plan(value, session.context_ref(s, build),capabilities=(build.family,))
                     session.revision += 1
                     session.solver.profile_name = None
                     session.log("plan_installed",source=getattr(session.planner,"last_source","deepseek")+"_replan",plan=session.plan.model_dump())
@@ -237,6 +237,7 @@ class RoomExecutor:
                 session.fallbacks += len(action.diagnostics["component_failures"])
                 session.event_reasons.add("invalid_profile")
                 session.log("component_fallback", frame=s.frame, failures=action.diagnostics["component_failures"])
+                if build.family!="normal_tears":return "UNSUPPORTED_MECHANISM"
             session.timings.append(decision_wall_ms)
             session.log.candidates(s.frame, session.solver.last_candidates)
             try:

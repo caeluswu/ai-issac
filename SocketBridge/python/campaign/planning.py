@@ -32,10 +32,10 @@ class FloorPlanner:
             value["context_ref"] = ref.model_dump()
             self.last_source = "deepseek_template"
             self.log("plan_template_rebound",key=key,context_ref=ref.model_dump())
-            return compile_plan(value,ref)
+            return compile_plan(value,ref,capabilities=(build.family,))
         try:
             value = await asyncio.wait_for(self.planner.plan(s,build,revision,feedback),20 if feedback else 45)
-            value = compile_plan(value,ref)
+            value = compile_plan(value,ref,capabilities=(build.family,))
             self.last_source = "deepseek"
             self.templates[key] = value.model_copy(deep=True)
             if len(self.templates)>32: self.templates.popitem(last=False)
@@ -43,4 +43,4 @@ class FloorPlanner:
         except BudgetExceeded as exc:
             self.last_source = "local_fallback"
             self.log("floor_request_budget_exhausted",error=str(exc),context_ref=ref.model_dump())
-            return default_plan(ref)
+            return default_plan(ref,family=build.family)
