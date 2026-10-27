@@ -1,6 +1,6 @@
 # M2-B 设计：DeepSeek 机制程序与道具扩展
 
-状态：待实现；M2-A 不依赖完整程序运行器。当前 DeepSeek 只配置已有组件，工程 Agent 编写的宿主代码不计为模型自主开发。来源接口见 [知识库合同](knowledge-project-interface-plan.zh-CN.md)，被动学习/P7 见 [学习机制](eid-local-learning-plan.zh-CN.md)，基础组件 DTO 见 [组件合同](component-contract.zh-CN.md)。
+状态：巧克力牛奶的 L1 程序开发与复用已完成狭窄可行性验收，包含宿主语法恢复；结果和未实现能力见 [M2-B 证据](evidence/phase-2b-validation.zh-CN.md)。其他机制分类及 L2 仍为设计。工程 Agent 编写的宿主代码不计为模型自主开发。来源接口见 [知识库合同](knowledge-project-interface-plan.zh-CN.md)，被动学习/P7 见 [学习机制](eid-local-learning-plan.zh-CN.md)，基础 DTO 见 [组件合同](component-contract.zh-CN.md)。
 
 本文件维护机制分类、产物等级与长期边界；当前首例、模块实施顺序、费用和验收由 [M2-B 详细计划](phase-2b-plan.zh-CN.md) 维护。
 

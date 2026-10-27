@@ -8,3 +8,6 @@
 *.jpg binary
 *.gif binary
 *.ico binary
+
+# 模型原始响应按字节校验，保留供应商原文的换行与格式错误。
+skills/**/model-response.json -text -eol

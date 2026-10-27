@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "task": "M2-B",
+  "scope": "bounded mechanism development and same-program process restart reuse feasibility",
+  "passed": true,
+  "program_sha256": "2f146c3dee844abedbb646268c64def479625c64e55c8e35ca744d8fdb784612",
+  "package_path": "skills/weapon.chocolate_milk/2f146c3dee844abedbb646268c64def479625c64e55c8e35ca744d8fdb784612",
+  "author": "deepseek",
+  "author_scope": "model_logic_host_syntax_recovery",
+  "normalization": {
+    "deleted": "]",
+    "kind": "delete_one_excess_closing_delimiter_v1",
+    "offset": 823,
+    "offset_unit": "unicode_code_points",
+    "original_sha256": "998e78200296483cf935a625d2ce3108d43993fe0cda32f8125379853f99233d",
+    "well_typed_results": 1
+  },
+  "raw_model_json_valid": false,
+  "raw_model_response_sha256": "998e78200296483cf935a625d2ce3108d43993fe0cda32f8125379853f99233d",
+  "response_model": "deepseek-flash",
+  "response_id": "f50abc81-d032-4f17-a90d-cc5b8a145fa6",
+  "engineering_semantic_edits": 0,
+  "runtime_trials": [
+    {
+      "id": "m2b-reused-20261027T072934144918Z",
+      "report_path": "artifacts/runs/m2b-reused-20261027T072934144918Z/report.json",
+      "report_sha256": "170515815252cc0daed80dfd6b0029616e09593f1e52caa1e2de5e01beccd470",
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "damage_half_hearts": 0,
+      "combat_ticks": 1046,
+      "wall_seconds": 38.54699999999866,
+      "decision_p95_ms": 11.533299999427982,
+      "decision_p99_ms": 12.314399995375425,
+      "max_no_progress_ticks": 158,
+      "boundaries": {
+        "stall": 8,
+        "no_progress": 4
+      },
+      "recovery_count": 7,
+      "origin": "reused",
+      "passed": true,
+      "program_sha256": "2f146c3dee844abedbb646268c64def479625c64e55c8e35ca744d8fdb784612",
+      "adopted_actions": 1082,
+      "applied_releases": 48,
+      "new_tears_observed": 28,
+      "max_program_call_ms": 0.7820999962859787,
+      "max_frame_fuel": 1236,
+      "generation_api_calls": 0,
+      "final_confirmed_control_mode": "MANUAL",
+      "first_combat": {
+        "room_index": 83,
+        "room_type": 1,
+        "room_shape": 1,
+        "enemies": [
+          [
+            217,
+            0
+          ]
+        ]
+      },
+      "released_actions": 50,
+      "initialization_observed": true,
+      "effective_program_actions": 1041,
+      "mechanism_failures": [],
+      "trace_sha256": "03ebb41a634fa88f66e4a9af86f1b61257b59a64649274a71cc5aa4afd57ebe8"
+    },
+    {
+      "id": "m2b-trial-20261027T072224227647Z",
+      "report_path": "artifacts/runs/m2b-trial-20261027T072224227647Z/report.json",
+      "report_sha256": "daec560a4433f8824eafa007302018b563cd3545ef714858ef8ea3151a4f748c",
+      "result": "ABORTED",
+      "success": false,
+      "error": "TimeoutError: GAME_CONNECTION_TIMEOUT",
+      "damage_half_hearts": 0,
+      "combat_ticks": 0,
+      "wall_seconds": 120.06299999999464,
+      "decision_p95_ms": null,
+      "decision_p99_ms": null,
+      "max_no_progress_ticks": 0,
+      "boundaries": {},
+      "recovery_count": 0,
+      "origin": "trial",
+      "passed": false,
+      "program_sha256": "2f146c3dee844abedbb646268c64def479625c64e55c8e35ca744d8fdb784612",
+      "adopted_actions": 0,
+      "applied_releases": 0,
+      "new_tears_observed": 0,
+      "max_program_call_ms": 0.0,
+      "max_frame_fuel": 0,
+      "generation_api_calls": 0,
+      "final_confirmed_control_mode": null,
+      "first_combat": null,
+      "released_actions": 0,
+      "initialization_observed": false,
+      "effective_program_actions": 0,
+      "mechanism_failures": [],
+      "trace_sha256": "9a47a88fea6eac225e0fb784d3f4aa3eef989c53014416f978b4d418df4314a8"
+    },
+    {
+      "id": "m2b-trial-20261027T072611362865Z",
+      "report_path": "artifacts/runs/m2b-trial-20261027T072611362865Z/report.json",
+      "report_sha256": "637243e91613ca49e2393a1ba965aa402ab549b7a4e117773ba21d0da3f97150",
+      "result": "CLEARED",
+      "success": true,
+      "error": null,
+      "damage_half_hearts": 0,
+      "combat_ticks": 1046,
+      "wall_seconds": 38.45299999999406,
+      "decision_p95_ms": 11.914700000488665,
+      "decision_p99_ms": 12.61499999964144,
+      "max_no_progress_ticks": 142,
+      "boundaries": {
+        "stall": 9,
+        "no_progress": 5
+      },
+      "recovery_count": 11,
+      "origin": "trial",
+      "passed": true,
+      "program_sha256": "2f146c3dee844abedbb646268c64def479625c64e55c8e35ca744d8fdb784612",
+      "adopted_actions": 1082,
+      "applied_releases": 48,
+      "new_tears_observed": 28,
+      "max_program_call_ms": 0.5393000028561801,
+      "max_frame_fuel": 1236,
+      "generation_api_calls": 0,
+      "final_confirmed_control_mode": "MANUAL",
+      "first_combat": {
+        "room_index": 83,
+        "room_type": 1,
+        "room_shape": 1,
+        "enemies": [
+          [
+            217,
+            0
+          ]
+        ]
+      },
+      "released_actions": 50,
+      "initialization_observed": true,
+      "effective_program_actions": 1041,
+      "mechanism_failures": [],
+      "trace_sha256": "ee8b2e346e8d33e8ad48d08ea04a0e52dbee5a9b27088af4f3967128d0191e6b"
+    }
+  ],
+  "budget": {
+    "max_requests": 4,
+    "max_input": 60000,
+    "max_output": 28672,
+    "base_limits": {
+      "max_requests": 3,
+      "max_input": 60000,
+      "max_output": 24576
+    },
+    "extension_authorization": "explicit_human_authorization_for_one_transport_retry",
+    "requests": 4,
+    "usage_known": 3,
+    "unknown_usage_attempts": 1,
+    "input_actual": 8112,
+    "output_actual": 16992,
+    "cost": null,
+    "attempts": [
+      {
+        "id": 1,
+        "reserved_input": 8882,
+        "reserved_output": 8192,
+        "actual_input": 2700,
+        "actual_output": 8192,
+        "settled": 1
+      },
+      {
+        "id": 2,
+        "reserved_input": 9113,
+        "reserved_output": 8192,
+        "actual_input": 2737,
+        "actual_output": 8192,
+        "settled": 1
+      },
+      {
+        "id": 3,
+        "reserved_input": 9113,
+        "reserved_output": 8192,
+        "actual_input": null,
+        "actual_output": null,
+        "settled": 0
+      },
+      {
+        "id": 4,
+        "reserved_input": 8882,
+        "reserved_output": 4096,
+        "actual_input": 2675,
+        "actual_output": 608,
+        "settled": 1
+      }
+    ]
+  },
+  "tests": {
+    "command": ".venv/Scripts/python.exe -m unittest discover -s SocketBridge/python/tests -t SocketBridge/python -q",
+    "count": 316,
+    "wall_seconds": 89.572,
+    "passed": true,
+    "additional_evidence_tests": {
+      "count": 2,
+      "passed": true,
+      "command": "python -m unittest tests.test_mechanism_evidence -q"
+    }
+  },
+  "task_state": "supported",
+  "limitations": [
+    "fixed-seed development initialization, not random win rate",
+    "one calibrated item/build only",
+    "model source required explicit typed syntax recovery",
+    "EID development-purpose text remains redacted; mechanism knowledge came from local measurements",
+    "no claim of fast or optimal combat; stalls and recoveries retained",
+    "per-call program timing is not total per-frame plugin timing",
+    "one canceled API request has unknown usage"
+  ],
+  "metric_definitions": {
+    "adopted_actions": "actions carrying the mechanism runtime context, including entry observation hooks",
+    "effective_program_actions": "actions whose accepted policy reason is program_hold, program_release or program_idle",
+    "audit_scope": "only events after mechanism_initialization_complete; feedback additionally matches room identity and frame"
+  },
+  "implementation_commit": "b087e36",
+  "published_package_commit": "1ab9912"
+}

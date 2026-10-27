@@ -1,7 +1,7 @@
-# 阶段任务契约；对应 docs/task-contract.zh-CN.md v0.6。
+# 阶段任务契约；对应 docs/task-contract.zh-CN.md v0.7。
 # draft：正式 M1/M2/M3 的场景与数值门槛待冻结；首房工程验收见 phase_one_validation。
 schema_version: 1
-contract_version: 6
+contract_version: 7
 status: draft
 contract_date: 2026-10-27
 contract_doc: docs/task-contract.zh-CN.md
@@ -11,7 +11,7 @@ environment:
   build: "1.7.9b.J835"
   platform: windows
   executable_sha256: BB9FDA2535D94AE72E7FD4CD7D4A87DC9BFC27417E86F8F9190BFEEB8C9F10C2
-  mod_main_lua_sha256: B866FCA6613D3AA66C30B00929BEC3667BB0E05058F1E2694B73F5C5ABD6361D
+  mod_main_lua_sha256: 39C02F841C285A0E5327F7E5AB433F784A75F47BE04834F541704BB0C96FBCC0
   launch_args: ["--luadebug"]
   verify_hashes_before_evaluation: true
   # 初始化时备份并配置；正式动作开始前核对，计时期间保持不变。
@@ -58,6 +58,20 @@ assist_profile:
   initialization_commands_recorded: true
 
 controller:
+  component_development:
+    stage: M2-B
+    provider: deepseek
+    entry: independent_development_command
+    program_language: typed_scalar_ast_v1
+    arbitrary_python_execution: forbidden
+    host_type_budget_and_independent_validation: required
+    raw_response_and_author_transform_provenance: required
+    activation: next_session_start_only
+    default_actual_request_limit: 3
+    default_single_output_tokens: 4096
+    thinking_mode: disabled
+    request_ledger_survives_restart: true
+    extra_request_requires_explicit_authorization: true
   lower:
     implementation: explicit_interruptible_state_machine
     update_basis: game_update_frame

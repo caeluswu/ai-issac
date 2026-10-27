@@ -1,6 +1,6 @@
 # 第二、三阶段路线：首层、模型扩展与 Mom
 
-当前：M1 有单房可行性证据；P0–P6 边界已修复，M2-A 已实现；首层可行性与覆盖见 [验收证据](evidence/phase-2a-validation.zh-CN.md)。后续开发入口为 [M2-B 详细计划](phase-2b-plan.zh-CN.md)，当前为方案；M2-A 实施边界见 [首层计划](phase-2a-plan.zh-CN.md)。本文件只维护里程碑与跨阶段取舍。
+当前：M1 有单房证据；P0–P6 边界已修复，M2-A 首层与 M2-B 狭窄模型程序扩展均有工程可行性证据，分别见 [首层验收](evidence/phase-2a-validation.zh-CN.md) 和 [机制验收](evidence/phase-2b-validation.zh-CN.md)。M2-B 合同见 [详细计划](phase-2b-plan.zh-CN.md)。下一里程碑为 M3-A 连续两层，不要求先完成全道具或主动实验。本文件只维护里程碑与跨阶段取舍。
 
 ## 1. 里程碑与独立成功证据
 
