@@ -48,6 +48,7 @@ class NormalTearsBuild:
         self.seen = set()
         self.seen_order = deque()
         self.speeds = deque(maxlen=60)
+        self.samples = deque(maxlen=60)
         self.revision = 0
         self.previous = None
         self.run_id = None
@@ -89,7 +90,7 @@ class NormalTearsBuild:
         scope = (s.run_id, calibration)
         if self.calibration_scope != scope:
             self.seed_speed = None
-            self.speeds.clear(); self.seen.clear(); self.seen_order.clear()
+            self.speeds.clear(); self.samples.clear(); self.seen.clear(); self.seen_order.clear()
             for tear in (s.projectiles["player_tears"] or [])[-2048:]:
                 key = (s.room_visit_id, tear.get("instance_id", tear.get("id")))
                 self.seen.add(key); self.seen_order.append(key)
@@ -114,7 +115,10 @@ class NormalTearsBuild:
             if owner is not None and owner != 1: continue
             if s.player.pos.distance(Vec(**tear["pos"])) < 35 and s.player.vel.length() < .5:
                 speed = Vec(**tear["vel"]).length()
-                if math.isfinite(speed) and 0 < speed < 1000: self.speeds.append(speed)
+                if math.isfinite(speed) and 0 < speed < 1000:
+                    self.speeds.append(speed)
+                    self.samples.append({"sample_id":digest([s.run_id,*key,"launch-speed-2"]),"value":speed})
+        p.calibration_observations = list(self.samples)
         p.calibration_samples = len(self.speeds)
         p.calibrated = len(self.speeds) >= 3
         p.calibration_source = "observed" if p.calibrated else "prior"

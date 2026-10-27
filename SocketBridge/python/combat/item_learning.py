@@ -14,6 +14,7 @@ class ItemLearning:
         self.pickups = PickupExecutor(self)
         self.active_experiments = False
         self.source_mode = source_mode
+        self.gateway.evidence_modes = self.evidence_modes()
 
     def mask(self, s):
         allowed = None
@@ -56,17 +57,18 @@ class ItemLearning:
         await asyncio.to_thread(self.gateway.store.record,"room",identity,{"context":{"run_id":s.run_id,"room_visit_id":s.room_visit_id},
             "result":result,"build_signature":build.signature,"calibration_key":build.calibration_key})
         if not build.calibrated or build.calibration_source != "observed" or build.calibration_samples < 3: return
-        measurement = {"value":build.tear_speed,"unit":"game_pixel/game_update","sample_count":build.calibration_samples,
-                       "snapshot_id":s.snapshot_id,"source_mode":self.source_mode,"extractor_version":1}
-        ref = await asyncio.to_thread(self.gateway.store.measurement,build.calibration_key,"launch_speed",measurement)
+        observed = await asyncio.to_thread(self.gateway.store.passive_measurement,
+            build.calibration_key,build.calibration_observations,self.source_mode)
+        if observed is None: return
+        ref, measured_value = observed
         previous = await asyncio.to_thread(self.gateway.store.retrieve,build.calibration_key)
         modes = self.evidence_modes()
         if any(c.get("source_mode") in modes for c in previous["counterexamples"]): return
         for claim in previous["local_claims"]:
-            if claim.get("source_mode") in modes and claim["metric"] == "launch_speed" and abs(claim["value"]-build.tear_speed)>max(1.,abs(claim["value"])*.35):
+            if claim.get("source_mode") in modes and claim["metric"] == "launch_speed" and abs(claim["value"]-measured_value)>max(1.,abs(claim["value"])*.35):
                 await asyncio.to_thread(self.gateway.store.contradict,claim["claim_id"],{"measurement_id":ref,"reason":"prediction_residual","snapshot_id":s.snapshot_id})
                 return
-        await asyncio.to_thread(self.gateway.store.accept_claim,build.calibration_key,"launch_speed",build.tear_speed,[ref])
+        await asyncio.to_thread(self.gateway.store.accept_claim,build.calibration_key,"launch_speed",measured_value,[ref])
 
     def evidence_modes(self):
         return {"simulated_game"} if self.source_mode == "simulated_game" else {"normal_play","development_initialization"}

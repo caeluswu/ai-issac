@@ -5,6 +5,7 @@ import json
 from .builds import collectibles, digest
 from .catalog import default_plan
 from .controller import JointActionSolver
+from .item_knowledge import pickup_authority
 
 
 class PickupExecutor:
@@ -13,7 +14,7 @@ class PickupExecutor:
 
     async def execute(self, session, start, build, pickup, decision):
         store = self.learning.gateway.store
-        intent_id = digest([start.run_id,pickup.instance_id,pickup.sub_type,pickup.price])
+        intent_id = digest([start.run_id,start.floor.instance_id if start.floor else None,start.room_visit_id,pickup.instance_id,pickup.variant,pickup.sub_type,pickup.price])
         previous = await asyncio.to_thread(store.get,"pickup",intent_id)
         if previous: return previous
         result = {"intent_id":intent_id,"encounter_id":decision.encounter_id,"decision_id":decision.decision_id,"result":"aborted","reason":"not_started"}
@@ -27,6 +28,8 @@ class PickupExecutor:
             if decision.decision != "take" or decision.build_revision != build.revision: raise ValueError("PICKUP_NOT_AUTHORIZED")
             stored = await asyncio.to_thread(store.get,"decision",decision.decision_id)
             if stored != json.loads(json.dumps(asdict(decision))): raise ValueError("PICKUP_DECISION_NOT_RECORDED")
+            if decision.target_signature != pickup_authority(start,build,pickup): raise ValueError("PICKUP_TARGET_NOT_AUTHORIZED")
+            if start.frame > decision.deadline_frame: raise ValueError("PICKUP_DECISION_EXPIRED")
             await session.release()
             await session.set_mode("FORCE_AI")
             stamp = session.observation.latest.snapshot_id
@@ -52,6 +55,8 @@ class PickupExecutor:
                     acquired = resource is not None and resources[resource] is not None and current.inventory.get(resource,0)>resources[resource]
                 emptied = instance is None or instance.is_empty is True
                 if acquired and emptied:
+                    if pickup.price > 0 and (resources["coins"] is None or current.inventory.get("coins") != resources["coins"]-pickup.price):
+                        raise RuntimeError("PICKUP_COST_NOT_CONFIRMED")
                     updated = session.build_resolver.update(current)
                     result.update(result="confirmed",reason="pickup_consumed_and_inventory_changed",build_revision=updated.revision,
                                   inventory_after=current.inventory,source_mode="normal_pickup")
@@ -65,11 +70,12 @@ class PickupExecutor:
                     await session.release()
                     current = await session.next_snapshot(after=current.snapshot_id)
                     continue
-                if (instance.sub_type,instance.price) != (pickup.sub_type,pickup.price): raise RuntimeError("PICKUP_CHANGED")
+                if (instance.variant,instance.sub_type,instance.price) != (pickup.variant,pickup.sub_type,pickup.price): raise RuntimeError("PICKUP_CHANGED")
                 if pickup.price and (current.inventory.get("coins") is None or current.inventory["coins"]-pickup.price < decision.reserve_coins):
                     raise RuntimeError("PICKUP_RESOURCE_BUDGET_CHANGED")
                 updated = session.build_resolver.update(current)
                 if updated.revision != build.revision: raise RuntimeError("PICKUP_BUILD_CHANGED")
+                if decision.target_signature != pickup_authority(current,updated,instance): raise RuntimeError("PICKUP_TARGET_NOT_AUTHORIZED")
                 self.learning.mask(current)
                 action = await asyncio.to_thread(solver.solve,current,default_plan(session.context_ref(current,build)),build,True,instance.pos)
                 try: await session.send_action(current,action.move,(0,0),action.model_dump())
@@ -82,7 +88,10 @@ class PickupExecutor:
             return result
         finally:
             self.learning.active_pickup = None
-            await session.release()
-            if session.bridge.connected: await session.set_mode("MANUAL")
+            try:
+                await session.release()
+                if session.bridge.connected: await session.set_mode("MANUAL")
+            except Exception as exc:
+                result.update(result="aborted", reason="PICKUP_CLEANUP_FAILED", cleanup_error=str(exc))
             await asyncio.to_thread(store.record,"pickup",intent_id,result)
             session.log("pickup_transaction",**result)

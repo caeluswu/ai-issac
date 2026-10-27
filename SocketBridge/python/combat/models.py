@@ -316,6 +316,7 @@ class BuildProfile(Strict):
     effective_range: float = 220
     fire_interval: float = 11
     calibrated: bool = False
+    calibration_observations: list[dict] = Field(default_factory=list, max_length=60)
     calibration_samples: int = 0
     inheritance_available: bool = False
     signature: str = ""

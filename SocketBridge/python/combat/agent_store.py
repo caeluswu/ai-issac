@@ -2,6 +2,8 @@
 import json
 from pathlib import Path
 import sqlite3
+import math
+import statistics
 from contextlib import contextmanager
 from .builds import digest
 
@@ -19,6 +21,7 @@ class AgentStore:
                 CREATE TABLE IF NOT EXISTS pickup_results(intent_id TEXT PRIMARY KEY,body TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS room_results(id TEXT PRIMARY KEY,body TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS measurements(id TEXT PRIMARY KEY,signature TEXT,metric TEXT,body TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS evidence_samples(signature TEXT,mode TEXT,sample_id TEXT,measurement_id TEXT,PRIMARY KEY(signature,mode,sample_id));
                 CREATE TABLE IF NOT EXISTS claims(id TEXT PRIMARY KEY,signature TEXT,metric TEXT,body TEXT NOT NULL,active INTEGER);
                 CREATE TABLE IF NOT EXISTS counterexamples(id TEXT PRIMARY KEY,claim_id TEXT,body TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS learning_tasks(id TEXT PRIMARY KEY,body TEXT NOT NULL);
@@ -60,6 +63,25 @@ class AgentStore:
             db.execute("INSERT OR IGNORE INTO measurements VALUES(?,?,?,?)",(identity,signature,metric,json.dumps(body,allow_nan=False)))
         return identity
 
+    def passive_measurement(self, signature, samples, mode):
+        """Atomically consume new physical samples; a cache is never evidence."""
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            new = {}
+            for sample in samples:
+                key, value = sample["sample_id"], sample["value"]
+                if not isinstance(key,str) or not key or type(value) not in (int,float) or not math.isfinite(value) or not .1 <= value <= 1000:
+                    raise ValueError("INVALID_PASSIVE_SAMPLE")
+                if not db.execute("SELECT 1 FROM evidence_samples WHERE signature=? AND mode=? AND sample_id=?",(signature,mode,key)).fetchone():
+                    new[key] = value
+            if len(new) < 3: return None
+            body = {"value":statistics.median(new.values()),"unit":"game_pixel/game_update",
+                    "sample_count":len(new),"sample_ids":sorted(new),"source_mode":mode,"extractor_version":2}
+            identity = digest([signature,"launch_speed",body])
+            db.execute("INSERT OR IGNORE INTO measurements VALUES(?,?,?,?)",(identity,signature,"launch_speed",json.dumps(body,allow_nan=False)))
+            db.executemany("INSERT INTO evidence_samples VALUES(?,?,?,?)",[(signature,mode,key,identity) for key in new])
+            return identity, body["value"]
+
     def accept_claim(self, signature, metric, value, evidence_refs):
         if not evidence_refs: raise ValueError("Claim requires measurements")
         identity = digest([signature,metric,value,sorted(evidence_refs)])
@@ -76,6 +98,13 @@ class AgentStore:
                 modes.add(observed.get("source_mode","unknown"))
             if len(modes) != 1: raise ValueError("Mixed evidence modes")
             body["source_mode"] = modes.pop()
+            rows = db.execute("SELECT id,body FROM claims WHERE signature=? AND metric=? AND active=1",(signature,metric)).fetchall()
+            for old_id, encoded in rows:
+                old = json.loads(encoded)
+                if old.get("source_mode") == body["source_mode"] and old["value"] == value:
+                    old["evidence_refs"] = sorted(set(old["evidence_refs"]+evidence_refs))
+                    db.execute("UPDATE claims SET body=? WHERE id=?",(json.dumps(old,allow_nan=False),old_id))
+                    return old_id
             inserted = db.execute("INSERT OR IGNORE INTO claims VALUES(?,?,?,?,1)",(identity,signature,metric,json.dumps(body,allow_nan=False))).rowcount
             if inserted: db.execute("UPDATE metadata SET value=CAST(value AS INTEGER)+1 WHERE key='experience_revision'")
         return identity

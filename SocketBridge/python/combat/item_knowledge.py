@@ -22,6 +22,13 @@ class PickupDecision:
     deadline_frame: int = 0
     decision_id: str = ""
     reserve_coins: int = 0
+    target_signature: str = ""
+
+
+def pickup_authority(s, build, pickup):
+    return digest([s.run_id, s.floor.instance_id if s.floor else None, s.room_visit_id,
+                   pickup.instance_id, pickup.variant, pickup.sub_type, pickup.price,
+                   build.revision, build.signature])
 
 
 class KnowledgeGateway:
@@ -72,15 +79,15 @@ class KnowledgeGateway:
                     else: reasons.append("INSUFFICIENT_COINS_OR_RESERVE")
                 else: decision="take"; cost=pickup.price; reasons.append("SUPPORTED_ITEM_WITH_DESCRIPTION")
                 benefits = [r["summary"]["text"] for r in records if r["summary"]["text"]]
-        elif pickup.variant == 20 and pickup.price == 0:
+        elif pickup.variant == 20 and pickup.sub_type in (1, 2, 3, 5) and pickup.price == 0:
             decision="take"; reasons.append("FREE_COIN")
-        elif pickup.variant == 30 and pickup.price == 0:
+        elif pickup.variant == 30 and pickup.sub_type in (1, 3) and pickup.price == 0:
             decision="take"; reasons.append("FREE_KEY")
-        elif pickup.variant == 40 and pickup.price == 0:
+        elif pickup.variant == 40 and pickup.sub_type in (1, 2) and pickup.price == 0:
             decision="take"; reasons.append("FREE_BOMB_PICKUP")
         else: reasons.append("PICKUP_STRATEGY_NOT_IMPLEMENTED")
         value = PickupDecision(encounter,decision,tuple(reasons),build.revision,
-            tuple(r["record_id"] for r in records),tuple(benefits),cost,s.frame+90,decision_id,reserve_coins)
+            tuple(r["record_id"] for r in records),tuple(benefits),cost,s.frame+90,decision_id,reserve_coins,pickup_authority(s,build,pickup))
         self.store.record("decision",decision_id,asdict(value))
         if decision != "take" and ("CAPABILITY_NOT_IMPLEMENTED" in reasons or "DESCRIPTION_PARTIAL_OR_MISSING" in reasons):
             self.store.record("task",digest([self.package.dataset_id,pickup.variant,pickup.sub_type,reasons]),{"dataset_id":self.package.dataset_id,"subject":{"variant":pickup.variant,"id":pickup.sub_type},"reasons":reasons,"state":"pending"})
@@ -97,6 +104,9 @@ class KnowledgeGateway:
                     if result["missing_facets"]: unknowns.append({"subject":result["subject"],"facets":result["missing_facets"]})
         experience = await asyncio.to_thread(self.store.retrieve, build.calibration_key)
         if experience["experience_revision"] != build.experience_revision: raise ValueError("EXPERIENCE_SNAPSHOT_CHANGED")
+        modes = getattr(self, "evidence_modes", {"normal_play", "development_initialization"})
+        for key in ("local_claims", "counterexamples"):
+            experience[key] = [c for c in experience[key] if c.get("source_mode") in modes]
         return {"bundle_schema_version":2,"bundle_id":digest([self.package.dataset_id,experience["experience_revision"],s.snapshot_id,subjects,purpose]),
             "dataset_id":self.package.dataset_id,"knowledge_revision":1,
             "context_ref":{"run_id":s.run_id,"floor_instance_id":s.floor.instance_id if s.floor else None,"room_visit_id":s.room_visit_id,

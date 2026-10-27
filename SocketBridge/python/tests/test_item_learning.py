@@ -116,6 +116,6 @@ class TestItemLearning(unittest.IsolatedAsyncioTestCase):
             reverted=await next_learning.apply(fresh,resolver,restored)
             self.assertNotEqual(reverted.calibration_source,"experience")
             # A simulated counterexample cannot block real-mode evidence.
-            measured=build.model_copy(update={"calibrated":True,"calibration_source":"observed","calibration_samples":3,"tear_speed":10.})
+            measured=build.model_copy(update={"calibrated":True,"calibration_source":"observed","calibration_samples":3,"tear_speed":10.,"calibration_observations":[{"sample_id":f"real:{i}","value":10.} for i in range(3)]})
             await real_learning.record_room(fresh,measured,{"result":"CLEARED"})
             self.assertEqual(len(real_learning.restore(measured)["calibration"]),1)

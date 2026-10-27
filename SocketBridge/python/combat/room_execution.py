@@ -65,45 +65,64 @@ class RoomExecutor:
         self.session.log("room_started", context=list(map(str, identity)))
 
     async def execute(self, s):
-        if self.results and self.context == self.identity(s) and self.results[-1]["result"] == "CLEARED" and s.alive and not self.session.death_observed and self.session.death_event_frame is None and not s.blocking_combat and s.room["is_clear"]:
-            return "CLEARED"
+        # Every visit checks current hazards; an old clear row is never authority.
         await self.enter(s)
-        result = "ABORTED"
+        result, combat_result, post_result = "ABORTED", "ABORTED", "NOT_RUN"
         started = s.frame
+        errors = []
+        current = s
         try:
-            result = await self._engage(s)
+            result = combat_result = await self._engage(s)
         finally:
             if self.state.pending:
-                self.state.pending.cancel(); await asyncio.gather(self.state.pending, return_exceptions=True)
+                self.state.pending.cancel()
+                await asyncio.gather(self.state.pending, return_exceptions=True)
                 self.state.pending = None
-            await self.session.release()
-            if self.session.bridge.connected: await self.session.set_mode("MANUAL")
-            if self.session.death_observed: result = "DEAD"
-            elif self.session.death_event_frame is not None: result = "REVIVAL_UNCONFIRMED"
-            current = self.session.observation.latest or s
+            current = self.session.observation.latest or current
+            try:
+                if result == "CLEARED" and self.session.learning:
+                    current = await self.session.learning.collect(self.session,current)
+                current = self.session.observation.latest or current
+                if self.identity(current) != self.identity(s): result = "POST_CLEAR_CONTEXT_CHANGED"
+                elif self.session.death_observed or not current.alive: result = "DEAD"
+                elif self.session.death_event_frame is not None: result = "REVIVAL_UNCONFIRMED"
+                elif not self.session.bridge.connected: result = "DISCONNECTED"
+                elif result == "CLEARED" and (current.blocking_combat or current.hostiles or not current.room["is_clear"]): result = "POST_CLEAR_NEW_THREAT"
+                elif result == "CLEARED" and (current.bombs or current.hazards or current.projectiles.get("enemy_projectiles") or any(x.get("is_enemy",True) for x in current.projectiles.get("lasers") or [])): result = "POST_CLEAR_UNSAFE"
+                post_result = "SAFE" if result == "CLEARED" else result
+            except Exception as exc:
+                result = post_result = "ITEM_BOUNDARY_FAILED"
+                errors.append(type(exc).__name__+": "+str(exc))
+            try:
+                await self.session.release()
+                if self.session.bridge.connected: await self.session.set_mode("MANUAL")
+            except Exception as exc:
+                errors.append("cleanup: "+str(exc))
+                result = "CLEANUP_FAILED"
             room_key = (s.floor.dimension, s.floor.room_list_index) if s.floor else s.room["room_idx"]
             known_room = not s.floor or s.floor.room_list_index is not None
             first = known_room and result == "CLEARED" and room_key not in self.cleared
-            if first:
-                if len(self.cleared) >= 1024: raise RuntimeError("FLOOR_ROOM_IDENTITY_LIMIT")
-                self.cleared.add(room_key)
-            row = {"room_visit_id": s.room_visit_id, "result": result, "first_clear": first,
-                   "ticks": max(0, current.frame-started), "damage": self.state.judge.damage,
-                   "bones_lost": self.state.judge.bones_lost}
+            row = {"room_visit_id":s.room_visit_id,"result":result,"combat_result":combat_result,
+                   "post_clear_result":post_result,"first_clear":first,"ticks":max(0,current.frame-started),
+                   "damage":self.state.judge.damage,"bones_lost":self.state.judge.bones_lost,
+                   "terminal_snapshot_id":current.snapshot_id,"alive":current.alive,
+                   "actionable":result == "CLEARED","errors":errors}
             if self.session.learning:
                 try:
                     build = self.session.build_resolver.update(current)
-                    if result == "CLEARED": await self.session.learning.collect(self.session,current)
+                    row.update(build_revision=build.revision,experience_revision=build.experience_revision)
                     await self.session.learning.record_room(current,build,row)
                 except Exception as exc:
-                    result = row["result"] = "ITEM_BOUNDARY_FAILED"
-                    row["error"] = type(exc).__name__+": "+str(exc)
-                    try:
-                        await self.session.learning.record_room(current,build,row)
-                    except Exception as storage_error:
-                        self.session.log("experience_write_failed",error=type(storage_error).__name__+": "+str(storage_error))
+                    result = row["result"] = "PERSISTENCE_FAILED"
+                    row["actionable"] = row["first_clear"] = False
+                    errors.append("record: "+str(exc))
+            if row["first_clear"]:
+                if len(self.cleared) >= 1024:
+                    result = row["result"] = "FLOOR_ROOM_IDENTITY_LIMIT"
+                    row["actionable"] = row["first_clear"] = False
+                else: self.cleared.add(room_key)
             self.results.append(row)
-            self.session.log("room_finished", **row)
+            self.session.log("room_finished",**row)
         return result
 
     async def _engage(self, s):
