@@ -72,13 +72,14 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 ## 文档导航
 
-完整目录及文档职责见 [docs 文档索引](docs/README.md)。当前执行入口是 M2-A 计划、首层运行手册和验收证据；历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
+完整目录及文档职责见 [docs 文档索引](docs/README.md)。后续开发从 M2-B 实施计划进入；当前可运行首层能力见首层运行手册和验收证据。历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
 
 | 入口 | 解决的问题 |
 |---|---|
 | [任务契约](docs/task-contract.zh-CN.md) / [总体架构](docs/architecture-plan.zh-CN.md) | 做什么，哪些辅助允许，模块如何分工 |
 | [P0–P6 实现审查](docs/phase-2a-preparation.zh-CN.md) | 当前能做什么，四个已复现问题及准入状态 |
 | [M2-A 详细实施计划](docs/phase-2a-plan.zh-CN.md) | A0–A7 的模块、预算与验收合同 |
+| [M2-B 详细实施计划](docs/phase-2b-plan.zh-CN.md) | DeepSeek 编写蓄力时序程序的 B0–B6 顺序、运行隔离、发布复用和验收；当前为方案 |
 | [首层运行手册](docs/phase-2a-runbook.zh-CN.md) / [验收证据](docs/evidence/phase-2a-validation.zh-CN.md) | 实际入口、完整首层证明及覆盖限制 |
 | [第二、三阶段路线](docs/phase-2-3-roadmap.zh-CN.md) | M2-B 模型开发组件与 M3 连续推进至 Mom 的边界 |
 | [运行手册](docs/phase-1-runbook.zh-CN.md) | 已实现入口的配置、启动和排错 |
