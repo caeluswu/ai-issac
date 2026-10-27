@@ -9,6 +9,7 @@ from campaign.budget import BudgetExceeded
 from combat.planner import EmptyModelResponse
 from .program import Program,ProgramError,canonical,sdk_contract,parse
 from .validation import validate_candidate
+from .normalization import model_program
 
 
 def skill_request(root,task):
@@ -64,14 +65,18 @@ class MechanismDeveloper:
             raw=None
             attempt=self.directory/"requests"/identity;attempt.mkdir(parents=True)
             (attempt/"messages.json").write_bytes(canonical(messages))
+            (attempt/"transport.json").write_bytes(canonical({"configured_model":self.client.model,
+                "max_tokens":getattr(self.client,"max_tokens",None),"thinking":getattr(self.client,"thinking",None),"retries":getattr(self.client,"retries",None)}))
             try:
                 raw,usage=await self.client.complete(messages)
                 (attempt/"response.json").write_bytes(raw.encode("utf-8"))
                 (attempt/"usage.json").write_bytes(canonical(usage))
-                decoded=parse(raw)
+                try:decoded=parse(raw)
+                except ProgramError:decoded=None
                 if isinstance(decoded,dict) and set(decoded)=={"requires_host_primitive"}:
                     result.update(status="requires_host_primitive",reason=str(decoded["requires_host_primitive"])[:1200]);break
-                program=Program(raw)
+                program,normalization=model_program(raw,allow_recovery=True)
+                (attempt/"normalization.json").write_bytes(canonical(normalization))
                 allowed={request["sources"]["local"]["source_id"]}
                 for res in request["sources"]["eid"].get("results",[]):
                     for record in res.get("records",[]):
@@ -87,6 +92,7 @@ class MechanismDeveloper:
                     (candidate/"program.json").write_bytes(canonical(program.document))
                     (candidate/"calibration.json").write_bytes(canonical(request["sources"]["local"]["calibration"]))
                     provenance={"author":self.author,"configured_model":self.client.model,"response_model":usage.get("response_model"),
+                        "normalization":normalization,"author_scope":"model_logic_host_syntax_recovery" if normalization["kind"]!="identity" else "model_program",
                         "task_id":request["task"].get("task_id"),
                         "response_id":usage.get("response_id"),"response_sha256":hashlib.sha256(raw.encode()).hexdigest(),
                         "program_sha256":program.sha256,"request_artifact":str(attempt),"task_request_sha256":hashlib.sha256(canonical(request)).hexdigest()}

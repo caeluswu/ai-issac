@@ -4,6 +4,7 @@ import asyncio
 import json
 from pathlib import Path
 import re
+import hashlib
 from combat.agent_store import AgentStore
 from combat.builds import digest
 from combat.item_knowledge import KnowledgeGateway
@@ -11,6 +12,9 @@ from combat.planner import DeepSeekClient,load_env
 from mechanisms.budget import DevelopmentBudget
 from mechanisms.developer import MechanismDeveloper,skill_request
 from mechanisms.store import SkillStore,read_candidate
+from mechanisms.normalization import model_program
+from mechanisms.program import canonical
+from mechanisms.validation import validate_candidate
 
 ROOT=Path(__file__).resolve().parents[3]
 
@@ -62,6 +66,36 @@ async def develop(identity,*,authorize_extra=False):
     return result
 
 
+def recover_response(identity,response_id):
+    if not re.fullmatch(r"[0-9a-f]{64}",identity) or not re.fullmatch(r"[0-9a-f]{32}",response_id):raise ValueError("INVALID_ARTIFACT_ID")
+    directory=ROOT/"artifacts/skill-development"/identity
+    request=json.loads((directory/"skill-request.json").read_text(encoding="utf-8"))
+    attempt=directory/"requests"/response_id
+    raw=(attempt/"response.json").read_bytes()
+    usage=json.loads((attempt/"usage.json").read_text(encoding="utf-8"))
+    program,normalization=model_program(raw,allow_recovery=True)
+    if normalization["kind"]=="identity":raise ValueError("RESPONSE_DOES_NOT_REQUIRE_SYNTAX_RECOVERY")
+    if not set(program.document["source_refs"]).issubset(request["allowed_source_refs"]):raise ValueError("UNBOUND_SOURCE_REFERENCE")
+    calibration=request["sources"]["local"]["calibration"]
+    validation=validate_candidate(program,calibration)
+    if not validation["passed"]:raise ValueError("RECOVERED_PROGRAM_FAILED_INDEPENDENT_CHECKS: "+json.dumps(validation["errors"]))
+    candidate=directory/"candidates"/program.sha256;candidate.mkdir(parents=True,exist_ok=False)
+    provenance={"author":"deepseek","author_scope":"model_logic_host_syntax_recovery","normalization":normalization,
+        "configured_model":None,"configured_model_source":"not_captured_before_initial_request",
+        "response_model":usage.get("response_model"),"response_id":usage.get("response_id"),"task_id":identity,
+        "response_sha256":hashlib.sha256(raw).hexdigest(),"program_sha256":program.sha256,"request_artifact":str(attempt),
+        "task_request_sha256":hashlib.sha256(canonical(request)).hexdigest()}
+    for name,value in (("program",program.document),("calibration",calibration),("provenance",provenance),("validation",validation)):
+        (candidate/(name+".json")).write_bytes(canonical(value))
+    previous=(directory/"result.json").read_bytes()
+    (directory/"result.before-syntax-recovery.json").write_bytes(previous)
+    result={"status":"validated_offline","candidate":str(candidate),"recovered_response":str(attempt),"normalization":normalization,
+            "generation_api_calls":0,"budget":DevelopmentBudget(directory/"budget.sqlite").report()}
+    (directory/"result.json").write_bytes(canonical(result))
+    agent_store().resolve_task(identity,"validated_offline",candidate)
+    return result
+
+
 def cli():
     parser=argparse.ArgumentParser(description=__doc__)
     commands=parser.add_subparsers(dest="command",required=True)
@@ -71,8 +105,10 @@ def cli():
     dev.add_argument("--authorize-one-extra-request",action="store_true",help="requires explicit human approval; preserves all prior attempts, adds at most one 4096-token request")
     publish=commands.add_parser("publish");publish.add_argument("candidate");publish.add_argument("--trial",required=True)
     quarantine=commands.add_parser("quarantine");quarantine.add_argument("program_sha256");quarantine.add_argument("--reason",required=True);quarantine.add_argument("--evidence",required=True)
+    recover=commands.add_parser("recover-response");recover.add_argument("task_id");recover.add_argument("response_id")
     args=parser.parse_args()
     if args.command=="record-probe":result=record_probe(args.probe_id)
+    elif args.command=="recover-response":result=recover_response(args.task_id,args.response_id)
     elif args.command=="list":
         with agent_store().connect() as db:rows=db.execute("SELECT id,body FROM learning_tasks ORDER BY id").fetchall()
         result=[{"task_id":identity,**json.loads(body)} for identity,body in rows if json.loads(body).get("subject",{}).get("id")==69]

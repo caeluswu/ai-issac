@@ -6,6 +6,7 @@ from uuid import uuid4
 from pathlib import Path
 from .program import Program,ProgramError,canonical
 from .validation import validate_candidate
+from .normalization import model_program
 
 
 def read_candidate(path):
@@ -17,7 +18,9 @@ def read_candidate(path):
     request=Path(provenance["request_artifact"])
     raw=(request/"response.json").read_bytes()
     usage=json.loads((request/"usage.json").read_text(encoding="utf-8"))
-    if (hashlib.sha256(raw).hexdigest()!=provenance.get("response_sha256") or Program(raw).sha256!=program.sha256 or
+    response,normalization=model_program(raw,allow_recovery=True)
+    if (hashlib.sha256(raw).hexdigest()!=provenance.get("response_sha256") or response.sha256!=program.sha256 or
+            normalization!=provenance.get("normalization",{"kind":"identity"}) or
             usage.get("response_id")!=provenance.get("response_id") or usage.get("response_model")!=provenance.get("response_model")):
         raise ProgramError("MODEL_RESPONSE_PROVENANCE_MISMATCH")
     validation=validate_candidate(program,calibration)
@@ -108,7 +111,9 @@ class SkillStore:
                 path.name!=p.sha256 or path.parent.name!=p.document["component_id"]):raise ProgramError("SKILL_PACKAGE_CORRUPT_OR_UNSUPPORTED")
         if not validate_candidate(p,calibration)["passed"]:raise ProgramError("SKILL_REVALIDATION_FAILED")
         raw=(path/"model-response.json").read_bytes()
-        if hashlib.sha256(raw).hexdigest()!=manifest["provenance"].get("response_sha256") or Program(raw).sha256!=p.sha256:
+        response,normalization=model_program(raw,allow_recovery=True)
+        if (hashlib.sha256(raw).hexdigest()!=manifest["provenance"].get("response_sha256") or response.sha256!=p.sha256 or
+                normalization!=manifest["provenance"].get("normalization",{"kind":"identity"})):
             raise ProgramError("PUBLISHED_MODEL_RESPONSE_MISMATCH")
         return p,calibration,manifest
 
