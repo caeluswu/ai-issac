@@ -76,7 +76,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 道具按 ID 查询；动态/运行时说明不保证覆盖，缺资料或不完整解析会明确返回状态。`partial` 表示已有说明而条件/协同未穷尽，并不等于查询失败；未知 ID 不制造知识条目。SQLite 写入失败返回错误，不宣称入库成功。安装包缺失时先执行准备脚本。排错与复现见 [EID 单道具验证](docs/evidence/eid-item-knowledge-validation.zh-CN.md)。
 
-`--with-items` 启用实验性的本地说明、拾取、避让和被动记录。原有收藏品映射为 1/4/12 的简单属性、20 的飞行以及不使用主动效果的 105；启动时加载已发布的 [机制库](skills/README.md) 后，可在校准匹配的基础 Isaac 构筑下接纳 69。69 与其他属性道具/饰品/临时效果的组合仍拒绝；不能把已发布程序等同于全道具支持。未知机制、复杂武器和健康交易明确拒绝。普通资源按已验证子型处理，首层另支持有限红/魂心；这仍是有限策略。边界及历史审查见 [准备状态](docs/phase-2a-preparation.zh-CN.md)。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git；遭遇、决策前态、拾取确认、房间结果、测量、结论和反例可追溯。
+`--with-items` 启用本地说明、拾取、避让和被动记录。限定收藏品支持 1/4/12/27/32/50 的实际属性、20 的飞行、69 的校准蓄力程序，以及不使用主动效果的 105。已发布的妈妈的菜刀 114 JS 组件可在普通拾取后加载，经无怪短测校准再进入战斗；114 与 69 的组合仍不支持。其他未知机制、饰品和健康交易不能由面板变化自动放行。普通资源按已验证子型处理，首层另支持有限红/魂心；这仍是有限策略。范围和固定种子证据见 [M2-C 道具适配记录](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git。
 
 开发用实机核验入口为 `scripts/validate_m2_preparation_live.py`：会自动重开固定场景，并在记录的初始化环节生成道具，再正常拾取和战斗。其结果仅验证机制，不是正常随机对局胜率；不作为日常启动命令。
 
@@ -101,7 +101,19 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 .\.venv\Scripts\python.exe analyze_damage.py summarize artifacts/runs/<run>/damage
 ```
 
-首轮已审核三次历史运行中的六次受伤，实际使用3次请求，已达到本轮子上限；M2-C总上限24次，不能通过重启重置。API原文、失败、用量和开发Agent审核分别保存。六例结论均为部分合理：能支持来源与部分接触假设，但存在单位、方位或跨案例引用错误。详见 [归因审核与下一步](docs/evidence/phase-2c-attribution-review.zh-CN.md) 和 [M2-C实施计划](docs/phase-2c-plan.zh-CN.md)。当前停止于审核交付，JS通用组件、当局加载与自动改代码尚未实现，M3暂缓。
+首轮已审核三次历史运行中的六次受伤，实际使用 3 次请求；API 原文、失败、用量和开发 Agent 审核分别保存。六例结论均为部分合理，存在单位、方位或跨案例引用错误。详见 [归因审核](docs/evidence/phase-2c-attribution-review.zh-CN.md)。M2-C 的 JS 运行和菜刀局内采用已有实机证据；另有用户授权追加的一次模型战后反馈决定保留程序，开发审核指出其玩家/敌人血量语义错误。自动修订尚无验收。M2-C 合计 7 次实际请求，24 次总上限不能通过重启重置。
+
+## M2-C 道具适配实机复核
+
+以下入口会重开 J835 游戏，并以固定种子和开发初始化设置道具；正常战斗仍通过移动、射击完成。`--reuse` 使用已发布菜刀模型，不调用 DeepSeek；原始轨迹和报告写入 `artifacts/runs/`。
+
+```powershell
+.\.venv\Scripts\python.exe scripts/validate_knife_live.py --reuse --pedestal
+.\.venv\Scripts\python.exe scripts/validate_knife_live.py --reuse --pedestal --attributes 4 27 32 50
+.\.venv\Scripts\python.exe scripts/validate_item_matrix_live.py --charge --attributes 4 27 32 50
+```
+
+菜刀基础构筑有确认的中距离投掷命中；上述属性组合已清房并确认刀伤，但那次运行没有确认投掷命中。详情见 [道具适配证据](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。
 
 ## 机制程序开发（M2-B）
 
@@ -125,7 +137,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 ## 文档导航
 
-完整目录及文档职责见 [docs 文档索引](docs/README.md)。当前任务从 M2-C 计划和归因审核进入，M3 暂缓；M2-B 和首层能力分别以各自验收为准。历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
+完整目录及文档职责见 [docs 文档索引](docs/README.md)。M2-A 首层、M2-B 蓄力程序、M2-C 有限道具适配均有各自的实机范围；M3 连续多层仍需独立验收。历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
 
 | 入口 | 解决的问题 |
 |---|---|

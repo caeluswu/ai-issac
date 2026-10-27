@@ -1,6 +1,6 @@
 # 文档索引与维护边界
 
-当前范围为单房、有限道具、首层控制、DeepSeek 蓄力时序程序，以及 M2-C 首轮受伤归因/API总结/独立审核。局内通用 JS 组件与自动优化仍为设计，M3 暂缓。实机覆盖、全部失败与 API 用量以证据为准。
+当前实现包括单房与首层控制、有限道具、DeepSeek 蓄力时序程序、受伤归因，以及妈妈的菜刀 JavaScript 组件的短测、加载、实机清房、战后保留决策与复用。模型修订后的局内试用和 M3 连续多层仍缺独立验收。实机覆盖、全部失败与 API 用量以证据为准。
 
 建议阅读顺序：任务契约 → 总体架构 → M2-A 验收 → M2-B 计划 → 需要的专项合同。日常启动与付费验证政策从 [项目 README](../README.md) 进入。
 
@@ -13,7 +13,7 @@
 | [P0–P6 实现审查](phase-2a-preparation.zh-CN.md) | 当前准备状态、源码缺口、四项离线复现与 A0 准入要求 |
 | [M2-A 详细计划](phase-2a-plan.zh-CN.md) | 首层范围、状态机、模块接口、预算、A0–A7 提交与验收 |
 | [M2-B 详细计划](phase-2b-plan.zh-CN.md) | 首例蓄力组件、B0–B6 合同、开发预算及范围；结果由对应验收维护 |
-| [M2-C 实施计划](phase-2c-plan.zh-CN.md) | 当前受伤采集/归因/审核接口与首轮边界，后续重构入口 |
+| [M2-C 实施计划](phase-2c-plan.zh-CN.md) | 受伤归因、有限道具适配、模型组件合同与后续反馈边界 |
 | [第二、三阶段路线](phase-2-3-roadmap.zh-CN.md) | M2-A、M2-B、M3 的里程碑和阶段衔接，不复制当前工作队列 |
 | [组件合同](component-contract.zh-CN.md) | 组件 DTO、能力、生命周期、宿主校验与限额 |
 | [V2 观测合同](observation-v2.zh-CN.md) | Lua/Python 结构化状态、字段语义、覆盖与兼容性 |
@@ -42,6 +42,7 @@
 | [M2-B 验收](evidence/phase-2b-validation.zh-CN.md) | 模型作者/语法恢复、独立检查、实机清房、进程复用、全部请求与启动失败 |
 | [EID 单道具验证](evidence/eid-item-knowledge-validation.zh-CN.md) | 实际 69 正文、按查询入库、跨进程复用及开发上下文；无付费调用 |
 | [M2-C 归因审核](evidence/phase-2c-attribution-review.zh-CN.md) | 六次历史受伤、三次实际API请求、逐例开发Agent审核与下一步判断 |
+| [M2-C 道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md) | 属性、69、菜刀114的实机矩阵、模型来源、失败和适用边界 |
 | [当前准备审查诊断 JSON](../artifacts/validation/m2-readiness-audit.json) | 合成场景复现四项边界缺陷；不是游戏损失记录 |
 
 ## 归档方案与源码参考
