@@ -1,12 +1,14 @@
 # 第一阶段优化：端到端可行性验收
 
+> 历史阶段资料；当前执行状态与已知缺陷以 [P0–P6 审查](../phase-2a-preparation.zh-CN.md) 和 [M2-A 计划](../phase-2a-plan.zh-CN.md) 为准。本文保留对应版本的设计或证据，不作为当前完成清单。
+
 验收日期：2026-10-26。控制实现：`50eb92ae3f33a20e19530cd159c706687b49cda0`。
 
 ## 结论
 
 **第一阶段端到端可行性验收通过，保留已知限制。** 已有实机证据覆盖自动启动、恢复存档基线、连接、普通房搜索与回溯、入房原生暂停、DeepSeek 配置组件、恢复游戏、正常移动和射击清房，以及释放输入并恢复 MANUAL。
 
-本结论证明工程链路和底层组件可以完成当前目标，不证明任意种子稳定通关、LLM 优于规则、整层能力或 SOTA。付费大样本评测和消融暂缓，执行原则与后续实验清单见 [README](../README.md#验证与付费-api-原则)。
+本结论证明工程链路和底层组件可以完成当前目标，不证明任意种子稳定通关、LLM 优于规则、整层能力或 SOTA。付费大样本评测和消融暂缓，执行原则与后续实验清单见 [README](../../README.md#验证与付费-api-原则)。
 
 ## 固定范围
 
@@ -48,10 +50,10 @@ DeepSeek 成功样本平均战斗时间为 10.45 游戏秒；十二次实际运�
 
 ## 证据与复现
 
-- [独立可行性审计](../artifacts/phase-1-optimization-20261026/qualification-final-20261026T041644Z/feasibility-audit.json)
-- [逐次证据索引](../artifacts/phase-1-optimization-20261026/qualification-final-20261026T041644Z/evidence-index.json)
-- [测试记录](../artifacts/phase-1-optimization-20261026/test-results.json)与[性能基准](../artifacts/phase-1-optimization-20261026/benchmark.json)
-- [片头故障注入](../artifacts/phase-1-optimization-20261026/launcher-intro-handshake/fault-injection.json)与[存档确认故障注入](../artifacts/phase-1-optimization-20261026/launcher-handshake/fault-injection.json)
+- [独立可行性审计](../../artifacts/phase-1-optimization-20261026/qualification-final-20261026T041644Z/feasibility-audit.json)
+- [逐次证据索引](../../artifacts/phase-1-optimization-20261026/qualification-final-20261026T041644Z/evidence-index.json)
+- [测试记录](../../artifacts/phase-1-optimization-20261026/test-results.json)与[性能基准](../../artifacts/phase-1-optimization-20261026/benchmark.json)
+- [片头故障注入](../../artifacts/phase-1-optimization-20261026/launcher-intro-handshake/fault-injection.json)与[存档确认故障注入](../../artifacts/phase-1-optimization-20261026/launcher-handshake/fault-injection.json)
 - 完整原始轨迹位于本地 `artifacts/runs/`，文本证据保留轨迹 SHA-256；存档二进制和凭据不入库。
 
 ```powershell

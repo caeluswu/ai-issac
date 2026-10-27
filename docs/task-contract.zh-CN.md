@@ -17,7 +17,7 @@
 
 “妈腿”在本契约指 Mom，不是 Mom's Heart、Mother 或 It Lives。M3 是从第一层正常开局，逐层推进到第六层并击败 Mom；具体楼层和实体标识须在此构建中采样确认。
 
-SocketBridge 实机探针已证明状态、正常移动与射击、停发释放输入及正常过门可用，见 docs/control-mvp-live-validation.zh-CN.md；首房控制器已完成一次正常出门、DeepSeek 配置与自主清房的实机闭环；这不构成稳定胜率或楼层规划能力的证明，实测结果见 docs/phase-1-live-validation.zh-CN.md。
+SocketBridge 实机探针已证明状态、正常移动与射击、停发释放输入及正常过门可用，见 [控制 MVP 实机记录](evidence/control-mvp-live-validation.zh-CN.md)；首房控制器已完成一次正常出门、DeepSeek 配置与自主清房的实机闭环；这不构成稳定胜率或楼层规划能力的证明，实测结果见 [第一阶段实机验收](evidence/phase-1-live-validation.zh-CN.md)。
 
 ## 2. 分阶段任务与成功事件
 

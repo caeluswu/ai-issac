@@ -1,5 +1,7 @@
 # SocketBridge 控制可行性 MVP：忏悔原版实机记录
 
+> 历史阶段资料；当前执行状态与已知缺陷以 [P0–P6 审查](../phase-2a-preparation.zh-CN.md) 和 [M2-A 计划](../phase-2a-plan.zh-CN.md) 为准。本文保留对应版本的设计或证据，不作为当前完成清单。
+
 验证日期：2026-10-24。游戏日志确认版本为 **The Binding of Isaac: Repentance v1.7.9b.J835**。测试使用项目目录中的游戏副本、`--luadebug`、第三存档及本地 SocketBridge 补丁。开始前的用户文档和游戏模拟器存档备份位于 `D:\internship1\issac\artifacts\preflight-backup-20261024`。
 
 ## 验证结果

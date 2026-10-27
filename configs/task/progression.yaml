@@ -179,7 +179,7 @@ open_items:
 # 第一阶段工程链路验收；不代替 M1 稳定胜率门槛。
 phase_one_validation:
   status: engineering_verified
-  report: docs/phase-1-live-validation.zh-CN.md
+  report: docs/evidence/phase-1-live-validation.zh-CN.md
   implementation_commit: 72ab465
   seed_manifest: artifacts/phase-1-validation-20261026/seeds.json
   paired_regression_samples: 10
@@ -202,7 +202,7 @@ verification_policy:
 
 phase_one_optimization_validation:
   status: feasibility_verified_with_known_limitations
-  report: docs/phase-1-optimization-validation.zh-CN.md
+  report: docs/evidence/phase-1-optimization-validation.zh-CN.md
   evidence: artifacts/phase-1-optimization-20261026/qualification-final-20261026T041644Z/feasibility-audit.json
   implementation_commit: 50eb92ae3f33a20e19530cd159c706687b49cda0
   local_tests_passed: 207

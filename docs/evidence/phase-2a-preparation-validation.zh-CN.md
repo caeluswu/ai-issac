@@ -1,5 +1,7 @@
 # M2-A 前置准备 P3–P6 准入报告
 
+> 历史阶段资料；当前执行状态与已知缺陷以 [P0–P6 审查](../phase-2a-preparation.zh-CN.md) 和 [M2-A 计划](../phase-2a-plan.zh-CN.md) 为准。本文保留对应版本的设计或证据，不作为当前完成清单。
+
 日期：2026-10-26。目标：忏悔原版 `1.7.9b.J835`、普通 Isaac、普通难度、全解锁槽 1。范围为进入 M2-A 开发所需的基础能力；不包含首层路线、Boss 集成和正常离层。
 
 ## 1. 结论与准入边界
@@ -53,7 +55,7 @@ P7 主动实验关闭且未实现；M2-A 不依赖它。P8 为组件、预算、
 
 实机使用 `scripts/validate_m2_preparation_live.py`。仅在记录的初始化阶段通过 `spawn 5.100.1` 创建属性道具，之后通过正常移动拾取、出门、射击战斗；没有控制台清怪、无敌或战中修改。**这是 development_initialization 机制夹具，不是正常随机对局成绩或主动实验功能。**
 
-成功原始目录：`artifacts/runs/m2-preparation-20261026T124510333172Z/`。可入库摘要：[m2-preparation.json](../artifacts/validation/m2-preparation.json)。原始轨迹、日志和存档备份留在本地忽略目录，不公开存档数据。
+成功原始目录：`artifacts/runs/m2-preparation-20261026T124510333172Z/`。可入库摘要：[m2-preparation.json](../../artifacts/validation/m2-preparation.json)。原始轨迹、日志和存档备份留在本地忽略目录，不公开存档数据。
 
 | 指标 | 结果 |
 |---|---|

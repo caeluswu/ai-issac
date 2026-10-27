@@ -1,5 +1,7 @@
 # 第一阶段实机验收：自动启动、出门与首房清理
 
+> 历史阶段资料；当前执行状态与已知缺陷以 [P0–P6 审查](../phase-2a-preparation.zh-CN.md) 和 [M2-A 计划](../phase-2a-plan.zh-CN.md) 为准。本文保留对应版本的设计或证据，不作为当前完成清单。
+
 验收日期：2026-10-26。实现提交：`72ab465`，分支：`codex/phase1-auto-start`。
 
 ## 1. 结论与范围
@@ -97,4 +99,4 @@ LLM 组平均游戏战斗时间较短、失血较少，但暂停推理使控制�
 .\.venv\Scripts\python.exe scripts/audit_phase1.py artifacts/runs/batch-20261025T161249930368Z --output artifacts/tmp-llm-audit.json
 ```
 
-组件、权限与日志语义见 [运行手册](phase-1-runbook.zh-CN.md)；总体任务边界见 [任务契约](task-contract.zh-CN.md)。
+组件、权限与日志语义见 [运行手册](../phase-1-runbook.zh-CN.md)；总体任务边界见 [任务契约](../task-contract.zh-CN.md)。

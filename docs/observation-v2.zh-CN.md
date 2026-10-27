@@ -31,7 +31,7 @@ V2 保留 V1 的 room、layout、player、stats、health、inventory、敌人及
 
 计划 `ContextRef` 增加可空 floor_instance_id，目录修订可为正整数或非空版本字符串。运行器、规划器与求解器均绑定楼层身份、构筑和经验修订；显式过期提案或缺少当前 V2 楼层身份的计划不可执行。BuildResolver 根据实际观测发布构筑修订，不依赖描述文字加算属性。
 
-`inventory.queued_collectible_id` 为原版 `player.QueuedItem.Item.ID` 的可选读数：0 表示无队列，缺失表示 API 不可用。收藏品接触后底座可能先清空，动画结束才入库；队列只证明待交付，不证明拥有。拾取执行器默认接近预算 90 更新，消费后确认预算 30 更新；明确观察到对应待入库项时确认预算为 90 更新，总循环不超过 180 次。等待期间释放移动射击，仍检查新威胁、失血、换房、断线及事务期限；成功必须有实际库存增量。依据见 [EntityPlayer 队列说明](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html#queueditem)，J835 验证见 [P3–P6 报告](phase-2a-preparation-validation.zh-CN.md)。
+`inventory.queued_collectible_id` 为原版 `player.QueuedItem.Item.ID` 的可选读数：0 表示无队列，缺失表示 API 不可用。收藏品接触后底座可能先清空，动画结束才入库；队列只证明待交付，不证明拥有。拾取执行器默认接近预算 90 更新，消费后确认预算 30 更新；明确观察到对应待入库项时确认预算为 90 更新，总循环不超过 180 次。等待期间释放移动射击，仍检查新威胁、失血、换房、断线及事务期限；成功必须有实际库存增量。依据见 [EntityPlayer 队列说明](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html#queueditem)，J835 验证见 [P3–P6 报告](evidence/phase-2a-preparation-validation.zh-CN.md)。
 
 ## 验证与复现
 

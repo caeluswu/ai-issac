@@ -75,46 +75,9 @@ uv pip install --python .venv\Scripts\python.exe -r SocketBridge\python\requirem
 
 本地诊断成功只证明本地控制链路，不代表 LLM 规划验收。生产入口遇到 API 故障会记录降级，并用本地默认组件尝试完成当前房间。退出码为 0 的完整条件是清房成功且入房 LLM 规划成功；本地诊断入口允许无 LLM 的清房成功。DeepSeek 使用可取消的异步 HTTP 客户端，进入控制前初始化 TLS，整次运行复用连接池，退出时关闭。`wall_seconds` 记录控制会话，批量报告的 `process_wall_seconds` 记录完整子进程耗时。
 
-## 实现分层
+## 架构与当前状态
 
-| 文件 | 职责 |
-|---|---|
-| `SocketBridge/main.lua` | `COMBAT_FRAME` 原子观测、房间访问标识、完整输入、两帧观测租约校验、动作接收回执、输入回调读取证据、三更新帧失效释放、暂停心跳 |
-| `combat/models.py` | 严格计划结构、世界快照、构筑、动作、回执和房间报告 |
-| `combat/observation.py` | 快照去重、缺失字段拒绝、独立失血与清房判定 |
-| `combat/catalog.py` | 七个组件槽位、合法名称、参数默认值和上下界、互斥及上下文校验 |
-| `combat/geometry.py` | 原版碰撞网格、房间外形、玩家与泪弹通行分离、A*、线段碰撞及逃生区域 |
-| `combat/components.py` | 可替换目标、站位、瞄准、武器、躲避、逃生与恢复实现，攻击及等待证据契约 |
-| `combat/threats.py` | 可注入敌人机制、时间区间危险、时空索引、逃生路径与死亡后果检查 |
-| `combat/supervision.py` | 强制进展监督、边界计时、恢复级别与未恢复停滞判定 |
-| `combat/controller.py` | 注册组件调度、目标迟滞、联合动作搜索、路径进展与计算预算 |
-| `combat/planner.py` | DeepSeek JSON 请求、分析与配置两阶段、只读工具、参数修复、Wiki 缓存 |
-| `combat/runtime.py` | 唯一动作发送者、原生暂停协调、异步重规划、运行日志和清理 |
-| `combat/launcher.py` | 版本检查、选项与存档备份、模组同步、进程管理、菜单引导及启动证据 |
-| `apps/auto_first_room.py`、根目录启动脚本 | 自动启动与首房任务的统一入口 |
-| `apps/first_room.py` | 配置加载与运行入口 |
-
-动作求解枚举九种移动；武器模块提出攻击候选，普通泪弹最多四方向，有效攻击不存在时才提出停火。先计算 12 更新帧的运动与危险，并检查 45 帧内逃生路径及至少六帧余量，再执行一个动作。组件的 `begin_frame` 只在每次求解开始执行，候选生成不得推进武器状态；组件应自行对相同游戏帧去重。v1 计划经显式转换为 v2。参数校验后才允许装载计划。规划上下文使用运行、房间访问、构筑、组件目录及计划版本；旧房间结果被拒绝，单纯游戏帧前进不会使有效计划过期。
-
-新增武器时，向 `BuildResolver` 注册对应游戏武器类型的构筑适配器，并注册匹配的武器、瞄准组件及能力声明。武器的 `firing_route` 决定攻击几何，`propose` 返回 `AttackProposal`；站位组件包装成 `MotionProposal`，调度器不假设所有武器都使用四方向弹道。状态只在 `begin_frame` 推进，候选评估必须只读。首阶段生产注册表只允许普通泪弹；模拟蓄力族验证完整注册、编译、站位和攻击替换。未注册的真实武器直接停止。
-
-移动目标与开火目标分别记录。普通泪弹在主目标之外检查至多七个最近的可攻击对象，最多仍提出四个方向；主目标暂时无法命中时，可以对其他对象保持输出。安全服务检查整条攻击射线上的爆炸与禁止攻击对象，不以候选目标数量裁剪危险感知。敌人适配器的 `attack_allowed` 可表达阶段性禁攻，不需要修改动作求解器。
-
-敌人通过 `EnemyAdapters` 按类型/变体注册预测模块，输出带有效时间和误差的 `ThreatForecast`。固定安全服务生成 `SafetyAssessment`，`ProgressSupervisor` 输出 `ProgressEvidence` 与 `BoundaryEvent`；这些契约不是自由文本指令。组件抛出异常时通过 `ResilientComponent` 切换到预置替代实现，并记录故障、计入降级次数和请求诊断。
-
-导航使用带余量的半径，物理滚动预测以观测到的实体碰撞半径为保守初值。实体半径并非精确网格碰撞体积：若击退后的真实位置落入模型墙体余量，允许减少既有重叠的脱离动作，禁止继续深入或进入危险机关。普通墙体阻挡对应轴，允许沿墙滑动。有安全候选时优先满足完整约束；全候选不安全时，先保留近三帧没有预测接触的动作。若都预测接触，则在最小近程穿透量加 8 像素的误差带内优先选择真实撤退路，再比较整段最坏风险、累计暴露和进攻收益。预测穿透量不是扣血概率，不能让几像素近似差异长期压过可执行的逃生路线。8 像素是工程容差，不能视为生存保证。开火使用下一更新帧预测速度，包含墙体阻挡后的变化，不以期望方向代替真实移动继承。
-
-稀疏危险使用按需建立的时空索引；至少 128 个预测危险时使用 NumPy 批量计算整条运动轨迹。两种后端都保留全部危险实体，密集后端与逐实体计算有数值等价回归。逃生结果按连续终点分别检查，不能把同一网格内不同站位视为相同安全状态。
-
-逃生搜索找到两个分别验证过时间路径、均至少保留 6 更新帧、且至少一个保留 12 帧的撤退方向后即可停止扩展。方向分数在两个方向时已经饱和；返回的是实际找到的路径证据，不以提前结束为理由省略路径上的危险检查。未达到条件时继续执行原有的有界搜索。
-
-战中请求由独立监督器与已确认失血、新敌人实例等事件触发。一般请求至少相隔 90 更新帧，严重边界不受普通冷却限制；每房最多六次请求，普通事件最多使用前四次，同时最多一个请求在途。战中直接重配，最多一次修复，总预算 20 墙钟秒。已恢复的停滞事件返回旧配置时拒绝装载。本地控制继续运行，返回结果在下一动作边界校验后替换。新敌人实例是保守重规划信号，不等于已经识别出一种新机制。
-
-无理由零动作或移动受阻一秒触发本地恢复，两秒无有效进展触发强制诊断，四秒切换替代站位，八秒仍无进展判 `STALL_UNRECOVERED`。LLM 不能关闭边界，切换计划不能重置计时。停滞、120 游戏秒总超时及进程超时均计失败。原生恢复必须看到未暂停的新更新帧；仅在确认仍持有暂停时有限重试，不以发出 Escape 作为恢复成功证据。
-
-确认受伤后保护配置接管 60 更新帧；持续无安全候选或逃生余量不足触发同一保护，深度恢复期间继续接管。剩余生命不高于两个半心时持续保护。保护配置使用现有注册组件，优先完成击杀、保持更远距离、允许低置信度的安全射击并增加躲避余量；不等待模型，不重置停滞计时。每次接管保存完整参数，`contract_override_count` 单独统计；它不等于 API 降级次数。`contract_` 配置名称保留给本地契约，模型不能伪造这些名称。
-
-入房动画可能忽略首次暂停键；暂停协调器在三秒内有限重试，等待期间用当前状态避险移动，正式配置前不射击。过期求解结果先释放输入，再从新快照重算；一秒内三次计算期限失误判 `CONTROL_DEADLINE_MISSES`。不会发送过期动作，也不会用反复丢弃掩盖持续控制失效。
+模块职责见 [总体架构](architecture-plan.zh-CN.md)，组件接口见 [组件合同](component-contract.zh-CN.md)，当前限制见 [准备审查](phase-2a-preparation.zh-CN.md)。现有求解、预测窗口与监督阈值见 [控制实现参考](reference/combat-controller-implementation.zh-CN.md)。含道具入口与安装步骤见 [README](../README.md)；M2-A 运行器仍为待实现计划，不能用首房入口代替整层验收。
 
 ## 模型与知识边界
 
@@ -151,7 +114,7 @@ Ticking Spider 参数来自固定构建的已有轨迹：无遮挡、无近期�
 
 报告新增进展指标、强制边界次数、战中请求数、决策 p99 与安全收尾帧数。候选日志包含停火理由、逃生余量、路线目标、剩余路径成本和预算是否耗尽。密度基准可执行 `python scripts/benchmark_combat.py --output artifacts/tmp-benchmark.json`；批次门槛由 `scripts/evaluate_phase1_optimization.py` 独立审计，混用实现版本、种子不符、缺少收尾证据或遗漏失败都不能通过。
 
-`ActionFrame.decision_ms` 是求解器内部耗时，`diagnostics.decision_wall_ms` 与房间报告延迟包含线程调度和等待，使用高分辨率 `perf_counter` 测量。正式回归、开发与留出链可执行 `.\.venv\Scripts\python.exe scripts/qualify_phase1.py`：先要求规则与 LLM 各十例通过，再执行三十例开发，最后冻结五十个新种子配对评测。任一前置门槛未通过时停止并写 `qualification.json`；不会消耗留出样本掩盖开发失败。`--through regression` 或 `--through development` 可限定一次验证的终点。
+`ActionFrame.decision_ms` 是求解器内部耗时，`diagnostics.decision_wall_ms` 与房间报告延迟包含线程调度和等待，使用 perf_counter 测量。`scripts/qualify_phase1.py` 是历史大样本研究工具，当前不属于常规验收；执行会产生多批模型调用，应依 README 的研究与费用原则另行安排。
 
 ## 导航与遮挡
 
@@ -177,4 +140,4 @@ Ticking Spider 参数来自固定构建的已有轨迹：无遮挡、无近期�
 
 参考：[DeepSeek JSON Output](https://api-docs.deepseek.com/guides/json_mode/)、[原版玩家 API](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html)、[网格碰撞枚举](https://wofsauge.github.io/IsaacDocs/rep/enums/GridCollisionClass.html)、[原版炸弹 API](https://wofsauge.github.io/IsaacDocs/rep/EntityBomb.html)。
 
-实机结果、同种子对照与证据索引见 [第一阶段实机验收](phase-1-live-validation.zh-CN.md)。
+实机结果、同种子对照与证据索引见 [第一阶段实机验收](evidence/phase-1-live-validation.zh-CN.md)。
