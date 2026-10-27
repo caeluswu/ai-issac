@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "source_mode": "synthetic_audit",
+  "paid_api_calls": 0,
+  "game_launched": false,
+  "findings": [
+    {
+      "id": "R1",
+      "scenario": "bomb_subtype_policy",
+      "observed": {
+        "1": "take",
+        "3": "skip",
+        "4": "skip",
+        "5": "skip",
+        "6": "skip",
+        "7": "skip"
+      },
+      "issue_present": false
+    },
+    {
+      "id": "R2",
+      "scenario": "publish_without_new_samples",
+      "observed": {
+        "sample_count": 3,
+        "claims_before": 1,
+        "claims_after": 1,
+        "revision_before": 1,
+        "revision_after": 1
+      },
+      "issue_present": false
+    },
+    {
+      "id": "R3",
+      "scenario": "death_during_post_clear_collection",
+      "observed": {
+        "room_result": "DEAD",
+        "recorded_result": "DEAD",
+        "dead_after_collection": true
+      },
+      "issue_present": false
+    },
+    {
+      "id": "R4",
+      "scenario": "decision_target_binding",
+      "observed": {
+        "authorized_item": 1,
+        "requested_item": 149,
+        "input_attempts": 0,
+        "result_reason": "PICKUP_TARGET_NOT_AUTHORIZED"
+      },
+      "issue_present": false
+    }
+  ],
+  "implementation_commit": "174d40fee2241dbc6ffe4a8d2bd9dd51207502c5"
+}

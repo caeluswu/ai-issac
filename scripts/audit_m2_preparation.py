@@ -4,6 +4,8 @@ Reports observed behavior rather than weakening production test assertions.
 The JSON is review evidence, not a claim that these defects occurred in-game.
 """
 import asyncio
+import argparse
+import subprocess
 import json
 from pathlib import Path
 import sys
@@ -112,7 +114,12 @@ async def audit():
 
 
 if __name__ == "__main__":
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output",type=Path,default=ROOT/"artifacts/validation/m2-readiness-current.json")
+    args=parser.parse_args()
     result = asyncio.run(audit())
-    output = ROOT / "artifacts/validation/m2-readiness-audit.json"
+    result["implementation_commit"]=subprocess.check_output(["git","rev-parse","HEAD"],cwd=ROOT,text=True).strip()
+    output = args.output
+    output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))

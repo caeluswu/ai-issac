@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "command": ".venv/Scripts/python.exe -m unittest discover -s SocketBridge/python/tests -t SocketBridge/python -q",
+  "implementation_commit": "af4c2fa",
+  "total": 272,
+  "passed": 272,
+  "failures": 0,
+  "errors": 0,
+  "seconds": 88.396,
+  "paid_api_calls": 0,
+  "prior_check": {
+    "total": 272,
+    "errors": 1,
+    "location": "SimulatedRoom.close / StreamWriter.wait_closed",
+    "cause": "Windows IOCP ConnectionResetError WinError 64 after deliberate server shutdown",
+    "resolution": "Make test peer cleanup idempotent for ConnectionResetError; functional assertions unchanged"
+  },
+  "fixture_sha256": "62bd029b5e3bf53bd197b018b14f3d69e758a9f49a89dcecb6e063e57bea8c01"
+}

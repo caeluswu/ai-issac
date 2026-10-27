@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "verifier_sha256": "3858553f3cf82ce4afd3f71b3bafa8250d7251ed829364120baa1b5460954310",
+  "passed": true,
+  "errors": [],
+  "seed": "3BYH A82R",
+  "evaluation_mode": "normal_random",
+  "source_hashes_match": false,
+  "judge_sources_match": true,
+  "normal_input_scope": true,
+  "manual_restored": true,
+  "independent_proof": {
+    "boss": {
+      "room_key": "3347517318:42604889:floor:1:0:0",
+      "visit": "3347517318:42604889:7",
+      "clear_frame": 3694,
+      "first_frame": 1758,
+      "identities": [
+        [
+          404,
+          0
+        ]
+      ],
+      "engaged": true,
+      "hp": {
+        "2027565983:2": 20.5
+      }
+    },
+    "exit_authorization": {
+      "exit_id": "3347517318:42604889:7:grid:37",
+      "visit": "3347517318:42604889:7",
+      "frame": 3671,
+      "movement_applied": true
+    },
+    "departure": {
+      "source_floor": "3347517318:42604889:floor:1",
+      "destination_floor": "3347517318:42604889:floor:2",
+      "snapshot_id": "3347517318:42604889:8:3696",
+      "exit_id": "3347517318:42604889:7:grid:37",
+      "armed_frame": 3671
+    },
+    "actionable": {
+      "snapshot_id": "3347517318:42604889:8:3701",
+      "action_id": 3570,
+      "displacement": 11.203704833979998,
+      "consecutive_ready_samples": 6
+    },
+    "failure": null
+  },
+  "health_after": {
+    "extra_lives": 0,
+    "bone_hearts": 0,
+    "red_hearts": 6,
+    "black_hearts": 0,
+    "max_hearts": 6,
+    "soul_hearts": 0,
+    "eternal_hearts": 0,
+    "rotten_hearts": 0,
+    "broken_hearts": 0,
+    "golden_hearts": 0
+  },
+  "damage_half_hearts": 0,
+  "game_ticks": 3697,
+  "process_wall_seconds": 156.17199999999866,
+  "pause_seconds": 3.3289999999979045,
+  "llm_plan_sources": [],
+  "planner_complete_calls": 0,
+  "http_budget": {
+    "max_requests": 0,
+    "max_routine": 0,
+    "max_diagnostic": 0,
+    "max_input": 60000,
+    "max_output": 12000,
+    "requests": 0,
+    "routine": 0,
+    "diagnostic": 0,
+    "input_reserved": 0,
+    "output_reserved": 0,
+    "input_actual": 0,
+    "output_actual": 0,
+    "usage_known": 0,
+    "input_estimator": "utf8_bytes_plus_framing_upper_bound",
+    "unknown_usage_attempts": 0,
+    "cost": null
+  },
+  "files_sha256": {
+    "manifest.json": "4fe0ca4b3fbec75c4bb24f2d2444a6d4e64e886130eb392f5079b59bdc4cd6f5",
+    "trace.jsonl": "bbcaebd43bee013d7624bb23893f95726903ad3451fac7617281989bccba7809",
+    "floor-report.json": "e96b75af313be2ca7af4436ad22d9ef1fd1134e8b941cb50ea44ffc1d38d6158",
+    "startup.json": "4309606180cfb8ade285a059da037611bd42d8cf6111557449eefe22ffcb1375"
+  }
+}

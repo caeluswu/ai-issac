@@ -94,7 +94,12 @@ class SimulatedRoom:
         for task in self.tasks: task.cancel()
         await asyncio.gather(*self.tasks, return_exceptions=True)
         if hasattr(self, "writer"):
-            self.writer.close(); await self.writer.wait_closed()
+            self.writer.close()
+            try: await self.writer.wait_closed()
+            except ConnectionResetError:
+                # Windows IOCP may report peer reset after the server has
+                # deliberately stopped. Functional assertions run before this.
+                pass
 
 
 class FixturePlanner:

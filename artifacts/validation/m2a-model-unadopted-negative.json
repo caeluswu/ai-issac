@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "verifier_sha256": "3858553f3cf82ce4afd3f71b3bafa8250d7251ed829364120baa1b5460954310",
+  "passed": false,
+  "errors": [
+    "LLM_PLAN_NOT_ADOPTED"
+  ],
+  "seed": "3BYH A82R",
+  "evaluation_mode": "debug_replay",
+  "source_hashes_match": false,
+  "judge_sources_match": true,
+  "normal_input_scope": true,
+  "manual_restored": true,
+  "independent_proof": {
+    "boss": {
+      "room_key": "3347517318:42867828:floor:1:0:0",
+      "visit": "3347517318:42867828:7",
+      "clear_frame": 3515,
+      "first_frame": 1566,
+      "identities": [
+        [
+          404,
+          0
+        ]
+      ],
+      "engaged": true,
+      "hp": {
+        "2027565983:2": 3.5
+      }
+    },
+    "exit_authorization": {
+      "exit_id": "3347517318:42867828:7:grid:37",
+      "visit": "3347517318:42867828:7",
+      "frame": 3487,
+      "movement_applied": true
+    },
+    "departure": {
+      "source_floor": "3347517318:42867828:floor:1",
+      "destination_floor": "3347517318:42867828:floor:2",
+      "snapshot_id": "3347517318:42867828:8:3517",
+      "exit_id": "3347517318:42867828:7:grid:37",
+      "armed_frame": 3487
+    },
+    "actionable": {
+      "snapshot_id": "3347517318:42867828:8:3521",
+      "action_id": 3393,
+      "displacement": 6.238891601559999,
+      "consecutive_ready_samples": 5
+    },
+    "failure": null
+  },
+  "health_after": {
+    "golden_hearts": 0,
+    "max_hearts": 6,
+    "eternal_hearts": 0,
+    "bone_hearts": 0,
+    "soul_hearts": 0,
+    "red_hearts": 6,
+    "extra_lives": 0,
+    "broken_hearts": 0,
+    "rotten_hearts": 0,
+    "black_hearts": 0
+  },
+  "damage_half_hearts": 0,
+  "game_ticks": 3517,
+  "process_wall_seconds": 169.5460000000021,
+  "pause_seconds": 21.35899999999674,
+  "llm_plan_sources": [],
+  "planner_complete_calls": 14,
+  "http_budget": {
+    "max_requests": 6,
+    "max_routine": 4,
+    "max_diagnostic": 2,
+    "max_input": 60000,
+    "max_output": 12000,
+    "requests": 4,
+    "routine": 3,
+    "diagnostic": 1,
+    "input_reserved": 44060,
+    "output_reserved": 3728,
+    "input_actual": 44060,
+    "output_actual": 3728,
+    "usage_known": 4,
+    "input_estimator": "utf8_bytes_plus_framing_upper_bound",
+    "unknown_usage_attempts": 0,
+    "cost": null
+  },
+  "files_sha256": {
+    "manifest.json": "64b1573eba2d86095f919710409a922b957b931b830a54b6be1b3395dc13ca14",
+    "trace.jsonl": "c036399dfaeec1002d906405fce19c9fa768d8dcc19b169015b83132987ad160",
+    "floor-report.json": "2e6ed37f9b11f0a95c6583c4e409542af805d4439ae1617488539092928ddaf7",
+    "startup.json": "bc4cf91bb82ca3b161fbac58d44d0bf8abaa93efd42da114dd5d93618194b652"
+  }
+}
