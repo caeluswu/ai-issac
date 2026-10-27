@@ -8,7 +8,9 @@
 flowchart LR
   S[固定 EID 源快照] --> P[字面量解析与版本发布]
   P --> D[不可变 SQLite 包]
-  D --> K[只读 Python SDK]
+  D --> K[Python SDK]
+  K <--> Q[按查询入库的单道具 SQLite]
+  U[项目用途配置] --> K
   K --> G[智能体 KnowledgeGateway]
   O[当前可见观测] --> G
   E[智能体经验库] --> G
@@ -60,11 +62,17 @@ KnowledgeRecord 保存 record_id、身份/标签、knowledge_state、summary、c
 
 状态 unknown 表示缺资料，partial 表示有部分资料，error 表示查询失败；不能把任何一种解释为“该物品没有效果”。未实现搜索、HTTP、异步 enrichment、反馈写接口或版本兼容推理。policy 中的 exact_or_reviewed_compatible 目前不会扩展实际匹配范围，include_evidence_text 不会让元数据接口返回正文；消费方应以 describe 和实际子集为准。
 
-来源策略 unknown 时 display 可本地查看说明，planning/component_development 不输出相应正文；build_compilation 必须拒绝未审核声明。改变来源策略应发布新的包，不能原地编辑 manifest。未审核来源也不能绕过实际构筑与能力检查。
+来源策略 unknown 时，默认 SDK 仅对 display 输出说明。宿主可在构造时传入绑定 provider/dataset 的 LocalUsagePolicy，明确本项目本地存储与 AI 用途；当前项目配置允许 display/planning/component_development。该配置与来源 rights 分开，不由 LookupRequest 自行授权，不修改来源身份；显式禁止仍不能放行。响应 local_usage_policy 保存策略身份、哈希和用途，source_evidence.rights 保留上游元数据。build_compilation 必须拒绝未审核声明，说明不能绕过实际构筑与能力检查。
 
 ## 4. 本项目接入合同
 
-KnowledgeGateway 加载 `configs/knowledge/eid-package.json`，检查固定 dataset_id，缓存最多 512 个静态查询结果并向调用方返回副本。它从当前可见地上物品构造 subject；隐藏身份不得用底层 ID 旁路查询。
+KnowledgeGateway 加载 `configs/knowledge/eid-package.json`，检查固定 dataset_id、项目用途及独立查询库路径，向调用方返回副本。它从当前可见地上物品构造 subject；隐藏身份不得用底层 ID 旁路查询。
+
+首次命中来源的道具以 `(provider_id,dataset_id,kind,id,requested_language)` 为键，先写入 `artifacts/knowledge/queried-items.sqlite`，再返回记录；跨进程查询复用，跨用途重新渲染权限。该库保存单道具说明、源语言/文件哈希、记录完整性哈希和查询时间，不保存遭遇或测量。缺失 ID 不生成条目，中文缺失时回退英文并保留标记；损坏条目从固定来源修复，写库失败明确返回 LOCAL_KNOWLEDGE_UNAVAILABLE，不伪造成功。不同来源数据集分键，refresh 仅重读本地来源并更新同一条。原始包不可写，智能体经验库另行维护。
+
+可选响应字段 local_knowledge 提供 SQLite 类型、schema_version、cache_hits/source_reads/saved_records/cache_repairs。机制开发的固定请求去掉这些易变运行计数，保留相同来源正文与项目策略身份，避免首次查询与随后命中改变任务上下文。
+
+新机制开发请求若查询失败或没有说明正文，在创建模型客户端之前以 DEVELOPMENT_EID_TEXT_UNAVAILABLE 停止，不消耗付费请求。已完成任务继续返回历史产物，不重新生成或修改既有请求。
 
 | KnowledgeBundle v2 字段组 | 语义 |
 |---|---|
@@ -72,6 +80,7 @@ KnowledgeGateway 加载 `configs/knowledge/eid-package.json`，检查固定 data
 | dataset_id/knowledge_revision/experience_revision | 固定来源和已采用的局部经验版本；数据源 revision 与组件 catalog_revision 分开 |
 | context_ref | run/floor/visit/snapshot/build/catalog/experience；只能对匹配上下文使用 |
 | purpose/resolved_subjects/visibility_policy_id | 本次查询用途、身份和可见性依据 |
+| local_usage_policy | 来源包之外的项目授权策略身份与用途，不提高声明的证据等级 |
 | records/interactions/unknowns/evidence_refs | 来源记录与未知，当前 interactions 为空 |
 | local_claims/counterexamples/hypotheses/support_limits | 智能体经验、反例、假设与范围；当前 hypotheses 预留为空 |
 | truncated/usable_for_build_compilation | 上下文截断及可执行事实可用性；当前说明包不能编译机制 |

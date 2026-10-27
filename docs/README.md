@@ -39,6 +39,7 @@
 | [M2-A 验收](evidence/phase-2a-validation.zh-CN.md) | 正常随机首层与受预算限制的模型回放，包含全部失败 |
 | [M2-B 机制探针](evidence/phase-2b-mechanism-probe.zh-CN.md) | 巧克力牛奶的输入/出弹、有限伤害校准与暂停/TTL 释放；不是模型程序战斗验收 |
 | [M2-B 验收](evidence/phase-2b-validation.zh-CN.md) | 模型作者/语法恢复、独立检查、实机清房、进程复用、全部请求与启动失败 |
+| [EID 单道具验证](evidence/eid-item-knowledge-validation.zh-CN.md) | 实际 69 正文、按查询入库、跨进程复用及开发上下文；无付费调用 |
 | [当前准备审查诊断 JSON](../artifacts/validation/m2-readiness-audit.json) | 合成场景复现四项边界缺陷；不是游戏损失记录 |
 
 ## 归档方案与源码参考

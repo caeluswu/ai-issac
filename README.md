@@ -61,6 +61,21 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 .\.venv\Scripts\python.exe run_first_room.py --local-only --with-items
 ```
 
+查询单个道具后，会将该道具的说明、源版本和解析状态存入 `artifacts/knowledge/queried-items.sqlite`。后续查询及重启脚本优先复用，规划和组件开发均可取得正文；查询本身不调用 DeepSeek。项目用途配置位于 `configs/knowledge/eid-package.json`，与上游来源权利元数据分开保存，不修改原始来源包。
+
+```powershell
+# 收藏品 69；首次从固定本地 EID 包读取并入库，之后命中单道具知识库
+.\.venv\Scripts\python.exe query_item.py 69 --purpose component_development
+
+# 查看当前数据集已入库条目（最多 100 条）
+.\.venv\Scripts\python.exe query_item.py --list
+
+# 其他类别：--kind trinket / card / pill_effect；默认中文，缺失则回退英文
+# --refresh 仅重新读取固定本地来源并更新该条，不联网更新 EID
+```
+
+道具按 ID 查询；动态/运行时说明不保证覆盖，缺资料或不完整解析会明确返回状态。`partial` 表示已有说明而条件/协同未穷尽，并不等于查询失败；未知 ID 不制造知识条目。SQLite 写入失败返回错误，不宣称入库成功。安装包缺失时先执行准备脚本。排错与复现见 [EID 单道具验证](docs/evidence/eid-item-knowledge-validation.zh-CN.md)。
+
 `--with-items` 启用实验性的本地说明、拾取、避让和被动记录。原有收藏品映射为 1/4/12 的简单属性、20 的飞行以及不使用主动效果的 105；启动时加载已发布的 [机制库](skills/README.md) 后，可在校准匹配的基础 Isaac 构筑下接纳 69。69 与其他属性道具/饰品/临时效果的组合仍拒绝；不能把已发布程序等同于全道具支持。未知机制、复杂武器和健康交易明确拒绝。普通资源按已验证子型处理，首层另支持有限红/魂心；这仍是有限策略。边界及历史审查见 [准备状态](docs/phase-2a-preparation.zh-CN.md)。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git；遭遇、决策前态、拾取确认、房间结果、测量、结论和反例可追溯。
 
 开发用实机核验入口为 `scripts/validate_m2_preparation_live.py`：会自动重开固定场景，并在记录的初始化环节生成道具，再正常拾取和战斗。其结果仅验证机制，不是正常随机对局胜率；不作为日常启动命令。
@@ -89,7 +104,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 已完成任务返回历史产物，不重新生成；当前激活版本另由技能索引和隔离记录决定。任务账本、请求/原文/恢复/检查位于 `artifacts/skill-development/<task_id>/`；不可变发布程序位于 `skills/`。模型编写蓄力条件与状态，宿主维护权限、预算、几何、安全和 Judge。首例原始 JSON 多了一个闭括号，通过唯一类型化语法恢复接纳，未人工改写逻辑；不是无错误输出的证明。
 
-EID 组件开发用途仍隐去正文，本次机制知识来自本地测量，EID 只提供身份/来源引用。自然生成底座的整条实机拾取链未由 M2-B 单独验证。当前证据是固定场景的可行性，不代表高效打法或稳定胜率；详见验收中的停滞、恢复和费用记录。
+当前 EID 正文可进入规划和组件开发上下文，并在首次查询后保存到单道具知识库；说明始终标为未审核，不能自动放行未知机制。历史 M2-B 实机验收使用的是本地测量，EID 当时只提供身份/来源引用；该证据不证明模型读过 EID。自然生成底座的整条实机拾取链未由 M2-B 单独验证。固定场景的可行性不代表高效打法或稳定胜率；详见验收中的停滞、恢复和费用记录。
 
 ## 文档导航
 

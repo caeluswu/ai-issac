@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "dataset_id": "eid-16b584b65a6e506666e0cf71",
+  "source_database_sha256": "b5051b70ca53f46b3a723fcc9754722426df21e4d064bfdd551926b422a4feec",
+  "source_database_unchanged": true,
+  "item": {
+    "kind": "collectible",
+    "id": 69,
+    "requested_language": "zh-CN",
+    "source_language": "zh-CN",
+    "text_characters": 47,
+    "text_sha256": "58191c706de798688bc3ef858bee45ca0b199c3b026ecbffb1245f4c2928c656",
+    "parser_complete": true,
+    "source_revision": "8b59d00c6828e333294639ad2b2b6875eae821cb"
+  },
+  "initial_cached_items": 0,
+  "final_cached_items": 1,
+  "matching_item_rows": 1,
+  "first_query": {
+    "storage": "sqlite",
+    "schema_version": 1,
+    "cache_hits": 0,
+    "source_reads": 1,
+    "saved_records": 1,
+    "cache_repairs": 0
+  },
+  "fresh_process_query": {
+    "storage": "sqlite",
+    "schema_version": 1,
+    "cache_hits": 1,
+    "source_reads": 0,
+    "saved_records": 0,
+    "cache_repairs": 0
+  },
+  "unknown_item_creates_no_record": true,
+  "development_context_contains_eid_text": true,
+  "development_context_stable": true,
+  "model_http_requests": 0,
+  "game_launched": false,
+  "local_database": "artifacts/knowledge/queried-items.sqlite"
+}

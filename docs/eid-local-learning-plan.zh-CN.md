@@ -15,7 +15,7 @@ LLM 自身知识标为 model_prior，可以提出解释和实验设计，不能�
 
 ## 2. 当前被动链路
 
-`观察物品 → 保存首次遭遇前态 → 本地说明查询 → 宿主支持/成本判定 → 拾取、跳过或延后 → 正常移动交互 → 核验消费与实际库存 → 构筑事务 → 房间使用 → 有新证据时保存局部结论 → 下一安全边界检索采用`。
+`观察物品 → 保存首次遭遇前态 → 查询本地单道具库，缺条目则从固定 EID 包读取并入库 → 宿主支持/成本判定 → 拾取、跳过或延后 → 正常移动交互 → 核验消费与实际库存 → 构筑事务 → 房间使用 → 有新证据时保存局部结论 → 下一安全边界检索采用`。
 
 当前拾取决定是工程支持表加成本规则，未调用 DeepSeek 阅读整条说明作收益推理。支持属性用实际面板，EID 数值不再加一次。未知物品进入避让和缺口任务，能力不足与物品不值得拿使用不同原因码；它们会决定后续开发优先级。
 
@@ -35,7 +35,7 @@ LLM 自身知识标为 model_prior，可以提出解释和实验设计，不能�
 
 ## 4. 存储与记录
 
-固定知识包由 isaac-knowledge 拥有，本项目不写其数据库。智能体 SQLite 拥有 encounters、decisions、pickup_results、room_results、measurements、claims、counterexamples、learning_tasks；原始大轨迹仍在运行目录。
+固定来源包由 isaac-knowledge 拥有，本项目不写其数据库。SDK 的单道具查询库 `artifacts/knowledge/queried-items.sqlite` 保存查过的条目、原始解析状态、来源/记录哈希和时间；同一数据集、道具与请求语言只存一条，查询不会自动成为测量或经验结论。项目用途配置允许说明进入规划和组件开发，来源权利元数据与未审核标记原样保留。查询复用与失败处理见 [知识库接口](knowledge-project-interface-plan.zh-CN.md)。智能体 SQLite `artifacts/agent-state/agent.sqlite` 拥有 encounters、decisions、pickup_results、room_results、measurements、claims、counterexamples、learning_tasks；原始大轨迹仍在运行目录。
 
 | 记录 | 最小内容 |
 |---|---|
