@@ -1122,8 +1122,9 @@ end
 
 function CustomCollectors.PROJECTILES()
     local player = Isaac.GetPlayer(0)
-    if not player then return { enemy_projectiles = {}, player_tears = {}, lasers = {} } end
-    local data = { enemy_projectiles = {}, player_tears = {}, lasers = {}, friendly_tears = {} }
+    if not player then return { enemy_projectiles = {}, player_tears = {}, lasers = {}, player_knives = {} } end
+    local data = { enemy_projectiles = {}, player_tears = {}, lasers = {}, friendly_tears = {}, player_knives = {} }
+    State.knifeObservations = State.knifeObservations or {}
     for _, entity in ipairs(Isaac.GetRoomEntities()) do
         if entity.Type == EntityType.ENTITY_PROJECTILE then
             local proj = entity:ToProjectile()
@@ -1160,6 +1161,28 @@ function CustomCollectors.PROJECTILES()
                 table.insert(data.player_tears, tearData)
             else
                 table.insert(data.friendly_tears, tearData)
+            end
+        elseif entity.Type == EntityType.ENTITY_KNIFE then
+            local knife = entity:ToKnife()
+            if knife and (entity.SpawnerType == EntityType.ENTITY_PLAYER or (entity.Parent and entity.Parent.Type == EntityType.ENTITY_PLAYER)) then
+                local id=tostring(entity.InitSeed)..":"..tostring(entity.Index)
+                local distance=Helpers.optional(function() return knife:GetKnifeDistance() end)
+                local flying=Helpers.optional(function() return knife:IsFlying() end)
+                local previous=State.knifeObservations[id]
+                local delta=nil
+                if previous and previous.run_id==State.runId and previous.visit==State.roomVisit and distance and previous.distance then
+                    delta=State.updateCount>previous.frame and distance-previous.distance or previous.delta
+                end
+                State.knifeObservations[id]={run_id=State.runId,visit=State.roomVisit,frame=State.updateCount,distance=distance,delta=delta}
+                table.insert(data.player_knives,{id=entity.Index,instance_id=id,type=entity.Type,variant=entity.Variant,
+                    owner_type=entity.SpawnerType,pos=Helpers.vectorToTable(entity.Position),vel=Helpers.vectorToTable(entity.Velocity),
+                    collision_radius=entity.Size,collision_damage=Helpers.optional(function() return entity.CollisionDamage end),
+                    entity_frame_count=entity.FrameCount,charge=Helpers.optional(function() return knife.Charge end),
+                    is_flying=flying,distance=distance,distance_change=delta,
+                    knife_velocity=Helpers.optional(function() return knife:GetKnifeVelocity() end),
+                    max_distance=Helpers.optional(function() return knife.MaxDistance end),
+                    rotation=Helpers.optional(function() return knife.Rotation end),
+                    phase=flying==false and "held" or (flying==true and delta and (delta>0 and "outbound" or delta<0 and "returning" or "turning") or "unknown")})
             end
         elseif entity.Type == EntityType.ENTITY_LASER then
             local laser = entity:ToLaser()
@@ -1997,7 +2020,18 @@ end)
 
 -- MC_ENTITY_TAKE_DMG — player damage
 mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, function(_, entity, amount, flags, source)
-    if entity.Type ~= EntityType.ENTITY_PLAYER then return end
+    if entity.Type ~= EntityType.ENTITY_PLAYER then
+        if source and source.Type == EntityType.ENTITY_KNIFE then
+            local ok, origin=pcall(function() return source.Entity end)
+            local npc=entity:ToNPC()
+            if npc then EventSystem.emit("KNIFE_DAMAGE_ATTEMPT",{
+                run_id=State.runId,room_visit_id=State.runId..":"..tostring(State.roomVisit),callback_frame=State.updateCount,
+                target_id=tostring(entity.InitSeed)..":"..tostring(entity.Index),target_type=entity.Type,
+                source_knife_id=ok and origin and (tostring(origin.InitSeed)..":"..tostring(origin.Index)) or nil,
+                hp_before=entity.HitPoints,amount=amount,flags=flags}) end
+        end
+        return
+    end
     local player = entity:ToPlayer()
     local function optional(fn) local ok,value=pcall(fn); if ok then return value end end
     local origin = optional(function() return source.Entity end)

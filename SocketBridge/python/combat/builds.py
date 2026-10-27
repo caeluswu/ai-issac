@@ -43,8 +43,7 @@ def observed_build(s):
 
 
 class NormalTearsBuild:
-    def __init__(self,*,piercing=False):
-        self.piercing=piercing
+    def __init__(self):
         self.profile = BuildProfile()
         self.seen = set()
         self.seen_order = deque()
@@ -67,7 +66,7 @@ class NormalTearsBuild:
         self.seed_speed = None
 
     def update(self, s):
-        capabilities=resolve_items(s,piercing=self.piercing)
+        capabilities=resolve_items(s)
         state = observed_build(s)
         if self.run_id != s.run_id:
             self.revision, self.previous, self.run_id = 0, None, s.run_id
@@ -132,13 +131,14 @@ class BuildResolver:
         self.previous_semantic=None
         self.run_id=None
         self.attack_model=None
+        self.knife_enabled=False
 
     def supports_pickup(self,s,pickup):
         if pickup.variant!=100 or pickup.sub_type is None:return False
         future=s.model_copy(deep=True);items=dict(collectibles(s));items[str(pickup.sub_type)]=items.get(str(pickup.sub_type),0)+1
         future.inventory["collectibles"]=items
         try:
-            resolve_items(future,charge=self.mechanism_adapter is not None,piercing=self.attack_model is not None)
+            resolve_items(future,charge=self.mechanism_adapter is not None,knife=self.knife_enabled,preview=True)
         except ValueError:return False
         return True
 
@@ -146,18 +146,15 @@ class BuildResolver:
         return self.mechanism_adapter if self.mechanism_adapter and collectibles(s).get("69") else self.adapters[s.stats["weapon_type"]]
 
     def update(self, s):
-        for adapter in self.adapters.values():
-            if isinstance(adapter,NormalTearsBuild):adapter.piercing=self.attack_model is not None
-        if self.mechanism_adapter and hasattr(self.mechanism_adapter,"allow_piercing"):
-            self.mechanism_adapter.allow_piercing=self.attack_model is not None
         weapon = s.stats["weapon_type"]
+        if self.run_id!=s.run_id:self.weapon_type=None
         if weapon not in self.adapters: raise ValueError("UNSUPPORTED_BUILD: unregistered weapon adapter")
-        if self.weapon_type is not None and weapon != self.weapon_type:
+        if self.weapon_type is not None and weapon != self.weapon_type and not (self.knife_enabled and weapon in (1,-1)):
             raise ValueError("UNSUPPORTED_BUILD: weapon transition needs a compatible published transaction")
         self.weapon_type = weapon
         adapter=self.adapter_for(s)
         profile=adapter.update(s)
-        if self.attack_model and "piercing" in profile.modifiers:
+        if self.attack_model and profile.family=="knife":
             profile.attack_binding=self.attack_model.identity
             profile.signature=digest([profile.signature,profile.attack_binding])
         if self.run_id!=s.run_id:self.epoch=0;self.previous_semantic=None;self.run_id=s.run_id

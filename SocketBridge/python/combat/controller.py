@@ -46,6 +46,7 @@ class MotionPredictor:
 
 class JointActionSolver:
     def __init__(self, registry=None, enemy_adapters=None):
+        self.attack_model=None
         self.registry = registry or EXECUTABLES
         self.enemy_adapters = enemy_adapters or EnemyAdapters()
         self.modules = {}
@@ -233,6 +234,11 @@ class JointActionSolver:
         routes = {}
         candidates = []
         self.budget_exhausted = False
+        primary=modules["fire"].primary
+        if hasattr(primary,"attack_model_results"):primary.attack_model_results={}
+        if self.attack_model and build.family=="knife" and not movement_only:
+            from mechanisms.attack_batch import prepare_batch
+            prepare_batch(self.attack_model,s,build,profile,g,MOVES,primary,modules["aim"])
         for move in MOVES:
             if candidates and (time.perf_counter()-started)*1000 > 26:
                 self.budget_exhausted = True
@@ -292,6 +298,7 @@ class JointActionSolver:
                     # a nearby waypoint and makes zero input a local optimum.
                     stance += (s.player.pos.distance(waypoint)-closest_waypoint)*(.35 if recovering else .15)
             evade = modules["evade"].score(clearance, desired*build.player_displacement_scale)
+            if self.attack_model and build.family=="knife":primary.attack_candidate_id=MOVES.index(move)+1
             attacks = ([AttackProposal((0, 0), 0, 0, "entry_move_only")] if movement_only else
                        modules["fire"].propose(s, build, profile, target, firing_velocity, g, modules["aim"]))
             for attack in attacks:
@@ -302,6 +309,7 @@ class JointActionSolver:
                 damage_risk = max(0, -clearance)
                 offense = min(100., attack.expected_damage*30/attack.prediction_horizon_frames)*(6/(3.5*30/11))
                 utility = offense+stance+evade+modules["escape"].score(escape, slack)-(.04 if move != self.previous_move else 0)-blocked_steps*.02
+                utility += attack.position_bias
                 if movement_only: utility = min(100, clearance)/20+escape+max(0, slack)/45-blocked_steps*.05
                 if movement_only and waypoint:
                     # Score the complete path, with earlier progress worth more.
@@ -355,5 +363,7 @@ class JointActionSolver:
                                "near_risk_tolerance_px": 8,
                                "occlusion_reposition": repositioning,
                                "navigation_forward_override": forward_override, "first_route_progress": best["first_route_progress"],
-                               "component_failures": component_failures,"mechanism":mechanism},
+                               "component_failures": component_failures,"mechanism":mechanism,
+                               "attack_model":{"identity":self.attack_model.identity,"calls":self.attack_model.calls,
+                                   "failure":self.attack_model.failure,"last_ms":self.attack_model.timings[-1] if self.attack_model.timings else None} if self.attack_model else None},
                            decision_ms=(time.perf_counter()-started)*1000)

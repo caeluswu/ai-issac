@@ -31,6 +31,7 @@ def validate_result(method, value, context, snapshot, max_wait_frames):
         result = []
         for attack in value:
             if not isinstance(attack, AttackProposal): raise ValueError("expected AttackProposal")
+            finite(attack.position_bias,-10,10)
             if (type(attack.withdrawal_shoot) is not tuple or len(attack.withdrawal_shoot)!=2 or
                     any(type(x) is not int or x not in (-1,0,1) for x in attack.withdrawal_shoot) or
                     sum(abs(x) for x in attack.withdrawal_shoot)>1):

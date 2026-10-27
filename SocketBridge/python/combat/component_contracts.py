@@ -70,6 +70,7 @@ class AttackProposal:
     # Withdrawing a charged release may require continuing the observed hold.
     # Zero input can itself fire. Trusted weapon adapters supply this action.
     withdrawal_shoot: tuple[int, int] = (0, 0)
+    position_bias: float = 0.
 
 
 class WeaponAdapter(Protocol):

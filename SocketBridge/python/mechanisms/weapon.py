@@ -148,7 +148,7 @@ class AdaptiveChargedBuild(ChargedBuild):
     """Keep the original program immutable; bind a current measured/prior profile."""
     def __init__(self,program,baseline,cache_directory=None):
         super().__init__(program,baseline)
-        self.baseline=baseline;self.allow_piercing=False
+        self.baseline=baseline
         self.cache_directory=Path(cache_directory) if cache_directory else None
         self.measurements={};self.cached=set();self.current_calibration=baseline
 
@@ -157,7 +157,7 @@ class AdaptiveChargedBuild(ChargedBuild):
         if pickup.variant!=100 or pickup.sub_type is None:return False
         future=s.model_copy(deep=True);items=dict(collectibles(s));items[str(pickup.sub_type)]=items.get(str(pickup.sub_type),0)+1
         future.inventory["collectibles"]=items
-        try:resolve_items(future,charge=True,piercing=self.allow_piercing)
+        try:resolve_items(future,charge=True)
         except ValueError:return False
         return True
 
@@ -173,7 +173,7 @@ class AdaptiveChargedBuild(ChargedBuild):
     def update(self,s):
         from combat.item_capabilities import resolve_items
         from .calibration import calibration_key,estimated_calibration,validate_runtime_calibration
-        capabilities=resolve_items(s,charge=True,piercing=self.allow_piercing)
+        capabilities=resolve_items(s,charge=True)
         if capabilities.family!=FAMILY:raise ValueError("UNSUPPORTED_BUILD: charge item missing")
         key=calibration_key(s)
         if key not in self.measurements and self.cache_directory and (self.cache_directory/(key+".json")).exists():

@@ -119,6 +119,38 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(e.data.hp_before, 6)
         self.assertIsNone(e.data.hp_after)
 
+    def test_knife_observation_phase_and_optional_legacy_methods(self):
+        self.lua.execute('''
+            Isaac.GetPlayer=function() return {} end
+            blade={Type=EntityType.ENTITY_KNIFE,Variant=0,Index=7,InitSeed=42,Size=8,FrameCount=2,
+                SpawnerType=EntityType.ENTITY_PLAYER,Position={X=120,Y=50},Velocity={X=8,Y=0},
+                ToKnife=function(self) return self end,
+                IsFlying=function() return flying end,GetKnifeDistance=function() return distance end}
+            Isaac.GetRoomEntities=function() return {blade} end
+            flying=false;distance=0
+            a=api.Custom.PROJECTILES().player_knives[1]
+        ''')
+        self.assertEqual(self.lua.globals().a.phase,'held')
+        self.assertIsNone(self.lua.globals().a.charge)
+        self.lua.execute('api.State.updateCount=1; flying=true; distance=80; b=api.Custom.PROJECTILES().player_knives[1]')
+        self.assertEqual(self.lua.globals().b.phase,'outbound')
+        self.lua.execute('api.State.updateCount=2;distance=60;c=api.Custom.PROJECTILES().player_knives[1]')
+        self.assertEqual(self.lua.globals().c.phase,'returning')
+        self.lua.execute('api.State.runId="other";d=api.Custom.PROJECTILES().player_knives[1]')
+        self.assertEqual(self.lua.globals().d.phase,'unknown')
+
+    def test_knife_damage_attempt_keeps_callback_identity_and_is_not_hp_loss(self):
+        self.lua.execute('''
+            api.State.updateCount=12
+            local target={Type=10,InitSeed=99,Index=4,HitPoints=20,ToNPC=function(self) return self end}
+            local source={Type=EntityType.ENTITY_KNIFE,Entity={InitSeed=42,Index=7}}
+            callbacks[ModCallbacks.MC_ENTITY_TAKE_DMG](nil,target,14,0,source)
+        ''')
+        e=self.lua.globals().fakeMod.EventSystem.pendingEvents[1]
+        self.assertEqual(e.type,'KNIFE_DAMAGE_ATTEMPT');self.assertEqual(e.data.callback_frame,12)
+        self.assertEqual(e.data.source_knife_id,'42:7');self.assertEqual(e.data.target_id,'99:4')
+        self.assertEqual(e.data.hp_before,20);self.assertIsNone(e.data.hp_after)
+
     def test_damage_source_identity_and_callback_frame_survive_flush(self):
         self.lua.execute('''
             api.State.updateCount=10
