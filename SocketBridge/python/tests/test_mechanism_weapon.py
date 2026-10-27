@@ -3,18 +3,21 @@ import json
 from pathlib import Path
 import unittest
 from unittest.mock import patch
-from combat.catalog import CATALOG,FAMILY_DEFAULTS,default_plan
+from combat.catalog import CATALOG,FAMILY_DEFAULTS,default_plan,current_revision
 from combat.components import EXECUTABLES
 from combat.builds import BuildResolver
 from combat.controller import JointActionSolver
 from combat.geometry import GeometryService
 from mechanisms.program import Program
 from mechanisms.weapon import ChargedBuild,ProgramWeapon,register_program,FAMILY
-from tests.combat_fixtures import snapshot,context
+from tests.combat_fixtures import snapshot,context as fixture_context
 from tests.test_mechanism_program import fixture,feedback
 
 
 CALIBRATION=json.loads((Path(__file__).resolve().parents[3]/"configs/mechanisms/chocolate-milk-j835.json").read_text())
+
+
+def context(s):return fixture_context(s).model_copy(update={"catalog_revision":current_revision()})
 
 
 def charged_snapshot():
@@ -90,3 +93,16 @@ class TestMechanismWeapon(unittest.TestCase):
             self.assertNotEqual(action.shoot,(0,0))
             self.assertEqual(plan.profiles["safe"].fire.component,fire)
             self.assertFalse(action.diagnostics["component_failures"])
+
+    def test_emergency_profile_preserves_identical_weapon_program_state(self):
+        d=fixture();d["decide"]={"mode":1,"shoot_x":["input","shoot_x"],"shoot_y":["input","shoot_y"]}
+        s=charged_snapshot();p=Program(d);b=ChargedBuild(p,CALIBRATION).update(s)
+        with patch.dict(CATALOG),patch.dict(EXECUTABLES.factories),patch.dict(FAMILY_DEFAULTS):
+            register_program(p,CALIBRATION);plan=default_plan(context(s),family=FAMILY);solver=JointActionSolver()
+            solver.solve(s,plan,b);runtime=solver.modules["fire"].primary.runtime;count=runtime.state["count"]
+            s.frame+=1;s.weapon_feedback["history"]=(s.weapon_feedback["history"]+[feedback(100,(0,-1))])[-32:]
+            solver.emergency_until=s.frame+10
+            action=solver.solve(s,plan,b)
+            self.assertEqual(action.profile,"contract_emergency")
+            self.assertIs(solver.modules["fire"].primary.runtime,runtime)
+            self.assertEqual(runtime.state["count"],count+1)

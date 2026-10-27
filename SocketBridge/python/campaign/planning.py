@@ -2,7 +2,7 @@
 import asyncio
 from collections import OrderedDict
 from combat.builds import digest
-from combat.catalog import compile_plan, default_plan
+from combat.catalog import compile_plan, default_plan, current_revision
 from combat.models import ContextRef
 from .budget import BudgetExceeded
 
@@ -24,6 +24,7 @@ class FloorPlanner:
 
     async def plan(self,s,build,revision=0,feedback=None):
         ref = ContextRef(run_id=s.run_id,room_visit_id=s.room_visit_id,snapshot_id=s.snapshot_id,
+            catalog_revision=current_revision(),
             floor_instance_id=s.floor.instance_id if s.floor else None,build_revision=build.revision,
             experience_revision=build.experience_revision,plan_revision=revision)
         key = self.key(s,build)

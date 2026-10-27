@@ -53,7 +53,7 @@ class AgentStore:
 
     def get(self, kind, identity):
         table, column = {"encounter":("encounters","id"),"decision":("decisions","encounter_id"),
-                         "pickup":("pickup_results","intent_id"),"room":("room_results","id")}[kind]
+                         "pickup":("pickup_results","intent_id"),"room":("room_results","id"),"task":("learning_tasks","id")}[kind]
         with self.connect() as db: row = db.execute(f"SELECT body FROM {table} WHERE {column}=?", (identity,)).fetchone()
         return json.loads(row[0]) if row else None
 
@@ -62,6 +62,16 @@ class AgentStore:
         with self.connect() as db:
             db.execute("INSERT OR IGNORE INTO measurements VALUES(?,?,?,?)",(identity,signature,metric,json.dumps(body,allow_nan=False)))
         return identity
+
+    def resolve_task(self,identity,state,artifact):
+        if state not in ("validated_offline","supported","rejected","requires_host_primitive","quarantined"):raise ValueError("INVALID_TASK_STATE")
+        with self.connect() as db:
+            row=db.execute("SELECT body FROM learning_tasks WHERE id=?",(identity,)).fetchone()
+            if not row:raise ValueError("UNKNOWN_TASK")
+            old=json.loads(row[0])
+            if old.get("state")=="supported" and state not in ("supported","quarantined"):raise ValueError("TASK_STATE_DOWNGRADE")
+            body={**old,"state":state,"artifact":str(artifact)}
+            db.execute("UPDATE learning_tasks SET body=? WHERE id=?",(json.dumps(body,ensure_ascii=False,allow_nan=False),identity))
 
     def passive_measurement(self, signature, samples, mode):
         """Atomically consume new physical samples; a cache is never evidence."""

@@ -1,6 +1,6 @@
 # 战斗组件合同 v1
 
-适用：M2-A 的可信本地组件。代码定义位于 `SocketBridge/python/combat/component_contracts.py`；七槽位与参数仍由 catalog 管理。此合同不提供任意代码隔离，模型程序必须等待 M2-B 的受限执行器。
+适用：M2-A 的可信本地组件与 M2-B 的受限时序接缝。代码定义位于 `SocketBridge/python/combat/component_contracts.py`；七槽位与参数仍由 catalog 管理。普通可信组件不提供任意代码隔离，模型程序只能通过下述有界解释器运行。
 
 ## 能力与输入
 
@@ -33,3 +33,12 @@ RoomExecutor 兼容原有字符串结果，同时在 results 暴露战斗结果�
 GeometryService/JointActionSolver 的 allowed_exits 是宿主专用参数，只允许已授权索引中 type=17、variant=0 的网格通行。FloorJudge 确认当前 Boss 完成并授权具体出口后，ExitExecutor 才传入该参数；LLM 的组件参数不能设置它。授权参与几何缓存身份，不解除其他机关或物品避让。
 
 弹体后果使用独立 ProjectileEffects 注册表，按 owner_type/variant 选择预测模型，输出 ThreatForecast，交统一危险场与运动求解器处理。首个模型依据 J835 捕获轨迹预测无头骑士血弹落地血池，使用标明未精确标定的保守范围；改变这类机制无需修改目标、瞄准、地图或独立判定器。
+## M2-B 有界时序程序接缝
+
+`mechanisms/program.py` 实现 `typed_scalar_ast` v1：数值/布尔常量、声明状态引用、固定输入引用、有限算术/比较/条件和 observe 中的 set/if；无模型循环、Python 执行或 IO。SDK 的可执行字段定义由 `sdk_contract()` 提供，模型程序不读取整个快照。AST 最多 512 节点、深度 16、64 KiB；状态最多 16 个有界标量，所有求值共用每游戏帧 12000 燃料。
+
+`TimingRuntime.begin_frame` 从当前房间、完整且一致的引擎输入查询历史逐帧提交 observe，未知区间必须等已确认中性输入重新建立状态。`decide` 只读已提交状态，同帧多候选不重复提交、不重置燃料；决策仅有 mode（0 idle / 1 hold / 2 release）和四向输入。模型收益、权限及等待凭据不直接进入求解器。
+
+`ProgramWeapon` 将时序结果转为已有 `AttackProposal`。DTO 新增 `withdrawal_shoot`，默认 `(0,0)`；蓄力释放被否决时可返回上一次实际保持方向。idle 在已经蓄力时同样按物理释放处理，必须提供实际攻击方向的 footprint；命中估计为零也不能跳过该 footprint 内的死亡后果检查。相同程序与参数、同房间/构筑/目录身份下，`room_and_build` 组件可跨战术 profile 保留状态。
+
+原版字段与观测限度见 [武器观测合同](observation-v2.zh-CN.md)。技能开发在独立进程入口进行；持久化预算、原始模型响应哈希、独立语义检查和实机试用共同约束发布。当前只在会话启动加载受支持包，发布不热替换运行中的战斗。首例及阶段完成标准见 [M2-B 计划](phase-2b-plan.zh-CN.md)；这些接口本身不证明模型战斗验收通过。

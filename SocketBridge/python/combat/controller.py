@@ -138,6 +138,8 @@ class JointActionSolver:
     def solve(self, s, plan, build, movement_only=False, navigation_goal=None, allowed_devices=(), allowed_exits=()):
         started = time.perf_counter()
         ref = plan.context_ref
+        from .catalog import current_revision
+        if ref.catalog_revision!=current_revision():raise ValueError("STALE_CATALOG_CONTEXT")
         floor_id = s.floor.instance_id if s.floor else None
         if (ref.run_id, ref.room_visit_id, ref.build_revision, ref.floor_instance_id) != (s.run_id, s.room_visit_id, build.revision, floor_id):
             raise ValueError("STALE_PLAN_CONTEXT")
@@ -145,7 +147,16 @@ class JointActionSolver:
         name, profile = self.select_profile(s, plan, build)
         key = (s.run_id, floor_id, s.room_visit_id, build.family, build.revision, ref.catalog_revision, ref.experience_revision, profile.model_dump_json())
         if key != self.module_key:
-            self.modules = {slot: resilient_component(getattr(profile, slot), slot, self.registry, build.family) for slot in type(profile).model_fields}
+            from .catalog import CATALOG
+            same_scope=self.module_key is not None and key[:7]==self.module_key[:7]
+            modules={}
+            for slot in type(profile).model_fields:
+                choice=getattr(profile,slot);old=self.modules.get(slot);spec=CATALOG.get(choice.component)
+                if (same_scope and old and not old.broken and old.identity==choice.component and spec and
+                        spec.state_scope=="room_and_build" and getattr(old.primary,"params",None)==choice.params):
+                    modules[slot]=old
+                else:modules[slot]=resilient_component(choice,slot,self.registry,build.family)
+            self.modules=modules
             self.module_key = key
         modules = self.modules
         for module in modules.values():

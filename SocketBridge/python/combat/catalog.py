@@ -1,5 +1,7 @@
 """Executable registry: closed names, per-slot schemas and bounded parameters."""
 from dataclasses import dataclass
+import hashlib
+import json
 from .models import BattlePlan, ContextRef
 from .components import EXECUTABLES
 
@@ -21,6 +23,11 @@ TARGET = {"switch_margin": (.15, .05, .5), "min_hold_ticks": (10, 0, 30)}
 POSITION = {"min_range_ratio": (.45, .2, .95), "max_range_ratio": (.8, .2, .95)}
 CATALOG = {}
 FAMILY_DEFAULTS = {"normal_tears":("aim.predictive","fire.normal_tears")}
+
+
+def current_revision():
+    if len(FAMILY_DEFAULTS)==1:return 2
+    return "2:"+hashlib.sha256(json.dumps(FAMILY_DEFAULTS,sort_keys=True).encode()).hexdigest()[:24]
 
 
 def register(name, parameters, description, inputs):

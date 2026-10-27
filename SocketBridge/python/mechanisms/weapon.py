@@ -13,9 +13,20 @@ FAMILY="charged_tears"
 
 class ChargedBuild:
     def __init__(self,program,calibration):
+        from .validation import validate_calibration
+        validate_calibration(calibration)
         self.program,self.calibration=program,calibration
         self.base=NormalTearsBuild()
         self.experience_revision=0
+
+    def supports_pickup(self,s,pickup):
+        if pickup.variant!=100 or pickup.sub_type!=69:return False
+        future=s.model_copy(deep=True)
+        items=dict(collectibles(s));items["69"]=items.get("69",0)+1
+        future.inventory["collectibles"]=items
+        try:ChargedBuild(self.program,self.calibration).update(future)
+        except ValueError:return False
+        return True
 
     def update(self,s):
         scope=self.calibration["scope"]
@@ -43,6 +54,8 @@ class ProgramWeapon(NormalTears):
     capabilities=CapabilitySet(FAMILY,moving_attack=True,break_plain_poop=False)
 
     def __init__(self,params,program,calibration):
+        from .validation import validate_calibration
+        validate_calibration(calibration)
         super().__init__({"min_hit_score":0})
         self.program,self.calibration=program,calibration
         self.runtime=TimingRuntime(program)
@@ -121,7 +134,7 @@ def register_program(program,calibration):
     aim="aim.charged_predictive"
     if fire not in EXECUTABLES.factories:
         EXECUTABLES.register(fire,lambda params:ProgramWeapon(params,program,calibration))
-        CATALOG[fire]=ComponentSpec(fire,{},"bounded model WeaponTiming; release can attack",("weapon_feedback","target","geometry"),weapons=(FAMILY,))
+        CATALOG[fire]=ComponentSpec(fire,{},"bounded model WeaponTiming; release can attack",("weapon_feedback","target","geometry"),weapons=(FAMILY,),state_scope="room_and_build")
     if aim not in EXECUTABLES.factories:
         EXECUTABLES.register(aim,PredictiveAim)
         CATALOG[aim]=ComponentSpec(aim,CATALOG["aim.predictive"].parameters,"charged tear trajectory",("target","build"),weapons=(FAMILY,))

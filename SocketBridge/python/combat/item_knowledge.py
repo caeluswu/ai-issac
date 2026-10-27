@@ -74,8 +74,9 @@ class KnowledgeGateway:
             else: records = answer["results"][0]["records"]
             if not reasons:
                 if not records or not records[0]["parser_complete"]: reasons.append("DESCRIPTION_PARTIAL_OR_MISSING")
-                elif pickup.sub_type not in ITEM_SUPPORT: reasons.append("CAPABILITY_NOT_IMPLEMENTED")
-                elif ITEM_SUPPORT[pickup.sub_type] == "inactive_active": reasons.append("ACTIVE_STRATEGY_NOT_ENABLED")
+                elif pickup.sub_type not in ITEM_SUPPORT and not (getattr(self,"mechanism_adapter",None) and self.mechanism_adapter.supports_pickup(s,pickup)):
+                    reasons.append("CAPABILITY_NOT_IMPLEMENTED")
+                elif ITEM_SUPPORT.get(pickup.sub_type) == "inactive_active": reasons.append("ACTIVE_STRATEGY_NOT_ENABLED")
                 elif pickup.price < 0: reasons.append("HEALTH_PAYMENT_NOT_AUTHORIZED")
                 elif s.inventory.get("coins") is None or s.inventory["coins"]-pickup.price < reserve_coins:
                     if pickup.price == 0: decision="take"; reasons.append("SUPPORTED_FREE_ITEM")
@@ -97,10 +98,13 @@ class KnowledgeGateway:
             tuple(r["record_id"] for r in records),tuple(benefits),cost,s.frame+90,decision_id,reserve_coins,pickup_authority(s,build,pickup))
         self.store.record("decision",decision_id,asdict(value))
         if decision != "take" and ("CAPABILITY_NOT_IMPLEMENTED" in reasons or "DESCRIPTION_PARTIAL_OR_MISSING" in reasons):
-            self.store.record("task",digest([self.package.dataset_id,pickup.variant,pickup.sub_type,reasons]),{"dataset_id":self.package.dataset_id,"subject":{"variant":pickup.variant,"id":pickup.sub_type},"reasons":reasons,"state":"pending"})
+            self.store.record("task",digest([self.package.dataset_id,pickup.variant,pickup.sub_type,reasons,build.signature]),
+                {"dataset_id":self.package.dataset_id,"subject":{"variant":pickup.variant,"id":pickup.sub_type},"reasons":reasons,"state":"pending",
+                 "trigger":"observed_pickup","encounter_id":encounter,"context":context,"build":build.model_dump()})
         return value
 
     async def prepare_bundle(self, s, build, subjects, purpose="planning"):
+        from .catalog import current_revision
         records, unknowns = [], []
         for subject in subjects[:32]:
             response = await asyncio.to_thread(self.lookup,subject["kind"],subject["id"],purpose)
@@ -117,7 +121,7 @@ class KnowledgeGateway:
         return {"bundle_schema_version":2,"bundle_id":digest([self.package.dataset_id,experience["experience_revision"],s.snapshot_id,subjects,purpose]),
             "dataset_id":self.package.dataset_id,"knowledge_revision":1,
             "context_ref":{"run_id":s.run_id,"floor_instance_id":s.floor.instance_id if s.floor else None,"room_visit_id":s.room_visit_id,
-                           "snapshot_id":s.snapshot_id,"build_revision":build.revision,"catalog_revision":2,"experience_revision":build.experience_revision},
+                           "snapshot_id":s.snapshot_id,"build_revision":build.revision,"catalog_revision":current_revision(),"experience_revision":build.experience_revision},
             "purpose":purpose,"resolved_subjects":subjects[:32],"records":records,"interactions":[],"unknowns":unknowns,
             "evidence_refs":[source["source_id"] for record in records for source in record["source_evidence"]],
             "source_request_ids":[],"visibility_policy_id":"identified_current_and_observed_inventory","truncated":len(subjects)>32,

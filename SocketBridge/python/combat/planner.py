@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.error
 import httpx
 from .models import ContextRef, BattleAssessment, BattlePlan
-from .catalog import compile_plan, default_plan, specs
+from .catalog import compile_plan, default_plan, specs, current_revision
 from .controller import JointActionSolver
 from .geometry import GeometryService
 
@@ -35,8 +35,11 @@ def load_env(path: Path, *, override=False):
 
 
 class DeepSeekClient:
-    def __init__(self, timeout=45, budget=None):
+    def __init__(self, timeout=45, budget=None, *, max_tokens=4096, retries=3):
         self.budget = budget
+        if type(max_tokens) is not int or not 256<=max_tokens<=8192 or type(retries) is not int or not 1<=retries<=3:
+            raise ValueError("Invalid transport limits")
+        self.max_tokens,self.retries=max_tokens,retries
         self.key = os.environ.get("DEEPSEEK_API_KEY", "")
         self.model = os.environ.get("DEEPSEEK_MODEL", "")
         self.base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
@@ -51,15 +54,15 @@ class DeepSeekClient:
         await self.http.aclose()
 
     async def complete(self, messages):
-        body = {"model": self.model, "messages": messages, "response_format": {"type": "json_object"}, "max_tokens": 4096}
+        body = {"model": self.model, "messages": messages, "response_format": {"type": "json_object"}, "max_tokens": self.max_tokens}
         async def request():
             headers = {"Content-Type": "application/json", "Authorization": "Bearer "+self.key}
             deadline = time.monotonic()+self.timeout
-            for attempt in range(3):
+            for attempt in range(self.retries):
                 try:
                     # Cancellation unwinds the request socket; app cleanup also
                     # closes the shared pool. No urllib worker tail survives.
-                    ticket = self.budget.reserve(messages) if self.budget else None
+                    ticket = self.budget.reserve(messages,self.max_tokens) if self.budget else None
                     if ticket: body["max_tokens"] = ticket["output"]
                     response = await self.http.post(self.base_url+"/chat/completions", json=body, headers=headers,
                                                     timeout=max(.1, deadline-time.monotonic()))
@@ -68,13 +71,14 @@ class DeepSeekClient:
                     if ticket: self.budget.settle(ticket,data.get("usage",{}))
                     break
                 except httpx.HTTPStatusError as exc:
-                    if exc.response.status_code not in (429, 500, 502, 503, 504) or attempt == 2: raise
+                    if exc.response.status_code not in (429, 500, 502, 503, 504) or attempt == self.retries-1: raise
                 except httpx.TransportError:
-                    if attempt == 2 or time.monotonic() >= deadline: raise
+                    if attempt == self.retries-1 or time.monotonic() >= deadline: raise
                 await asyncio.sleep(.5*(attempt+1))
             content = data["choices"][0]["message"].get("content")
             if not content: raise ValueError("DeepSeek returned empty JSON content")
-            return content, {**data.get("usage", {}), "finish_reason": data["choices"][0].get("finish_reason")}
+            return content, {**data.get("usage", {}), "finish_reason": data["choices"][0].get("finish_reason"),
+                             "response_model":data.get("model"),"response_id":data.get("id")}
         return await asyncio.wait_for(request(), timeout=self.timeout)
 
 
@@ -125,6 +129,7 @@ class Planner:
 
     def context(self, s, build, revision, feedback):
         ref = ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id,
+                         catalog_revision=current_revision(),
                          build_revision=build.revision, plan_revision=revision,
                          experience_revision=build.experience_revision,
                          floor_instance_id=s.floor.instance_id if s.floor else None)

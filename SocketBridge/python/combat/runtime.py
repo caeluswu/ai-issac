@@ -14,7 +14,7 @@ import subprocess
 import time
 import importlib.metadata
 from .models import ContextRef, RoomReport, ActionReceipt, Vec
-from .catalog import compile_plan, default_plan
+from .catalog import compile_plan, default_plan, current_revision
 from .controller import BuildResolver, JointActionSolver
 from .geometry import GeometryService
 from .observation import SnapshotAssembler, CombatJudge
@@ -59,6 +59,9 @@ class RunLog:
         files = (list((root/"SocketBridge/python/combat").glob("*.py"))+
                  list((root/"SocketBridge/python/apps").glob("*.py"))+
                  list((root/"SocketBridge/python/campaign").glob("*.py"))+
+                 list((root/"SocketBridge/python/mechanisms").glob("*.py"))+
+                 list((root/"skills").glob("weapon.*/*/program.json"))+
+                 list((root/"skills").glob("weapon.*/*/manifest.json"))+
                  [root/"SocketBridge/main.lua", root/"SocketBridge/python/facade.py",
                   root/"SocketBridge/python/connection/server.py", root/"run_first_room.py",
                   root/"run-first-room.ps1",root/"run_floor.py"])
@@ -327,6 +330,8 @@ class CombatSession:
         self.navigation_replan_requests = 0
         self.navigation_devices = {}
         bridge.on_message(self.on_message)
+        from mechanisms.integration import load_session_skills
+        load_session_skills(self,Path(__file__).resolve().parents[3])
 
     def on_message(self, raw):
         self.log("game_message", message=raw)
@@ -476,6 +481,7 @@ class CombatSession:
 
     def context_ref(self, s, build):
         return ContextRef(run_id=s.run_id, room_visit_id=s.room_visit_id, snapshot_id=s.snapshot_id,
+                          catalog_revision=current_revision(),
                           build_revision=build.revision, plan_revision=self.revision,
                           experience_revision=build.experience_revision,
                           floor_instance_id=s.floor.instance_id if s.floor else None)
