@@ -304,6 +304,7 @@ class CombatSession:
         self.applied = ReceiptWindow()
         self.rejected = None
         self.build_resolver = BuildResolver()
+        if self.learning:self.learning.gateway.build_resolver=self.build_resolver
         self.solver = JointActionSolver()
         self.supervisor = ProgressSupervisor()
         self.previous_action = None

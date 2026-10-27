@@ -5,11 +5,11 @@ import json
 import math
 import statistics
 from .models import BuildProfile, Vec
+from .item_capabilities import ITEM_SUPPORT, resolve_items
 
 
 # Narrow host support, verified against the pinned EID package by P5 tooling.
 # These are implementation support rules, not estimates of item strength.
-ITEM_SUPPORT = {105: "inactive_active", 1: "attributes", 4: "attributes", 12: "attributes", 20: "flight"}
 
 
 def collectibles(s):
@@ -43,7 +43,8 @@ def observed_build(s):
 
 
 class NormalTearsBuild:
-    def __init__(self):
+    def __init__(self,*,piercing=False):
+        self.piercing=piercing
         self.profile = BuildProfile()
         self.seen = set()
         self.seen_order = deque()
@@ -66,18 +67,7 @@ class NormalTearsBuild:
         self.seed_speed = None
 
     def update(self, s):
-        if s.stats["weapon_type"] != 1 or s.stats["player_type"] != 0:
-            raise ValueError("UNSUPPORTED_BUILD: no compatible observed weapon/character")
-        unknown = [int(k) for k, v in collectibles(s).items() if v and int(k) not in ITEM_SUPPORT]
-        trinkets = [s.inventory.get(k, 0) for k in ("trinket_0", "trinket_1")]
-        effects = s.effects.items if s.effects else []
-        if unknown or any(trinkets) or any(e.count and (e.kind != "collectible" or e.item_id not in ITEM_SUPPORT) for e in effects):
-            raise ValueError("UNSUPPORTED_BUILD: unmapped item/effect capabilities")
-        if any(v.get("item") not in ITEM_SUPPORT for v in (s.inventory.get("active_items") or {}).values()):
-            raise ValueError("UNSUPPORTED_BUILD: active inventory capability unknown")
-        if s.inventory_coverage and s.inventory_coverage.static_status != "known":
-            raise ValueError("UNSUPPORTED_BUILD: incomplete inventory observation")
-        if s.effects and s.effects.status != "known": raise ValueError("UNSUPPORTED_BUILD: temporary effects unknown")
+        capabilities=resolve_items(s,piercing=self.piercing)
         state = observed_build(s)
         if self.run_id != s.run_id:
             self.revision, self.previous, self.run_id = 0, None, s.run_id
@@ -98,6 +88,7 @@ class NormalTearsBuild:
         p = self.profile.model_copy(deep=True)
         p.revision = self.revision
         p.signature = digest(state)
+        p.modifiers=list(capabilities.modifiers)
         p.calibration_key = calibration
         p.changed_domains = changes
         p.damage_per_hit = float(s.stats.get("damage", 3.5))
@@ -140,11 +131,25 @@ class BuildResolver:
         self.mechanism_adapter=mechanism_adapter
         self.previous_semantic=None
         self.run_id=None
+        self.attack_model=None
+
+    def supports_pickup(self,s,pickup):
+        if pickup.variant!=100 or pickup.sub_type is None:return False
+        future=s.model_copy(deep=True);items=dict(collectibles(s));items[str(pickup.sub_type)]=items.get(str(pickup.sub_type),0)+1
+        future.inventory["collectibles"]=items
+        try:
+            resolve_items(future,charge=self.mechanism_adapter is not None,piercing=self.attack_model is not None)
+        except ValueError:return False
+        return True
 
     def adapter_for(self,s):
         return self.mechanism_adapter if self.mechanism_adapter and collectibles(s).get("69") else self.adapters[s.stats["weapon_type"]]
 
     def update(self, s):
+        for adapter in self.adapters.values():
+            if isinstance(adapter,NormalTearsBuild):adapter.piercing=self.attack_model is not None
+        if self.mechanism_adapter and hasattr(self.mechanism_adapter,"allow_piercing"):
+            self.mechanism_adapter.allow_piercing=self.attack_model is not None
         weapon = s.stats["weapon_type"]
         if weapon not in self.adapters: raise ValueError("UNSUPPORTED_BUILD: unregistered weapon adapter")
         if self.weapon_type is not None and weapon != self.weapon_type:
@@ -152,6 +157,9 @@ class BuildResolver:
         self.weapon_type = weapon
         adapter=self.adapter_for(s)
         profile=adapter.update(s)
+        if self.attack_model and "piercing" in profile.modifiers:
+            profile.attack_binding=self.attack_model.identity
+            profile.signature=digest([profile.signature,profile.attack_binding])
         if self.run_id!=s.run_id:self.epoch=0;self.previous_semantic=None;self.run_id=s.run_id
         semantic=(profile.family,profile.signature)
         if semantic!=self.previous_semantic:self.epoch+=1;self.previous_semantic=semantic

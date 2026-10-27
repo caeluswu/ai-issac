@@ -79,7 +79,8 @@ class KnowledgeGateway:
             else: records = answer["results"][0]["records"]
             if not reasons:
                 if not records or not records[0]["parser_complete"]: reasons.append("DESCRIPTION_PARTIAL_OR_MISSING")
-                elif pickup.sub_type not in ITEM_SUPPORT and not (getattr(self,"mechanism_adapter",None) and self.mechanism_adapter.supports_pickup(s,pickup)):
+                elif not (self.build_resolver.supports_pickup(s,pickup) if getattr(self,"build_resolver",None) else
+                        pickup.sub_type in ITEM_SUPPORT or (getattr(self,"mechanism_adapter",None) and self.mechanism_adapter.supports_pickup(s,pickup))):
                     reasons.append("CAPABILITY_NOT_IMPLEMENTED")
                 elif ITEM_SUPPORT.get(pickup.sub_type) == "inactive_active": reasons.append("ACTIVE_STRATEGY_NOT_ENABLED")
                 elif pickup.price < 0: reasons.append("HEALTH_PAYMENT_NOT_AUTHORIZED")

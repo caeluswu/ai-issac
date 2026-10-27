@@ -332,6 +332,9 @@ class BattleAssessment(Strict):
 
 class BuildProfile(Strict):
     family: str = "normal_tears"
+    modifiers: list[str] = Field(default_factory=list)
+    attack_binding: str | None = None
+    calibration_state: Literal["ready","needs_probe","estimated"] = "ready"
     revision: int = 1
     move_speed: float = 4.2
     player_displacement_scale: float = Field(default=1, gt=0, le=4)
