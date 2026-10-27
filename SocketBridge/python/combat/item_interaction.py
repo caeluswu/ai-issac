@@ -47,8 +47,6 @@ class PickupExecutor:
                 if current.blocking_combat or current.hostiles or not current.alive: raise RuntimeError("PICKUP_NEW_THREAT_OR_DEATH")
                 if boundary_danger(current):
                     raise RuntimeError("PICKUP_NEW_HAZARD")
-                if current.hp < start.hp or current.health["bone_hearts"] < start.health["bone_hearts"]:
-                    raise RuntimeError("PICKUP_UNEXPECTED_HEALTH_LOSS")
                 instance = next((p for p in current.pickups or [] if p.instance_id == pickup.instance_id),None)
                 acquired = False
                 if pickup.variant == 100:
@@ -65,8 +63,11 @@ class PickupExecutor:
                         raise RuntimeError("PICKUP_COST_NOT_CONFIRMED")
                     updated = session.build_resolver.update(current)
                     result.update(result="confirmed",reason="pickup_consumed_and_inventory_changed",build_revision=updated.revision,
-                                  inventory_after=current.inventory,source_mode="normal_pickup")
+                                  inventory_after=current.inventory,health_before=start.health,
+                                  health_after=current.health,source_mode="normal_pickup")
                     return result
+                if current.hp < start.hp or current.health["bone_hearts"] < start.health["bone_hearts"]:
+                    raise RuntimeError("PICKUP_UNEXPECTED_HEALTH_LOSS")
                 if emptied:
                     if empty_since is None:
                         empty_since = current.frame

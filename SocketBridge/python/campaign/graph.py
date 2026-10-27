@@ -72,7 +72,10 @@ class FloorGraph:
                 target = node.links.get(slot) or self.destination(door)
                 step = slot if first is None else first
                 if target not in self.nodes:
-                    priority = {5:0,4:1,1:2}[door.target_room_type]
+                    # An accessible treasure opportunity is worth visiting before
+                    # ending the floor at the boss. The pickup gateway still
+                    # decides whether a particular item can be used.
+                    priority = {4:0,5:1,1:2}[door.target_room_type]
                     candidates.append((priority,depth,step))
                 elif target not in seen:
                     # A visible open return door can be attempted; only confirm() records its actual edge.

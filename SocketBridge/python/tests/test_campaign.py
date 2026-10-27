@@ -66,6 +66,13 @@ class TestFloorGraph(unittest.TestCase):
         self.assertEqual(graph.grid_aliases[83],key)
         with self.assertRaisesRegex(ValueError,"GRAPH_FLOOR_CHANGED"): graph.observe(floor_snapshot(stage=2))
 
+    def test_available_treasure_precedes_boss_exit(self):
+        s=floor_snapshot()
+        s.layout["doors"]={"0":door(85,kind=5,x=0),"2":door(86,kind=4)}
+        slot,target=FloorGraph().choose(s)
+        self.assertEqual(slot,2)
+        self.assertEqual(target.target_room_type,4)
+
 
 class TestFloorJudge(unittest.TestCase):
     def prepare_boss(self):

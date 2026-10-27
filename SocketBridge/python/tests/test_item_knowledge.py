@@ -19,7 +19,7 @@ def package_fixture(root):
             for table in ("collectibles","trinkets","cards","pills"):
                 head = f"EID.descriptions[languageCode].{table}" if layer=="ab+" else "local rep"+table[0].upper()+table[1:]
                 description = "Base {{Tears}} boost" if layer=="ab+" else "Rep {{Tears}} boost#Conditional coverage unknown"
-                lines.append(head+'={{"1","Fixture","'+description+'"}}')
+                lines.append(head+'={{"1","Fixture","'+description+'"},{"14","Roid Rage","{{Speed}} +0.3 Speed#{{Range}} +2.5 Range"}}')
             path = Path(root)/"source/descriptions"/layer/(code+".lua")
             path.parent.mkdir(parents=True,exist_ok=True); path.write_text("\n".join(lines),encoding="utf-8")
     destination = Path(root)/"package"
@@ -104,6 +104,17 @@ class TestPickupDecisions(unittest.TestCase):
             self.assertEqual(hidden.decision,"skip")
             self.assertEqual(gateway.decide(s,build,pickup(wait=10)).decision,"defer")
             self.assertEqual(gateway.decide(s,build,pickup(item_id=999)).decision,"skip")
+
+    def test_boss_stat_reward_is_taken_from_pinned_description_and_capability(self):
+        with tempfile.TemporaryDirectory() as root:
+            gateway=KnowledgeGateway(package_fixture(root),AgentStore(Path(root)/"agent.sqlite"))
+            resolver=BuildResolver();gateway.build_resolver=resolver
+            s=snapshot();s.room.update(room_type=5,stage=2);s.inventory["coins"]=0
+            reward=pickup(14)
+            result=gateway.decide(s,resolver.update(s),reward)
+            self.assertEqual(result.decision,"take")
+            self.assertIn("SUPPORTED_FREE_ITEM",result.reason_codes)
+            self.assertTrue(result.evidence_refs)
 
     def test_skipped_pickup_blocks_path_but_allows_withdrawal(self):
         s=snapshot();s.pickup_exclusions=[{"id":"item","x":360,"y":160,"radius":10}]

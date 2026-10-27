@@ -358,5 +358,5 @@ class FloorDirector:
             wall_seconds=time.monotonic()-self.began,pause_seconds=self.session.pause_seconds-before_pause,
             llm_configured=self.session.llm_configured,fallback_count=self.session.fallbacks,
             request_budget=self.budget.report() if self.budget else {"requests":0,"cost":0},
-            evaluation_mode="debug_replay" if self.session.seed else "normal_random",
+            evaluation_mode="debug_replay" if getattr(self.session,"seed",None) else "normal_random",
             cleanup_errors=cleanup)

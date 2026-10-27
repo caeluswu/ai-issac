@@ -33,9 +33,29 @@ class TestItemCapabilities(unittest.TestCase):
     def test_pickup_preview_does_not_mutate_build(self):
         s=snapshot();r=BuildResolver();old=r.update(s)
         self.assertTrue(r.supports_pickup(s,pickup(32)))
+        self.assertTrue(r.supports_pickup(s,pickup(14)))
+        self.assertTrue(r.supports_pickup(s,pickup(167)))
+        self.assertTrue(r.supports_pickup(s,pickup(240)))
+        self.assertTrue(r.supports_pickup(s,pickup(538)))
         self.assertFalse(r.supports_pickup(s,pickup(48)))
         self.assertEqual(r.update(s).signature,old.signature)
         self.assertNotIn("32",s.inventory["collectibles"])
+
+    def test_boss_stat_reward_rebinds_from_actual_panel_and_familiar_keeps_calibration(self):
+        s=snapshot();r=BuildResolver();before=r.update(s)
+        s.inventory["collectibles"]["14"]=1
+        s.stats.update(speed=1.3,tear_range=320)
+        after=r.update(s)
+        self.assertNotEqual(before.calibration_key,after.calibration_key)
+        self.assertGreater(after.move_speed,before.move_speed)
+        self.assertGreater(after.effective_range,before.effective_range)
+        s.inventory["collectibles"]["167"]=1
+        familiar=r.update(s)
+        self.assertEqual(after.calibration_key,familiar.calibration_key)
+        self.assertEqual(familiar.family,"normal_tears")
+        s.inventory["collectibles"]["254"]=1
+        eye=r.update(s)
+        self.assertIn("left_eye_damage",eye.modifiers)
 
 
 class TestAdaptiveCharge(unittest.TestCase):
@@ -71,6 +91,8 @@ class TestAdaptiveCharge(unittest.TestCase):
             restored=self.adapter(directory).update(s)
             self.assertEqual(restored.calibration_source,"experience")
             self.assertEqual(restored.calibration_samples,1)
+            s.inventory["collectibles"]["254"]=1
+            self.assertNotEqual(calibration_key(s),old)
             s.stats["damage"]=8
             self.assertEqual(a.update(s).calibration_state,"needs_probe")
 

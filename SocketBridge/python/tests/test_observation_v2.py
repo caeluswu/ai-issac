@@ -134,8 +134,15 @@ class TestObservationV2(unittest.TestCase):
         legacy = lua_value(self.lua.eval('api.Sensors.sensors.PICKUPS.extract(pickupEntity,player)'))
         self.assertIsNone(legacy.get("sub_type"))
         self.lua.execute("stage=2;curses=0")
-        self.assertEqual(self.observe().pickups[0].identity_visibility, "unknown")
+        later = self.observe().pickups[0]
+        self.assertEqual(later.identity_visibility, "visible")
+        self.assertEqual(later.sub_type, 2)
+        self.lua.execute("curses=64")
         self.assertIsNone(self.observe().pickups[0].sub_type)
+        self.lua.execute("curses=0;level.GetRoomByIdx=function(self,index,d) if d==1 then return desc else return {pointer=tostring(d)} end end")
+        self.assertEqual(self.observe().pickups[0].identity_visibility,"unknown")
+        self.lua.execute("curses=0;stage=7")
+        self.assertEqual(self.observe().pickups[0].identity_visibility, "unknown")
 
     def test_reroll_identity_changes_but_entity_instance_is_stable(self):
         self.pickup(); before = self.observe().pickups[0]

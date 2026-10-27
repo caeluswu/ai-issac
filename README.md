@@ -101,7 +101,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 .\.venv\Scripts\python.exe analyze_damage.py summarize artifacts/runs/<run>/damage
 ```
 
-首轮已审核三次历史运行中的六次受伤，实际使用 3 次请求；API 原文、失败、用量和开发 Agent 审核分别保存。六例结论均为部分合理，存在单位、方位或跨案例引用错误。详见 [归因审核](docs/evidence/phase-2c-attribution-review.zh-CN.md)。M2-C 的 JS 运行和菜刀局内采用已有实机证据；另有用户授权追加的一次模型战后反馈决定保留程序，开发审核指出其玩家/敌人血量语义错误。自动修订尚无验收。M2-C 合计 7 次实际请求，24 次总上限不能通过重启重置。
+首轮已审核三次历史运行中的六次受伤，实际使用 3 次请求；API 原文、失败、用量和开发 Agent 审核分别保存。六例结论均为部分合理，存在单位、方位或跨案例引用错误。详见 [归因审核](docs/evidence/phase-2c-attribution-review.zh-CN.md)。M2-C 的 JS 运行和菜刀局内采用已有实机证据；一次模型战后反馈决定保留程序，开发审核指出其玩家/敌人血量语义错误。自动修订尚无验收。M2-C 合计 7 次实际请求，24 次总上限不能通过重启重置。
 
 ## M2-C 道具适配实机复核
 
@@ -114,6 +114,18 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 ```
 
 菜刀基础构筑有确认的中距离投掷命中；上述属性组合已清房并确认刀伤，但那次运行没有确认投掷命中。详情见 [道具适配证据](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。
+
+## J835 被动道具与 Boss 奖励
+
+当前普通泪弹路线登记 155 个被动/跟班道具 ID。拾取前查询 EID，拾取后按实际面板、库存、生命与武器类型重新绑定；主武器机制改变的道具仍需专属组件。模组在第 1～6 层普通维度、非失明诅咒下提供可见底座身份，失明时隐藏 ID。
+
+本机 J835 `resources-dlc3/itempools.xml` 的 Boss 奖励池共有 59 个唯一 ID，当前能力表覆盖 59 个。覆盖是拾取与通用控制的准入范围，不代表逐个道具实机验证或收益评估。静态核对 EID 记录与游戏道具类型：
+
+```powershell
+.\.venv\Scripts\python.exe scripts/audit_item_support.py
+```
+
+实机拾取、构筑变化与未验证边界见 [被动道具支持证据](docs/evidence/j835-passive-item-support.zh-CN.md)。
 
 ## 连续两层运行（M3-A）
 

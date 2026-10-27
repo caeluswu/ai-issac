@@ -1,9 +1,49 @@
-"""One narrow, observed capability map shared by pickup and build resolution."""
+"""Reviewed J835/EID passive classes shared by pickup and build resolution.
+
+The panel, health and flight are read from the game after pickup. These IDs
+were reviewed against the pinned EID English descriptions; this registry is
+an implementation claim, not an item-value ranking or a stat formula.
+"""
 from dataclasses import dataclass
 
-ITEM_SUPPORT={105:"inactive_active",1:"attributes",4:"attributes",12:"attributes",
-              20:"flight",27:"movement_attributes",32:"attributes",50:"attributes"}
+# Attack stats can change aim, damage or cadence, so their ID is part of the
+# ordinary-tear calibration scope. Extra benign effects may be undervalued.
+ATTACK_ATTRIBUTES=frozenset({
+    1,4,6,7,12,14,29,30,32,50,51,62,70,72,79,80,90,101,109,120,
+    121,138,143,165,176,183,189,193,194,196,197,216,240,254,255,259,
+    309,310,339,341,342,345,355,359,370,381,411,415,438,442,443,
+    455,465,493,513,547,564,567,573,600,601,621,644,659,695,708,
+    730,731,732,
+})
+MOVEMENT_ATTRIBUTES=frozenset({20,27,28,71,82,232,340,571,590,632})
+HEALTH_AND_UTILITY=frozenset({
+    15,16,22,23,24,25,26,31,92,119,129,141,184,195,198,218,219,
+    226,253,312,334,343,344,346,354,428,456,501,538,541,591,614,624,707,
+})
+# These add autonomous damage/defence. They do not replace Isaac's normal
+# movement or tear input. Their contribution is observed, not promised DPS.
+SUPPLEMENTAL_PASSIVES=frozenset({
+    10,57,73,112,128,151,167,172,207,211,217,234,247,248,264,274,
+    275,279,280,318,319,322,360,361,363,364,387,403,412,413,430,509,
+    525,526,528,542,645,661,693,698,702,717,
+})
+assert not any(a & b for a,b in (
+    (ATTACK_ATTRIBUTES,MOVEMENT_ATTRIBUTES),
+    (ATTACK_ATTRIBUTES,HEALTH_AND_UTILITY),
+    (ATTACK_ATTRIBUTES,SUPPLEMENTAL_PASSIVES),
+    (MOVEMENT_ATTRIBUTES,HEALTH_AND_UTILITY),
+    (MOVEMENT_ATTRIBUTES,SUPPLEMENTAL_PASSIVES),
+    (HEALTH_AND_UTILITY,SUPPLEMENTAL_PASSIVES),
+))
+ITEM_SUPPORT={105:"inactive_active"}
+for _items,_class in ((ATTACK_ATTRIBUTES,"attributes"),
+                      (MOVEMENT_ATTRIBUTES,"movement_attributes"),
+                      (HEALTH_AND_UTILITY,"health_utility"),
+                      (SUPPLEMENTAL_PASSIVES,"supplemental_passive")):
+    ITEM_SUPPORT.update({item:_class for item in _items})
 MECHANISMS={69:"charge",114:"knife"}
+PASSIVE_MODIFIERS={240:"random_stat_tradeoff",254:"left_eye_damage",
+                   538:"trinket_generation",600:"left_eye_fire_rate",731:"right_eye_damage"}
 
 
 @dataclass(frozen=True)
@@ -29,11 +69,13 @@ def resolve_items(s,*,charge=False,knife=False,preview=False):
     if s.effects and (s.effects.status!="known" or any(e.count and (e.kind!="collectible" or e.item_id not in ITEM_SUPPORT) for e in s.effects.items)):
         raise ValueError("UNSUPPORTED_BUILD: temporary effects unknown")
     return ItemCapabilities("knife" if is_knife else "charged_tears" if 69 in items else "normal_tears",
-                            tuple(MECHANISMS[i] for i in sorted(items) if i==69),tuple(sorted(items)))
+                            tuple((MECHANISMS.get(i) or PASSIVE_MODIFIERS[i]) for i in sorted(items)
+                                  if i==69 or i in PASSIVE_MODIFIERS),tuple(sorted(items)))
 
 
 def attack_identity(s):
     """Movement-only items/health cannot invalidate a weapon measurement."""
     return {"stats":{k:s.stats.get(k) for k in ("player_type","weapon_type","damage","max_fire_delay","shot_speed","tear_range","tear_height","tear_falling_speed")},
+        "attack_items":sorted(int(k) for k,v in s.inventory.get("collectibles",{}).items() if v and int(k) in ATTACK_ATTRIBUTES),
         "mechanisms":sorted(int(k) for k,v in s.inventory.get("collectibles",{}).items() if v and int(k) in MECHANISMS),
         "effects":[(e.kind,e.item_id,e.count) for e in s.effects.items] if s.effects else None}

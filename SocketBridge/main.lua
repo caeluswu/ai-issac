@@ -990,12 +990,14 @@ function Helpers.pickupObservation(entity, player)
         visibility, reason = "unknown", "appearance_not_verified"
         local visible = Helpers.optional(function()
             local level = Game():GetLevel()
-            return player:GetPlayerType() == 0 and level:GetStage() == 1 and level:GetStageType() <= 2
+            local stage = level:GetStage()
+            return player:GetPlayerType() == 0 and stage >= 1 and stage <= 6
+                and level:GetStageType() <= 2 and Helpers.floorObservation().dimension == 0
                 and (level:GetCurses() & LevelCurse.CURSE_OF_BLIND) == 0 and entity.SubType > 0
         end)
         local blind = Helpers.optional(function() return (Game():GetLevel():GetCurses() & LevelCurse.CURSE_OF_BLIND) ~= 0 end)
         if blind then visibility, reason="hidden", "curse_of_blind"
-        elseif visible then visibility, reason="visible", "isaac_standard_first_floor_no_blind" end
+        elseif visible then visibility, reason="visible", "isaac_normal_mainline_no_blind" end
         if visibility ~= "visible" then subtype=nil end
     elseif entity.Variant == 70 then
         visibility, reason="unknown", "pill_color_only"

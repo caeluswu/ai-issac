@@ -84,9 +84,9 @@ class KnowledgeGateway:
                     reasons.append("CAPABILITY_NOT_IMPLEMENTED")
                 elif ITEM_SUPPORT.get(pickup.sub_type) == "inactive_active": reasons.append("ACTIVE_STRATEGY_NOT_ENABLED")
                 elif pickup.price < 0: reasons.append("HEALTH_PAYMENT_NOT_AUTHORIZED")
+                elif pickup.price == 0: decision="take"; reasons.append("SUPPORTED_FREE_ITEM")
                 elif s.inventory.get("coins") is None or s.inventory["coins"]-pickup.price < reserve_coins:
-                    if pickup.price == 0: decision="take"; reasons.append("SUPPORTED_FREE_ITEM")
-                    else: reasons.append("INSUFFICIENT_COINS_OR_RESERVE")
+                    reasons.append("INSUFFICIENT_COINS_OR_RESERVE")
                 else: decision="take"; cost=pickup.price; reasons.append("SUPPORTED_ITEM_WITH_DESCRIPTION")
                 benefits = [r["summary"]["text"] for r in records if r["summary"]["text"]]
         elif pickup.variant == 20 and pickup.sub_type in (1, 2, 3, 5) and pickup.price == 0 and (s.inventory.get("coins") or 0) < 99:

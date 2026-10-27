@@ -38,6 +38,35 @@ class TestExperienceStore(unittest.TestCase):
 
 
 class TestItemLearning(unittest.IsolatedAsyncioTestCase):
+    async def test_owned_stat_item_with_health_change_is_recorded_not_lost(self):
+        class StatRoom(SimulatedRoom):
+            async def data(self):
+                if self.s.pickups and not self.s.pickups[0].is_empty and self.s.player.pos.distance(self.s.pickups[0].pos)<18:
+                    self.s.pickups[0].is_empty=True
+                    self.s.pickups[0].sub_type=None
+                    self.s.pickups[0].identity_visibility="unknown"
+                    self.s.inventory["collectibles"]["14"]=1
+                    self.s.stats.update(speed=1.3,tear_range=320)
+                    self.s.health["red_hearts"]=5
+                await super().data()
+        with tempfile.TemporaryDirectory() as root:
+            learning=ItemLearning(KnowledgeGateway(package_fixture(root),AgentStore(Path(root)/"agent.sqlite")),source_mode="simulated_game")
+            game=StatRoom();game.s.pickups=[pickup(14)]
+            bridge=SocketBridge(port=0);log=RunLog(Path(root)/"run")
+            session=CombatSession(bridge,None,game,log,ready_timeout=3,learning=learning)
+            async def boot(_):await game.connect(bridge._server._server.sockets[0].getsockname()[1])
+            try:
+                s=await session.open(bootstrap=boot);build=session.build_resolver.update(s)
+                await learning.prepare_room(s,build)
+                target=s.pickups[0];decision=learning.decisions[(target.instance_id,target.sub_type,target.price)]
+                result=await asyncio.wait_for(learning.pickups.execute(session,s,build,target,decision),8)
+                self.assertEqual(result["result"],"confirmed",result)
+                self.assertEqual(result["health_before"]["red_hearts"],6)
+                self.assertEqual(result["health_after"]["red_hearts"],5)
+                self.assertEqual(result["inventory_after"]["collectibles"]["14"],1)
+            finally:
+                await session.close();await game.close();log.file.close()
+
     async def test_pickup_transaction_moves_normally_and_confirms_inventory(self):
         class PickupRoom(SimulatedRoom):
             touched_frame = None
