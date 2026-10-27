@@ -98,3 +98,19 @@ class FloorReport(Strict):
     fallback_count: int = 0
     request_budget: dict = Field(default_factory=dict)
     cleanup_errors: list[str] = Field(default_factory=list)
+
+
+class RunReport(Strict):
+    result: str
+    success: bool
+    run_id: str | None = None
+    seed: str | None = None
+    error: str | None = None
+    floors: list[FloorReport] = Field(default_factory=list)
+    floor_instance_ids: list[str] = Field(default_factory=list)
+    damage_half_hearts: int = 0
+    bones_lost: int = 0
+    resources_spent: dict = Field(default_factory=dict)
+    wall_seconds: float = 0
+    request_budget: dict = Field(default_factory=dict)
+    cleanup_errors: list[str] = Field(default_factory=list)

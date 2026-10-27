@@ -180,8 +180,9 @@ class TestRequestBudget(unittest.IsolatedAsyncioTestCase):
 
 
 class SimulatedFloor(SimulatedRoom):
-    def __init__(self):
+    def __init__(self,end_stage=1):
         super().__init__();self.s=floor_snapshot();self.s.mode="MANUAL"
+        self.end_stage=end_stage
         self.s.layout["doors"]={"2":door(85)}
         self.visits=1
         self.boss_intro_until=None
@@ -233,10 +234,10 @@ class SimulatedFloor(SimulatedRoom):
                 if self.s.room["room_idx"]==86:
                     self.s.layout["grid"]["71"]={"type":17,"variant":0,"state":1,"collision":0,"x":440,"y":160}
                     self.s.exit_observations=[ExitObservation(instance_id="trapdoor",grid_index=71,type=17,variant=0,state=1,collision=0,pos=Vec(x=440,y=160))]
-            if self.s.floor.stage==1 and self.s.room["room_idx"]<86 and self.s.player.pos.x>=530:
-                self.enter(self.s.room["room_idx"]+1)
-            elif self.s.floor.stage==1 and self.s.room["room_idx"]==86 and self.s.exit_observations and self.s.player.pos.distance(self.s.exit_observations[0].pos)<18:
-                self.enter(84,stage=2)
+            if self.s.floor.stage<=self.end_stage and self.s.room["room_idx"]<86 and self.s.player.pos.x>=530:
+                self.enter(self.s.room["room_idx"]+1,stage=self.s.floor.stage)
+            elif self.s.floor.stage<=self.end_stage and self.s.room["room_idx"]==86 and self.s.exit_observations and self.s.player.pos.distance(self.s.exit_observations[0].pos)<18:
+                self.enter(84,stage=self.s.floor.stage+1)
             await self.data()
 
 

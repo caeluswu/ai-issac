@@ -2,7 +2,7 @@
 
 面向《以撒的结合：忏悔》原版 `1.7.9b.J835`，使用 SocketBridge 读取结构化状态，由可替换的底层控制组件执行移动与射击。DeepSeek 负责选择组件、填写参数和必要的异常诊断，也可通过独立开发流程编写有界机制程序。
 
-当前运行入口包括单房控制 `run_first_room.py` 和首层控制 `run_floor.py`。首层流程复用同一连接，维护已观察地图，执行普通战斗、有限拾取、Boss 和正常离层，并独立确认第二层可行动。原生入房暂停与战中异步诊断均有预算。
+当前运行入口包括单房控制 `run_first_room.py`、首层控制 `run_floor.py` 和同局两层控制 `run_two_floors.py`。跨层流程复用同一连接、构筑及健康账本，每层重建已观察地图，正常击败 Boss 并通过出口；M3-A 实机已连续完成前两层并确认第三层可行动。原生入房暂停与战中异步诊断均有预算。
 
 P0–P6 的四项审查缺陷已修复并加入回归。道具采用固定 EID 说明与有样本身份的本地经验，支持范围仍有限；主动实验关闭。M2-B 已完成巧克力牛奶的模型时序程序、实机清房和另一个进程复用，采用显式语法恢复，范围与全部失败见 [M2-B 验收](docs/evidence/phase-2b-validation.zh-CN.md)。首层覆盖见 [M2-A 证据](docs/evidence/phase-2a-validation.zh-CN.md)，操作见 [首层运行手册](docs/phase-2a-runbook.zh-CN.md)。
 
@@ -114,6 +114,18 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 ```
 
 菜刀基础构筑有确认的中距离投掷命中；上述属性组合已清房并确认刀伤，但那次运行没有确认投掷命中。详情见 [道具适配证据](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。
+
+## 连续两层运行（M3-A）
+
+```powershell
+# 固定种子用于开发复现；不调用 DeepSeek
+.\.venv\Scripts\python.exe run_two_floors.py --seed "3BYH A82R" --wall-limit 600
+
+# 省略 --seed 时由游戏产生正常随机种子；--llm-requests N 明确开放付费规划
+.\.venv\Scripts\python.exe run_two_floors.py
+```
+
+入口会自动启动指定游戏构建、核对存档基线，并把连续楼层报告和原始轨迹写入 `artifacts/runs/`。当前固定种子实机证据是两层成功、累计 5 个半心非主动损失；不代表随机种子稳定性或六层能力。详见 [M3-A 验证](docs/evidence/phase-3a-two-floor-validation.zh-CN.md)。
 
 ## 机制程序开发（M2-B）
 

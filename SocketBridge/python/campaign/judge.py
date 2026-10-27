@@ -11,7 +11,10 @@ def clear_of_threats(s):
 
 
 class FloorJudge:
-    def __init__(self):
+    def __init__(self, expected_stage=1):
+        if type(expected_stage) is not int or not 1 <= expected_stage <= 5:
+            raise ValueError("INVALID_EXPECTED_STAGE")
+        self.expected_stage = expected_stage
         self.observation = SnapshotAssembler()
         self.start = None
         self.previous = None
@@ -29,7 +32,7 @@ class FloorJudge:
 
     def begin(self,s):
         if (not s.floor or not s.floor_progress or s.floor_progress.curses is None
-                or not s.room.get("is_starting_room") or s.room["stage"] != 1
+                or not s.room.get("is_starting_room") or s.room["stage"] != self.expected_stage
                 or s.room.get("stage_type") not in (0,1,2) or s.room["difficulty"] != 0
                 or s.stats["player_type"] != 0 or not s.alive or s.hostiles):
             raise ValueError("UNSUPPORTED_FLOOR_START")
@@ -88,7 +91,7 @@ class FloorJudge:
             if not armed or s.frame-armed["frame"] > 300 or not self.previous:
                 self.failure = "UNAUTHORIZED_FLOOR_CHANGE"
             elif (self.previous.room_visit_id != armed["visit"] or self.previous.player.pos.distance(armed["pos"])>50
-                    or s.floor.stage != 2 or s.floor.stage_type not in (0,1,2) or s.floor.dimension != 0):
+                    or s.floor.stage != self.expected_stage+1 or s.floor.stage_type not in (0,1,2) or s.floor.dimension != 0):
                 self.failure = "WRONG_FLOOR_EXIT"
             elif not armed["movement_applied"]: self.failure = "EXIT_INPUT_NOT_PROVEN"
             else:

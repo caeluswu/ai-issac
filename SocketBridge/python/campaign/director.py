@@ -32,6 +32,21 @@ class FloorDirector:
         session.bridge.on_message(self.judge.on_raw)
         session.action_auditors.append(self.judge.action)
 
+    def reset_for_floor(self, stage):
+        """Retain the one session and registered judge callback across floors."""
+        self.graph = FloorGraph()
+        self.judge.__init__(expected_stage=stage)
+        self.context = self.start = None
+        self.state = "WAIT_READY"
+        self.transitions = []
+        self.rooms = []
+        self.exit_executing = False
+        self.displacement_errors = 0
+        self.diagnostic_task = self.diagnostic_plan = None
+        self.diagnosed = set()
+        self.began = time.monotonic()
+        self.session.transition_wait = None
+
     def enter_state(self,state,s,**details):
         self.state = state
         self.session.log("floor_state",state=state,snapshot_id=s.snapshot_id,**details)
@@ -220,7 +235,9 @@ class FloorDirector:
         self.judge.begin(s)
         self.context = FloorContext(run_id=s.run_id,floor_instance_id=s.floor.instance_id,
             stage=s.floor.stage,stage_type=s.floor.stage_type,dimension=s.floor.dimension,
-            curses=s.floor_progress.curses,initial_snapshot_id=s.snapshot_id)
+            curses=s.floor_progress.curses,initial_snapshot_id=s.snapshot_id,
+            support_profile=("j835-isaac-normal-tears-first-floor-v1" if s.floor.stage==1 else
+                             f"j835-isaac-normal-tears-stage{s.floor.stage}-experimental-v1"))
         while True:
             self.check(s)
             damage_before = self.session.task_judge.health.damage
@@ -290,10 +307,18 @@ class FloorDirector:
             if not task.done(): task.cancel()
             await asyncio.gather(task,return_exceptions=True)
 
-    async def run(self,bootstrap=None):
+    async def run(self,bootstrap=None,*,initial=None,close_session=True):
+        if initial is not None and bootstrap is not None:
+            raise ValueError("EXISTING_SESSION_CANNOT_BOOTSTRAP")
+        if initial is not None:
+            self.reset_for_floor(initial.floor.stage)
+        before_damage=self.session.task_judge.health.damage
+        before_bones=self.session.task_judge.health.bones_lost
+        before_resources=dict(self.session.resources.spent)
+        before_pause=self.session.pause_seconds
         result,error,cleanup = "FAILED",None,[]
         try:
-            s = await self.session.open(bootstrap=bootstrap)
+            s = initial if initial is not None else await self.session.open(bootstrap=bootstrap)
             await self.supervised(s)
             result = "FLOOR_COMPLETED" if self.judge.success else "FLOOR_NOT_PROVEN"
         except (Exception,asyncio.CancelledError) as exc:
@@ -305,8 +330,12 @@ class FloorDirector:
                 self.diagnostic_task.cancel()
                 await asyncio.gather(self.diagnostic_task,return_exceptions=True)
             try:
-                await self.session.close()
-                cleanup.extend(self.session.cleanup_errors)
+                if close_session:
+                    await self.session.close()
+                    cleanup.extend(self.session.cleanup_errors)
+                elif self.session.bridge.connected:
+                    await self.session.release()
+                    await self.session.set_mode("MANUAL")
             except Exception as exc: cleanup.append(str(exc))
         if result == "FLOOR_COMPLETED" and not self.judge.success:
             result="FLOOR_TERMINAL_NOT_PROVEN"
@@ -322,8 +351,12 @@ class FloorDirector:
         return FloorReport(result=result,success=result == "FLOOR_COMPLETED",error=error,
             seed=self.start.seed if self.start else None,context=self.context,rooms=self.rooms,
             transitions=self.transitions,evidence=self.judge.evidence(),
-            damage_half_hearts=self.session.task_judge.health.damage,bones_lost=self.session.task_judge.health.bones_lost,
-            resources_spent=self.session.resources.spent,game_ticks=last.frame-self.start.frame if last and self.start else 0,
-            wall_seconds=time.monotonic()-self.began,pause_seconds=self.session.pause_seconds,
+            damage_half_hearts=self.session.task_judge.health.damage-before_damage,
+            bones_lost=self.session.task_judge.health.bones_lost-before_bones,
+            resources_spent={k:v-before_resources.get(k,0) for k,v in self.session.resources.spent.items()},
+            game_ticks=last.frame-self.start.frame if last and self.start else 0,
+            wall_seconds=time.monotonic()-self.began,pause_seconds=self.session.pause_seconds-before_pause,
             llm_configured=self.session.llm_configured,fallback_count=self.session.fallbacks,
-            request_budget=self.budget.report() if self.budget else {"requests":0,"cost":0},cleanup_errors=cleanup)
+            request_budget=self.budget.report() if self.budget else {"requests":0,"cost":0},
+            evaluation_mode="debug_replay" if self.session.seed else "normal_random",
+            cleanup_errors=cleanup)

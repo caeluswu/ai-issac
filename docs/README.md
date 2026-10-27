@@ -1,6 +1,6 @@
 # 文档索引与维护边界
 
-当前实现包括单房与首层控制、有限道具、DeepSeek 蓄力时序程序、受伤归因，以及妈妈的菜刀 JavaScript 组件的短测、加载、实机清房、战后保留决策与复用。模型修订后的局内试用和 M3 连续多层仍缺独立验收。实机覆盖、全部失败与 API 用量以证据为准。
+当前实现包括单房、首层与同局连续两层控制、有限道具、DeepSeek 蓄力时序程序、受伤归因，以及妈妈的菜刀 JavaScript 组件的短测、加载、实机清房、战后保留决策与复用。模型修订后的局内试用和第三层至 Mom 的连续运行仍缺独立验收。实机覆盖、全部失败与 API 用量以证据为准。
 
 建议阅读顺序：任务契约 → 总体架构 → M2-A 验收 → M2-B 计划 → 需要的专项合同。日常启动与付费验证政策从 [项目 README](../README.md) 进入。
 
@@ -43,6 +43,7 @@
 | [EID 单道具验证](evidence/eid-item-knowledge-validation.zh-CN.md) | 实际 69 正文、按查询入库、跨进程复用及开发上下文；无付费调用 |
 | [M2-C 归因审核](evidence/phase-2c-attribution-review.zh-CN.md) | 六次历史受伤、三次实际API请求、逐例开发Agent审核与下一步判断 |
 | [M2-C 道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md) | 属性、69、菜刀114的实机矩阵、模型来源、失败和适用边界 |
+| [M3-A 连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md) | 同一 run、两层 Boss 与正常出口、第三层可行动、生命损失和元数据边界 |
 | [当前准备审查诊断 JSON](../artifacts/validation/m2-readiness-audit.json) | 合成场景复现四项边界缺陷；不是游戏损失记录 |
 
 ## 归档方案与源码参考
