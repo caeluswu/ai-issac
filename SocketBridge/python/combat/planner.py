@@ -34,12 +34,20 @@ def load_env(path: Path, *, override=False):
             else: os.environ.setdefault(key, value)
 
 
+class EmptyModelResponse(ValueError):
+    def __init__(self,metadata):
+        super().__init__("EMPTY_MODEL_CONTENT: "+str(metadata.get("finish_reason")))
+        self.metadata=metadata
+
+
 class DeepSeekClient:
-    def __init__(self, timeout=45, budget=None, *, max_tokens=4096, retries=3):
+    def __init__(self, timeout=45, budget=None, *, max_tokens=4096, retries=3, thinking=None):
         self.budget = budget
         if type(max_tokens) is not int or not 256<=max_tokens<=8192 or type(retries) is not int or not 1<=retries<=3:
             raise ValueError("Invalid transport limits")
         self.max_tokens,self.retries=max_tokens,retries
+        if thinking not in (None,"enabled","disabled"):raise ValueError("Invalid thinking mode")
+        self.thinking=thinking
         self.key = os.environ.get("DEEPSEEK_API_KEY", "")
         self.model = os.environ.get("DEEPSEEK_MODEL", "")
         self.base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
@@ -55,6 +63,7 @@ class DeepSeekClient:
 
     async def complete(self, messages):
         body = {"model": self.model, "messages": messages, "response_format": {"type": "json_object"}, "max_tokens": self.max_tokens}
+        if self.thinking is not None:body["thinking"]={"type":self.thinking}
         async def request():
             headers = {"Content-Type": "application/json", "Authorization": "Bearer "+self.key}
             deadline = time.monotonic()+self.timeout
@@ -76,9 +85,10 @@ class DeepSeekClient:
                     if attempt == self.retries-1 or time.monotonic() >= deadline: raise
                 await asyncio.sleep(.5*(attempt+1))
             content = data["choices"][0]["message"].get("content")
-            if not content: raise ValueError("DeepSeek returned empty JSON content")
-            return content, {**data.get("usage", {}), "finish_reason": data["choices"][0].get("finish_reason"),
-                             "response_model":data.get("model"),"response_id":data.get("id")}
+            metadata={**data.get("usage", {}), "finish_reason": data["choices"][0].get("finish_reason"),
+                      "response_model":data.get("model"),"response_id":data.get("id")}
+            if not content:raise EmptyModelResponse(metadata)
+            return content,metadata
         return await asyncio.wait_for(request(), timeout=self.timeout)
 
 

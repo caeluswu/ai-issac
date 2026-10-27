@@ -69,7 +69,9 @@ class Program:
         d=self.document
         if not isinstance(d,dict) or set(d)!={"schema_version","component_id","target_build","target_item","state","observe","decide","source_refs","assumptions"}:
             raise ProgramError("PROGRAM_FIELDS")
-        if type(d["schema_version"]) is not int or d["schema_version"]!=1 or d["target_build"]!="1.7.9b.J835" or type(d["target_item"]) is not int or d["target_item"]!=69:
+        if (type(d["schema_version"]) is not int or d["schema_version"]!=1 or
+                not isinstance(d["target_build"],str) or not 0<len(d["target_build"])<=64 or
+                type(d["target_item"]) is not int or not 0<d["target_item"]<=2147483647):
             raise ProgramError("PROGRAM_SCOPE")
         if not isinstance(d["component_id"],str) or not re.fullmatch(r"weapon\.[a-z][a-z0-9_]{0,63}",d["component_id"]):
             raise ProgramError("PROGRAM_ID")

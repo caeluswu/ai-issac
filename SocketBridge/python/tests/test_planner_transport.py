@@ -1,9 +1,10 @@
 import asyncio
+import json
 import os
 import unittest
 from unittest.mock import patch
 import httpx
-from combat.planner import DeepSeekClient
+from combat.planner import DeepSeekClient,EmptyModelResponse
 
 
 class TestCancellableTransport(unittest.IsolatedAsyncioTestCase):
@@ -32,3 +33,21 @@ class TestCancellableTransport(unittest.IsolatedAsyncioTestCase):
         with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "fixture", "DEEPSEEK_MODEL": "fixture"}), patch("combat.planner.httpx.AsyncClient", side_effect=lambda **kw: original(transport=httpx.MockTransport(endpoint), **kw)):
             content, usage = await DeepSeekClient().complete([])
         self.assertEqual(content, "{}"); self.assertEqual(len(calls), 2)
+
+    async def test_explicit_thinking_mode_and_empty_response_metadata(self):
+        bodies=[]
+        async def endpoint(request):
+            bodies.append(json.loads(request.content))
+            return httpx.Response(200,json={"id":"fixture-response","model":"fixture-model",
+                "choices":[{"message":{"content":"","reasoning_content":"must never enter logs"},"finish_reason":"length"}],
+                "usage":{"prompt_tokens":10,"completion_tokens":8192}})
+        original=httpx.AsyncClient
+        with patch.dict(os.environ,{"DEEPSEEK_API_KEY":"fixture","DEEPSEEK_MODEL":"fixture"}),patch("combat.planner.httpx.AsyncClient",side_effect=lambda **kw:original(transport=httpx.MockTransport(endpoint),**kw)):
+            client=DeepSeekClient(max_tokens=4096,retries=1,thinking="disabled")
+            try:
+                with self.assertRaises(EmptyModelResponse) as failure:await client.complete([])
+                self.assertEqual(failure.exception.metadata["finish_reason"],"length")
+                self.assertNotIn("reasoning_content",failure.exception.metadata)
+            finally:await client.aclose()
+        self.assertEqual(bodies[0]["thinking"],{"type":"disabled"})
+        self.assertEqual(bodies[0]["max_tokens"],4096)

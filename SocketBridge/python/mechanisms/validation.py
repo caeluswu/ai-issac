@@ -21,6 +21,8 @@ def decision(calibration,*,hit=1.,has_target=True,target_hp=10.,last=(0,0),direc
 
 def validate_candidate(program,calibration):
     errors=[];checks=[];max_ms=0.;max_fuel=0
+    if program.document["target_build"]!="1.7.9b.J835" or program.document["target_item"]!=69:
+        return {"passed":False,"checks":[],"errors":[{"check":"support_scope","error":"NO_REGISTERED_MECHANISM_VALIDATOR"}],"program_sha256":program.sha256,"validator_version":1}
     try:validate_calibration(calibration)
     except ProgramError as exc:return {"passed":False,"checks":[],"errors":[{"check":"calibration","error":str(exc)}],"program_sha256":program.sha256,"validator_version":1}
     def check(name,fn):

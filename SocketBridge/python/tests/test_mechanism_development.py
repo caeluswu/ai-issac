@@ -12,11 +12,23 @@ from mechanisms.developer import MechanismDeveloper
 from mechanisms.program import Program,ProgramError,canonical
 from mechanisms.store import SkillStore,read_candidate
 from mechanisms.validation import validate_candidate
+from combat.planner import EmptyModelResponse
 from tests.test_mechanism_program import fixture
 from tests.test_mechanism_weapon import CALIBRATION
 
 
 class TestDevelopmentBudget(unittest.TestCase):
+    def test_explicit_single_extension_preserves_every_attempt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            b=DevelopmentBudget(Path(tmp)/"budget.sqlite")
+            for _ in range(3):b.reserve([],8192)
+            b.authorize_one_extra("fixture human approval");b.authorize_one_extra("duplicate cannot add another")
+            ticket=DevelopmentBudget(b.path).reserve([],8192)
+            self.assertEqual(ticket["output"],4096)
+            with self.assertRaises(BudgetExceeded):b.reserve([])
+            self.assertEqual(b.report()["requests"],4)
+            self.assertEqual(b.report()["unknown_usage_attempts"],4)
+
     def test_restarts_and_unknown_usage_do_not_refund_attempts(self):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/"budget.sqlite"
@@ -56,6 +68,17 @@ def request():
 
 
 class TestMechanismDevelopment(unittest.IsolatedAsyncioTestCase):
+    async def test_empty_final_content_stops_without_blind_repair(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            b=DevelopmentBudget(Path(tmp)/"budget.sqlite")
+            class Empty(FakeClient):
+                async def complete(self,messages):
+                    self.budget.reserve(messages);self.calls+=1
+                    raise EmptyModelResponse({"finish_reason":"length","response_id":"fixture"})
+            client=Empty(b,"")
+            r=await MechanismDeveloper(client,b,tmp,author="test_fixture").develop(request())
+            self.assertEqual(client.calls,1)
+            self.assertEqual(r["stop_reason"],"EMPTY_MODEL_CONTENT_REQUIRES_TRANSPORT_REVIEW")
     async def test_authentication_error_stops_without_repair_calls(self):
         with tempfile.TemporaryDirectory() as tmp:
             b=DevelopmentBudget(Path(tmp)/"budget.sqlite")
@@ -109,6 +132,12 @@ class TestMechanismDevelopment(unittest.IsolatedAsyncioTestCase):
         c=dict(CALIBRATION);c["max_charge_frames"]=1_000_000
         result=validate_candidate(Program(fixture()),c)
         self.assertFalse(result["passed"]);self.assertEqual(result["errors"][0]["check"],"calibration")
+
+    def test_generic_compiler_does_not_grant_support_for_a_new_item(self):
+        d=fixture();d["target_item"]=48
+        program=Program(d)
+        result=validate_candidate(program,CALIBRATION)
+        self.assertFalse(result["passed"]);self.assertEqual(result["errors"][0]["check"],"support_scope")
 
     def test_skill_index_cannot_read_outside_store(self):
         with tempfile.TemporaryDirectory() as tmp:

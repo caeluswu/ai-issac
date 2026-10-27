@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import uuid4
 import httpx
 from campaign.budget import BudgetExceeded
+from combat.planner import EmptyModelResponse
 from .program import Program,ProgramError,canonical,sdk_contract,parse
 from .validation import validate_candidate
 
@@ -95,6 +96,11 @@ class MechanismDeveloper:
                 failure={"errors":validation["errors"]}
             except BudgetExceeded as exc:
                 result["stop_reason"]=str(exc);break
+            except EmptyModelResponse as exc:
+                failure={"error_type":"EmptyModelResponse","response_metadata":exc.metadata}
+                (attempt/"failure.json").write_bytes(canonical(failure))
+                result["attempts"].append({"request_artifact":str(attempt),"passed":False,**failure})
+                result["stop_reason"]="EMPTY_MODEL_CONTENT_REQUIRES_TRANSPORT_REVIEW";break
             except asyncio.CancelledError:
                 result.update(status="interrupted",budget=self.budget.report())
                 (self.directory/"result.json").write_bytes(canonical(result))

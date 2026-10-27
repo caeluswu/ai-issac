@@ -68,7 +68,7 @@ class TestMechanismProgram(unittest.TestCase):
         with self.assertRaises(ProgramError):parse(' '*65537)
 
     def test_wrong_scope_sources_and_missing_inputs_fail_closed(self):
-        for key,value in (("target_item",True),("target_build","repentance+"),("source_refs",["x"*501])):
+        for key,value in (("target_item",True),("target_build",""),("source_refs",["x"*501])):
             d=fixture();d[key]=value
             with self.assertRaises(ProgramError):Program(d)
         p=Program(fixture())
