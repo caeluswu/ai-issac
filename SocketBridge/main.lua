@@ -1147,6 +1147,8 @@ function CustomCollectors.PROJECTILES()
                 variant = entity.Variant, collision_radius = entity.Size,
                 height = tear and tear.Height or 0,
                 scale = tear and tear.Scale or 1,
+                collision_damage = Helpers.optional(function() return entity.CollisionDamage end),
+                entity_frame_count = entity.FrameCount,
             }
             if entity.SpawnerType == EntityType.ENTITY_PLAYER then
                 table.insert(data.player_tears, tearData)
@@ -1329,7 +1331,32 @@ InputExecutor = {
     useItem = false, useBomb = false,
     useCard = false, usePill = false, drop = false,
     edgeFrames = {},
+    -- Read-only engine-query evidence, retained across input resets so releases
+    -- remain observable. An entry is complete only after all four shoot axes
+    -- were queried in one update with the same command/context.
+    feedback = {},
 }
+
+function InputExecutor.recordShootFeedback(action, active)
+    local names = {
+        [ButtonAction.ACTION_SHOOTLEFT]="left", [ButtonAction.ACTION_SHOOTRIGHT]="right",
+        [ButtonAction.ACTION_SHOOTUP]="up", [ButtonAction.ACTION_SHOOTDOWN]="down",
+    }
+    local name = names[action]
+    if not name then return end
+    local rows = InputExecutor.feedback
+    local row = rows[#rows]
+    local visit = State.runId .. ":" .. tostring(State.roomVisit)
+    if not row or row.frame ~= State.updateCount or row.room_visit_id ~= visit then
+        row = {frame=State.updateCount, room_visit_id=visit, action_id=InputExecutor.actionId,
+            queried={}, values={}, consistent=true}
+        table.insert(rows,row)
+        if #rows > 32 then table.remove(rows,1) end
+    end
+    if row.action_id ~= InputExecutor.actionId then row.consistent=false end
+    if row.queried[name] and row.values[name] ~= active then row.consistent=false end
+    row.queried[name]=true; row.values[name]=active
+end
 
 function InputExecutor.applyCommand(command)
     if not command then return end
@@ -1680,6 +1707,13 @@ function CustomCollectors.COMBAT_FRAME()
         movement_inheritance = inherited,
         applied_action_id = InputExecutor.appliedActionId,
         applied_frame = InputExecutor.appliedFrame,
+        weapon_feedback = {schema_version=1, provenance="engine_input_callback",
+            history=InputExecutor.feedback,
+            fire_delay=Helpers.optional(function()
+                local value=player.FireDelay
+                if type(value)=="number" then return value end
+            end),
+            fire_direction=Helpers.optional(function() return player:GetFireDirection() end)},
         seed = Game():GetSeeds():GetStartSeedString()}
 end
 
@@ -1911,6 +1945,9 @@ mod:AddCallback(ModCallbacks.MC_INPUT_ACTION, function(_, entity, hook, action)
         end
         InputExecutor.appliedActionId = InputExecutor.actionId
         InputExecutor.appliedFrame = State.updateCount
+        if hook == InputHook.IS_ACTION_PRESSED or hook == InputHook.GET_ACTION_VALUE then
+            InputExecutor.recordShootFeedback(action,isActive)
+        end
         if hook == InputHook.IS_ACTION_PRESSED then
             return isActive
         end

@@ -37,6 +37,7 @@
 | [P0–P2 验证](evidence/phase-2a-p0-p2-validation.zh-CN.md) | 组件边界和只读 V2 观测 |
 | [P3–P6 准入验证](evidence/phase-2a-preparation-validation.zh-CN.md) | 构筑、生命周期、EID 与被动学习的历史测试及开发场景实机证据 |
 | [M2-A 验收](evidence/phase-2a-validation.zh-CN.md) | 正常随机首层与受预算限制的模型回放，包含全部失败 |
+| [M2-B 机制探针](evidence/phase-2b-mechanism-probe.zh-CN.md) | 巧克力牛奶的输入/出弹、有限伤害校准与暂停/TTL 释放；不是模型程序战斗验收 |
 | [当前准备审查诊断 JSON](../artifacts/validation/m2-readiness-audit.json) | 合成场景复现四项边界缺陷；不是游戏损失记录 |
 
 ## 归档方案与源码参考

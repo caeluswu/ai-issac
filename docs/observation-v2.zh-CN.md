@@ -59,3 +59,9 @@ V2 增加可选 `floor_progress` 与 `exit_observations`。旧 V2 轨迹可继�
 `floor_progress` 包含 curses、can_pick_red/can_pick_soul、controls_enabled、extra_animation_finished；原版 API 缺失或类型错误保留 null。`exit_observations` 保存当前房间的网格实例身份、grid_index、type/variant/state/collision 和位置；17/18/23 只是基础网格事实，不直接声明合法出口。门新增可选 target_list_index，用当前可见门的目标描述符确认大房归并身份，不读取目标内部实体、物品或 RNG。NPC 的 is_boss 为可空兼容字段；缺失不能用于证明 Boss 已出现。
 
 Boss 入场或下楼可能只收到 paused 心跳。它们只有在门口/已授权出口附近生成对应过渡等待后，才能延长取帧等待至最多 15 秒；动作租约仍按真实观测帧检查，不能靠等待凭证发送旧输入。出处：[EntityPlayer API](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html)、[GridEntity API](https://wofsauge.github.io/IsaacDocs/rep/GridEntity.html)。
+
+## M2-B 可选武器反馈
+
+V2 增加可选 `weapon_feedback`，其内部 `schema_version=1`、`provenance=engine_input_callback`。`history` 最多保存 32 个有射击输入查询的更新帧；每条包含 frame、room_visit_id、可空 action_id、queried 与 values 的 left/right/up/down 布尔值，以及 consistent。同帧动作身份或方向值变化时 consistent=false。只有四向查询齐全、值一致、房间身份匹配且帧早于当前快照的条目，才可用于已应用输入反馈；没有查询不能补成零输入。重置保留历史，消费端按房间和帧去重。
+
+反馈证明输入回调提供的值，不能直接证明内部蓄力进度。可选 fire_delay 为原版玩家 FireDelay 数值，fire_direction 为可读时的方向；均不能替代已校准的时序。己方泪弹额外导出 collision_damage 与 entity_frame_count；出生归属仍需实例、owner 与轨迹交叉核对，不直接把实体年龄当成与桥接计数完全等价的时间轴。真实可读性和暂停释放后果见 [机制探针](evidence/phase-2b-mechanism-probe.zh-CN.md)。缺少反馈的旧轨迹仍可读取，但不能用于声称蓄力已确认。

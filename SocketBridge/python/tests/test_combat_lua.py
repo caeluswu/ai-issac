@@ -61,6 +61,41 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(self.api.State.controlMode, "MANUAL")
         self.assertEqual(self.api.Input.moveDirection.x, 0)
 
+    def test_shoot_feedback_requires_engine_queries_and_survives_release(self):
+        self.lua.execute('''
+            api.Input.applyCommand({action_id=1,room_visit_id="boot:0",observed_frame=0,shoot={x=1,y=0}})
+        ''')
+        self.assertEqual(len(self.api.Input.feedback),0)
+        self.lua.execute('''
+            local callback=callbacks[ModCallbacks.MC_INPUT_ACTION]
+            for _,action in ipairs({ButtonAction.ACTION_SHOOTLEFT,ButtonAction.ACTION_SHOOTRIGHT,
+                                    ButtonAction.ACTION_SHOOTUP,ButtonAction.ACTION_SHOOTDOWN}) do
+                callback(nil,{Type=EntityType.ENTITY_PLAYER},InputHook.GET_ACTION_VALUE,action)
+            end
+        ''')
+        row=self.api.Input.feedback[1]
+        self.assertTrue(row.consistent)
+        self.assertEqual(row.action_id,1)
+        self.assertTrue(row["values"].right)
+        self.assertFalse(row["values"].left)
+        self.lua.execute('api.Input.reset()')
+        self.assertEqual(len(self.api.Input.feedback),1)
+        self.api.State.updateCount=1
+        self.lua.execute('callbacks[ModCallbacks.MC_INPUT_ACTION](nil,{Type=EntityType.ENTITY_PLAYER},InputHook.GET_ACTION_VALUE,ButtonAction.ACTION_SHOOTRIGHT)')
+        self.assertFalse(self.api.Input.feedback[2]["values"].right)
+        self.assertIsNone(self.api.Input.feedback[2].action_id)
+
+    def test_shoot_feedback_marks_within_update_change_and_bounds_history(self):
+        self.lua.execute('''
+            api.Input.recordShootFeedback(ButtonAction.ACTION_SHOOTRIGHT,true)
+            api.Input.recordShootFeedback(ButtonAction.ACTION_SHOOTRIGHT,false)
+        ''')
+        self.assertFalse(self.api.Input.feedback[1].consistent)
+        for frame in range(1,50):
+            self.api.State.updateCount=frame
+            self.lua.execute('api.Input.recordShootFeedback(ButtonAction.ACTION_SHOOTRIGHT,false)')
+        self.assertEqual(len(self.api.Input.feedback),32)
+
     def test_paused_render_pumps_rpc_and_heartbeat(self):
         self.lua.execute('''
             paused=true; api.State.connected=true

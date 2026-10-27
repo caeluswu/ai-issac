@@ -168,6 +168,7 @@ class WorldSnapshot(Observed):
     seed: str
     applied_action_id: int | None = None
     applied_frame: int | None = None
+    weapon_feedback: dict[str, Any] | None = None
     pickups: list[PickupObservation] | None = None
     weapons: WeaponObservation | None = None
     effects: TemporaryEffectsObservation | None = None

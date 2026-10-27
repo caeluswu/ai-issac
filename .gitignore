@@ -38,6 +38,8 @@ configs/knowledge/cache/
 artifacts/sources/
 artifacts/knowledge/
 artifacts/agent-state/
+artifacts/mechanism-probes/
+artifacts/skill-development/
 
 # agent
 .dsh/
