@@ -5,6 +5,7 @@ import tempfile
 from pathlib import Path
 import unittest
 from unittest.mock import patch
+from unittest.mock import Mock
 import httpx
 from campaign.budget import BudgetExceeded
 from mechanisms.budget import DevelopmentBudget
@@ -68,6 +69,13 @@ def request():
 
 
 class TestMechanismDevelopment(unittest.IsolatedAsyncioTestCase):
+    def test_session_skill_loading_is_explicit_and_not_environment_dependent(self):
+        from combat.runtime import CombatSession
+        with patch("mechanisms.integration.load_session_skills") as load:
+            CombatSession(Mock(),None,None,Mock())
+            load.assert_not_called()
+            CombatSession(Mock(),None,None,Mock(),skill_store=Path("fixture-skills"))
+            self.assertEqual(load.call_args.args[1],Path("fixture-skills"))
     async def test_empty_final_content_stops_without_blind_repair(self):
         with tempfile.TemporaryDirectory() as tmp:
             b=DevelopmentBudget(Path(tmp)/"budget.sqlite")

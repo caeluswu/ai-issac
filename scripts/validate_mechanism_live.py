@@ -36,14 +36,19 @@ class PreparedSkillSession(CombatSession):
 
 def proof_from_trace(directory,program_sha):
     adopted=set();released=set();applied=set();accepted=set();tears={};max_fuel=0;max_ms=0.;failures=[]
+    initialized=False;initial_frame=None;effective=set()
     with (directory/"trace.jsonl").open(encoding="utf-8") as stream:
         for line in stream:
             row=json.loads(line)
+            if row["kind"]=="mechanism_initialization_complete":
+                initialized=True;initial_frame=row["frame"]
+            if not initialized:continue
             if row["kind"]=="action_sent":
                 diagnostics=(row.get("metadata") or {}).get("diagnostics") or {}
                 mechanism=diagnostics.get("mechanism") or {}
                 if mechanism.get("program_sha256")==program_sha:
                     adopted.add(row["action_id"])
+                    if str(diagnostics.get("fire_reason","")).startswith("program_"):effective.add(row["action_id"])
                     if diagnostics.get("fire_reason")=="program_release" and row["shoot"]==[0,0]:released.add(row["action_id"])
                     max_fuel=max(max_fuel,mechanism.get("max_fuel",0));max_ms=max(max_ms,mechanism.get("max_call_ms",0))
             if row["kind"]=="component_fallback":failures.append(row)
@@ -53,12 +58,14 @@ def proof_from_trace(directory,program_sha):
             s=(message.get("payload") or {}).get("COMBAT_FRAME")
             if not s:continue
             for feedback in (s.get("weapon_feedback") or {}).get("history") or []:
-                if feedback.get("consistent") is True and all((feedback.get("queried") or {}).get(k) is True for k in ("left","right","up","down")):
+                if (feedback.get("room_visit_id")==s.get("room_visit_id") and type(feedback.get("frame")) is int and initial_frame<=feedback["frame"]<s["frame"] and
+                        feedback.get("consistent") is True and all((feedback.get("queried") or {}).get(k) is True for k in ("left","right","up","down"))):
                     if not any((feedback.get("values") or {}).values()):applied.add(feedback.get("action_id"))
             for tear in (s.get("projectiles") or {}).get("player_tears") or []:
                 if tear.get("owner_type")==1 and tear.get("entity_frame_count")==0:
                     tears[tear["instance_id"]]={"frame":s["frame"],"damage":tear.get("collision_damage"),"velocity":tear["vel"]}
     return {"adopted_actions":len(adopted),"released_actions":len(released),"applied_releases":len(released&applied&accepted),
+            "initialization_observed":initialized,"effective_program_actions":len(effective),
             "new_tears_observed":len(tears),"tear_samples":dict(list(tears.items())[:64]),"mechanism_failures":failures,
             "max_frame_fuel":max_fuel,"max_program_call_ms":max_ms}
 
@@ -77,7 +84,7 @@ async def run(args):
     if installed.read_bytes()!=(ROOT/"SocketBridge/main.lua").read_bytes():raise RuntimeError("INSTALLED_LUA_DIFFERS_FROM_SOURCE")
     directory=ROOT/"artifacts/runs"/datetime.now(timezone.utc).strftime("m2b-"+origin+"-%Y%m%dT%H%M%S%fZ")
     log=RunLog(directory);log.manifest(ROOT,provenance.get("response_model"))
-    session=PreparedSkillSession(SocketBridge(),None,None,log,new_run=True,seed=args.seed)
+    session=PreparedSkillSession(SocketBridge(),None,None,log,new_run=True,seed=args.seed,skill_store=ROOT/"skills" if args.reuse else None)
     register_program(program,calibration)
     session.build_resolver.mechanism_adapter=ChargedBuild(program,calibration)
     log("skill_trial_authority",origin=origin,program_sha256=program.sha256,scope=calibration["scope"],provenance=provenance)
@@ -101,7 +108,7 @@ async def run(args):
     print("Mechanism artifacts: "+str(directory),flush=True)
     report=await session.run(on_ready=initialize)
     proof={"schema_version":1,"program_sha256":program.sha256,"origin":origin,"generation_api_calls":0,
-        "normal_combat":True,"source_mode":"development_initialization","game_build":"1.7.9b.J835",
+        "normal_combat":bool(report.combat_ticks>0),"source_mode":"development_initialization","game_build":"1.7.9b.J835",
         "calibration_id":calibration["calibration_id"],"seed":args.seed,**proof_from_trace(directory,program.sha256)}
     proof["passed"]=bool(report.success and proof["applied_releases"] and proof["new_tears_observed"] and not proof["mechanism_failures"])
     if origin=="reused" and proof["mechanism_failures"]:

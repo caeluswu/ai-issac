@@ -100,7 +100,10 @@ class KnowledgeGateway:
         if decision != "take" and ("CAPABILITY_NOT_IMPLEMENTED" in reasons or "DESCRIPTION_PARTIAL_OR_MISSING" in reasons):
             self.store.record("task",digest([self.package.dataset_id,pickup.variant,pickup.sub_type,reasons,build.signature]),
                 {"dataset_id":self.package.dataset_id,"subject":{"variant":pickup.variant,"id":pickup.sub_type},"reasons":reasons,"state":"pending",
-                 "trigger":"observed_pickup","encounter_id":encounter,"context":context,"build":build.model_dump()})
+                 "trigger":"observed_pickup","encounter_id":encounter,"context":context,"build":build.model_dump(),
+                 "observed_stats":{k:s.stats.get(k) for k in ("player_type","weapon_type","damage","max_fire_delay","shot_speed")},
+                 "observed_inventory":{"collectibles":dict(s.inventory.get("collectibles") or {}),
+                                       "trinkets":[s.inventory.get("trinket_0",0),s.inventory.get("trinket_1",0)]}})
         return value
 
     async def prepare_bundle(self, s, build, subjects, purpose="planning"):

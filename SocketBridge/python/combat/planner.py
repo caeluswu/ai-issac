@@ -41,7 +41,7 @@ class EmptyModelResponse(ValueError):
 
 
 class DeepSeekClient:
-    def __init__(self, timeout=45, budget=None, *, max_tokens=4096, retries=3, thinking=None):
+    def __init__(self, timeout=45, budget=None, *, max_tokens=4096, retries=3, thinking="disabled"):
         self.budget = budget
         if type(max_tokens) is not int or not 256<=max_tokens<=8192 or type(retries) is not int or not 1<=retries<=3:
             raise ValueError("Invalid transport limits")

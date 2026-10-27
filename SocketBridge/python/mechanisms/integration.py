@@ -3,8 +3,8 @@ from .store import SkillStore
 from .weapon import ChargedBuild,register_program
 
 
-def load_session_skills(session,root):
-    store=SkillStore(root/"skills")
+def load_session_skills(session,skills_root):
+    store=SkillStore(skills_root)
     active=store.active()
     if store.quarantines():session.log("skill_quarantines",entries=store.quarantines())
     if active is None:return

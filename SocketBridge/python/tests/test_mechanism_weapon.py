@@ -2,16 +2,20 @@
 import json
 from pathlib import Path
 import unittest
+import tempfile
 from unittest.mock import patch
 from combat.catalog import CATALOG,FAMILY_DEFAULTS,default_plan,current_revision
 from combat.components import EXECUTABLES
 from combat.builds import BuildResolver
 from combat.controller import JointActionSolver
 from combat.geometry import GeometryService
+from combat.item_knowledge import KnowledgeGateway
+from combat.agent_store import AgentStore
 from mechanisms.program import Program
 from mechanisms.weapon import ChargedBuild,ProgramWeapon,register_program,FAMILY
 from tests.combat_fixtures import snapshot,context as fixture_context
 from tests.test_mechanism_program import fixture,feedback
+from tests.test_item_knowledge import package_fixture,pickup
 
 
 CALIBRATION=json.loads((Path(__file__).resolve().parents[3]/"configs/mechanisms/chocolate-milk-j835.json").read_text())
@@ -31,6 +35,23 @@ def charged_snapshot():
 
 
 class TestMechanismWeapon(unittest.TestCase):
+    def test_published_scope_enables_pickup_and_unknown_scope_still_queues_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            gateway=KnowledgeGateway(package_fixture(tmp),AgentStore(Path(tmp)/"agent.sqlite"))
+            s=charged_snapshot();s.inventory["collectibles"].pop("69")
+            b=BuildResolver().update(s)
+            answer={"status":"partial","results":[{"records":[{"record_id":"fixture:69","parser_complete":True,"summary":{"text":"fixture item"}}]}]}
+            with patch.object(gateway,"lookup",return_value=answer):
+                self.assertEqual(gateway.decide(s,b,pickup(69)).decision,"skip")
+                gateway.decide(s,b,pickup(69))
+                with gateway.store.connect() as db:tasks=db.execute("SELECT body FROM learning_tasks").fetchall()
+                self.assertEqual(len(tasks),1)
+                self.assertEqual(json.loads(tasks[0][0])["observed_stats"]["damage"],3.5)
+                gateway.mechanism_adapter=ChargedBuild(Program(fixture()),CALIBRATION)
+                self.assertEqual(gateway.decide(s,b,pickup(69)).decision,"take")
+                s.inventory["collectibles"]["1"]=1
+                self.assertEqual(gateway.decide(s,b,pickup(69)).decision,"skip")
+
     def test_default_resolver_still_rejects_69(self):
         with self.assertRaisesRegex(ValueError,"UNSUPPORTED_BUILD"):BuildResolver().update(charged_snapshot())
 

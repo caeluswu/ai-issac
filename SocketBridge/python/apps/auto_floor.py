@@ -33,7 +33,7 @@ async def main(args):
     planner = FloorPlanner(Planner(client,KnowledgeStore(ROOT/"configs/knowledge"),log),log) if client else None
     pause = NativePause(game_executable=ROOT/"The Binding of Isaac Rebirth Repentance/isaac-ng.exe")
     launcher = GameLauncher(ROOT,log,pause,slot=args.slot,timeout=args.ready_timeout,require_baseline=True)
-    session = CombatSession(SocketBridge(),planner,pause,log,ready_timeout=args.ready_timeout,new_run=True,seed=args.seed,learning=learning)
+    session = CombatSession(SocketBridge(),planner,pause,log,ready_timeout=args.ready_timeout,new_run=True,seed=args.seed,learning=learning,skill_store=ROOT/"skills")
     director = FloorDirector(session,budget)
     print("Floor artifacts: "+str(log.directory),flush=True)
     report = None

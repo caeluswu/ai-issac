@@ -33,6 +33,7 @@ class TestCancellableTransport(unittest.IsolatedAsyncioTestCase):
         with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "fixture", "DEEPSEEK_MODEL": "fixture"}), patch("combat.planner.httpx.AsyncClient", side_effect=lambda **kw: original(transport=httpx.MockTransport(endpoint), **kw)):
             content, usage = await DeepSeekClient().complete([])
         self.assertEqual(content, "{}"); self.assertEqual(len(calls), 2)
+        self.assertEqual(json.loads(calls[-1].content)["thinking"],{"type":"disabled"})
 
     async def test_explicit_thinking_mode_and_empty_response_metadata(self):
         bodies=[]

@@ -32,7 +32,7 @@ async def main(args):
     launcher = GameLauncher(ROOT, log, pause, slot=args.slot, timeout=args.ready_timeout,
                             require_baseline=not args.local_only and not args.startup_only)
     session = CombatSession(SocketBridge(), planner, pause, log,
-                            ready_timeout=args.ready_timeout, new_run=True, seed=args.seed,learning=learning)
+                            ready_timeout=args.ready_timeout, new_run=True, seed=args.seed,learning=learning,skill_store=ROOT/"skills")
     print(f"Run artifacts: {log.directory}", flush=True)
     async def freeze_seeds(current):
         if not args.prepare_seeds: return

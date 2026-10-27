@@ -27,7 +27,7 @@ async def main(args):
     session = CombatSession(SocketBridge(port=args.port), planner,
                             NativePause(game_executable=ROOT/"The Binding of Isaac Rebirth Repentance"/"isaac-ng.exe"),
                             log, ready_timeout=args.ready_timeout,
-                            new_run=args.new_run, seed=args.seed,learning=learning)
+                            new_run=args.new_run, seed=args.seed,learning=learning,skill_store=ROOT/"skills")
     print(f"Waiting for a fresh Isaac Normal run; the game window may stay in the background. Trace: {log.directory}", flush=True)
     try: report = await session.run()
     finally:

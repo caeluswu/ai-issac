@@ -20,10 +20,14 @@ def skill_request(root,task):
     calibration=json.loads((root/"configs/mechanisms/chocolate-milk-j835.json").read_text(encoding="utf-8"))
     gateway=KnowledgeGateway.from_config(root)
     if task.get("dataset_id")!=gateway.package.dataset_id:raise ValueError("STALE_DEVELOPMENT_DATASET")
-    stats=(task.get("context") or {}).get("stats")
-    if stats:
-        for key in ("player_type","weapon_type","damage","max_fire_delay","shot_speed"):
-            if stats.get(key)!=calibration["scope"][key]:raise ValueError("UNSUPPORTED_DEVELOPMENT_SCOPE: "+key)
+    stats=(task.get("context") or {}).get("stats") or task.get("observed_stats")
+    if not stats:raise ValueError("DEVELOPMENT_OBSERVED_STATS_REQUIRED")
+    for key in ("player_type","weapon_type","damage","max_fire_delay","shot_speed"):
+        if stats.get(key)!=calibration["scope"][key]:raise ValueError("UNSUPPORTED_DEVELOPMENT_SCOPE: "+key)
+    inventory=(task.get("context") or {}).get("inventory") or task.get("observed_inventory") or {}
+    if (any(int(k) not in (69,105) or v!=1 for k,v in (inventory.get("collectibles") or {}).items() if v) or
+            any(inventory.get("trinkets") or []) or any(inventory.get(k,0) for k in ("trinket_0","trinket_1"))):
+        raise ValueError("UNSUPPORTED_DEVELOPMENT_COMBINATION")
     eid=gateway.lookup("collectible",69,purpose="component_development")
     local_ref="local:"+calibration["calibration_id"]
     refs={local_ref}

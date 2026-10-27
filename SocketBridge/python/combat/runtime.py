@@ -64,7 +64,8 @@ class RunLog:
                  list((root/"skills").glob("weapon.*/*/manifest.json"))+
                  [root/"SocketBridge/main.lua", root/"SocketBridge/python/facade.py",
                   root/"SocketBridge/python/connection/server.py", root/"run_first_room.py",
-                  root/"run-first-room.ps1",root/"run_floor.py"])
+                  root/"run-first-room.ps1",root/"run_floor.py",root/"develop_mechanism.py",
+                  root/"scripts/validate_mechanism_live.py",root/"configs/mechanisms/chocolate-milk-j835.json"])
         files = [p for p in files if p.is_file()]
         value = {"schema_version": 1, "platform": platform.platform(), "python": platform.python_version(),
                  "dependencies": {name: importlib.metadata.version(name) for name in ("pydantic", "httpx", "numpy")},
@@ -265,7 +266,7 @@ class NativePause:
 
 
 class CombatSession:
-    def __init__(self, bridge, planner, pause, log, *, ready_timeout=120, new_run=False, seed=None, learning=None):
+    def __init__(self, bridge, planner, pause, log, *, ready_timeout=120, new_run=False, seed=None, learning=None, skill_store=None):
         self.bridge, self.planner, self.pause, self.log = bridge, planner, pause, log
         self.learning = learning
         self.ready_timeout = ready_timeout
@@ -330,8 +331,9 @@ class CombatSession:
         self.navigation_replan_requests = 0
         self.navigation_devices = {}
         bridge.on_message(self.on_message)
-        from mechanisms.integration import load_session_skills
-        load_session_skills(self,Path(__file__).resolve().parents[3])
+        if skill_store is not None:
+            from mechanisms.integration import load_session_skills
+            load_session_skills(self,Path(skill_store))
 
     def on_message(self, raw):
         self.log("game_message", message=raw)
