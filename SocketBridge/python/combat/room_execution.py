@@ -66,6 +66,31 @@ class RoomExecutor:
         self.context = identity
         self.session.log("room_started", context=list(map(str, identity)))
 
+    async def settle_boundary(self,s):
+        """Recover/wait through post-clear residuals before declaring a terminal row."""
+        session=self.session
+        origin=self.identity(s)
+        began,stable=s.frame,None
+        solver=JointActionSolver()
+        await session.set_mode("FORCE_AI")
+        s=await session.next_snapshot(after=s.snapshot_id)
+        while s.frame-began <= 90:
+            if self.identity(s)!=origin or not s.alive or s.blocking_combat: return s
+            if s.mode=="MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
+            if not boundary_danger(s):
+                if stable is None:stable=s.frame
+                if s.frame-stable>=3:return s
+                await session.release()
+            else:
+                stable=None
+                build=session.build_resolver.update(s)
+                action=await asyncio.to_thread(solver.solve,s,default_plan(session.context_ref(s,build)),build,True)
+                try:await session.send_action(s,action.move,(0,0),action.model_dump())
+                except TimeoutError as exc:
+                    if "STALE_ACTION" not in str(exc):raise
+            s=await session.next_snapshot(after=s.snapshot_id)
+        return s
+
     async def execute(self, s):
         # Every visit checks current hazards; an old clear row is never authority.
         await self.enter(s)
@@ -85,6 +110,8 @@ class RoomExecutor:
                 if result == "CLEARED" and self.session.learning:
                     current = await self.session.learning.collect(self.session,current)
                 current = self.session.observation.latest or current
+                if result == "CLEARED" and self.identity(current)==self.identity(s) and current.alive and not current.blocking_combat and boundary_danger(current):
+                    current=await asyncio.wait_for(self.settle_boundary(current),5)
                 if self.identity(current) != self.identity(s): result = "POST_CLEAR_CONTEXT_CHANGED"
                 elif self.session.death_observed or not current.alive: result = "DEAD"
                 elif self.session.death_event_frame is not None: result = "REVIVAL_UNCONFIRMED"

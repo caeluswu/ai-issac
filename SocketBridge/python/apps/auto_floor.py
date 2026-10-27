@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[3]
 async def main(args):
     entry_started=time.monotonic()
     load_env(ROOT/".env.local",override=True)
-    budget = RequestBudget(max_requests=0,max_routine=0,max_diagnostic=0) if args.local_only else RequestBudget()
+    budget = RequestBudget(max_requests=0,max_routine=0,max_diagnostic=0) if args.local_only else RequestBudget(max_requests=args.llm_requests,max_routine=min(4,args.llm_requests),max_diagnostic=max(0,args.llm_requests-4))
     client = None if args.local_only else DeepSeekClient(timeout=45,budget=budget)
     stamp = datetime.now(timezone.utc).strftime("floor-%Y%m%dT%H%M%S%fZ")
     log = RunLog(args.output_dir or ROOT/"artifacts/runs"/stamp)
@@ -68,6 +68,7 @@ def cli():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--slot",type=int,choices=(1,2,3),default=1)
     parser.add_argument("--local-only",action="store_true")
+    parser.add_argument("--llm-requests",type=int,choices=range(1,7),default=6,help="lower the total HTTP attempt limit; default 6")
     parser.add_argument("--seed",help="debug replay only; omitted means a normal random run")
     parser.add_argument("--ready-timeout",type=float,default=75)
     parser.add_argument("--output-dir",type=Path)
