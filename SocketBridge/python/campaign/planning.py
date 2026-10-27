@@ -13,6 +13,8 @@ class FloorPlanner:
         self.templates = OrderedDict()
         self.last_source = None
         planner.compact_context = True
+        planner.single_stage = True
+        planner.allow_tools = False
 
     @staticmethod
     def key(s,build):

@@ -17,8 +17,8 @@ from campaign.models import RoomKey
 from campaign.planning import FloorPlanner
 from combat.builds import BuildResolver
 from combat.catalog import default_plan
-from combat.models import FloorObservation, FloorProgress, ExitObservation, Vec
-from combat.planner import DeepSeekClient
+from combat.models import ContextRef, FloorObservation, FloorProgress, ExitObservation, Vec
+from combat.planner import DeepSeekClient, Planner
 from combat.runtime import CombatSession, RunLog
 from tests.combat_fixtures import snapshot, context
 from tests.test_combat_session import SimulatedRoom
@@ -142,6 +142,23 @@ class TestRequestBudget(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sum(isinstance(x,BudgetExceeded) for x in results),1)
         self.assertEqual(budget.requests,1)
         self.assertEqual(budget.report()["unknown_usage_attempts"],1)
+
+    async def test_floor_planning_requests_one_final_plan_without_tools(self):
+        class Client:
+            calls=0
+            async def complete(self,messages):
+                self.calls+=1
+                self.system=messages[0]["content"]
+                data=json.loads(messages[1]["content"])
+                ref=ContextRef.model_validate(data["context"]["context_ref"])
+                return default_plan(ref).model_dump_json(),{"finish_reason":"stop"}
+        client=Client()
+        planner=FloorPlanner(Planner(client,None,lambda *a,**kw:None),lambda *a,**kw:None)
+        s=floor_snapshot(clear=False);build=BuildResolver().update(s)
+        plan=await planner.plan(s,build)
+        self.assertEqual(client.calls,1)
+        self.assertIn("Do not return tool_calls",client.system)
+        self.assertEqual(plan.context_ref.room_visit_id,s.room_visit_id)
 
     async def test_template_rebinds_new_visit_but_not_new_weapon_context(self):
         class Planner:
