@@ -53,6 +53,7 @@ class RoomExecutor:
         # Preserve entry damage collected during the navigation grace period.
         judge = old.judge if old.target_room == s.room_visit_id else CombatJudge()
         solver = old.solver if self.context is None else JointActionSolver()
+        judge.timeout_ticks = (180 if s.room.get("room_type") == 5 else 120)*30
         self.state = RoomState(judge=judge, solver=solver, target_room=s.room_visit_id)
         self.state.judge_result = judge.observe(s)
         if self.floor != identity[:2]:

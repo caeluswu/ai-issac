@@ -38,7 +38,8 @@ class SnapshotAssembler:
 
 
 class CombatJudge:
-    def __init__(self):
+    def __init__(self, timeout_ticks=120*30):
+        self.timeout_ticks = timeout_ticks
         self.previous = None
         self.damage = 0
         self.bones_lost = 0
@@ -67,7 +68,7 @@ class CombatJudge:
             self.clear_frames += 1
         else: self.clear_frames = 0
         if self.clear_frames >= 3: return "CLEARED"
-        if s.frame-self.started >= 120*30: return "COMBAT_TIMEOUT"
+        if s.frame-self.started >= self.timeout_ticks: return "COMBAT_TIMEOUT"
         # Without validated mechanism knowledge, invulnerability is unknown,
         # not an invented wait stage. Replanning still obeys the debounce.
         if s.frame-self.last_progress >= 90: self.events.append("no_progress")

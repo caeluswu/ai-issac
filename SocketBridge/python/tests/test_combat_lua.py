@@ -21,7 +21,7 @@ class TestLuaInput(unittest.TestCase):
             print=function() end
         ''')
         source = (Path(__file__).parents[2]/"main.lua").read_text(encoding="utf-8")
-        self.api = self.lua.execute(source+"\nreturn {State=State, Network=Network, Input=InputExecutor, Commands=CommandHandler, Custom=CustomCollectors, Sensors=SensorRegistry}")
+        self.api = self.lua.execute(source+"\nreturn {State=State, Network=Network, Input=InputExecutor, Commands=CommandHandler, Custom=CustomCollectors, Sensors=SensorRegistry, Helpers=Helpers}")
         self.lua.globals().api = self.api
         self.lua.execute("api.Network.send=function(value) lastSent=value; return true end; api.State.controlMode='FORCE_AI'")
 
@@ -126,3 +126,16 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(self.lua.globals().initialSeed, "ABCD EFGH")
         result = self.lua.eval('api.Commands.process({command="PREPARE_RUN",params={seed="invalid"}})')
         self.assertFalse(result.success)
+
+    def test_floor_progress_preserves_unknowns_and_reads_vanilla_player_facts(self):
+        self.lua.execute("function Game() return {GetLevel=function() return {GetCurses=function() return 0 end} end} end")
+        result = self.lua.eval("api.Helpers.floorProgress({ControlsEnabled=true,CanPickRedHearts=function() return false end,CanPickSoulHearts=function() return true end,IsExtraAnimationFinished=function() return true end})")
+        self.assertEqual(result.capability_version,1)
+        self.assertEqual(result.curses,0)
+        self.assertFalse(result.can_pick_red)
+        self.assertTrue(result.can_pick_soul)
+        unknown = self.lua.eval("api.Helpers.floorProgress({})")
+        self.assertIsNone(unknown.can_pick_red)
+        exits = self.lua.eval("api.Helpers.exitObservations({grid={a={grid_index=1,type=17,variant=0,state=1,collision=0,x=100,y=120},b={grid_index=2,type=2}}})")
+        self.assertEqual(len(exits),1)
+        self.assertEqual(exits[1].type,17)

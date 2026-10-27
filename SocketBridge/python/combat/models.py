@@ -50,6 +50,7 @@ class Enemy(Observed):
     friendly: bool
     dead: bool
     collision_class: int
+    is_boss: bool | None = None
     can_shut_doors: bool = True  # Missing legacy evidence remains blocking.
 
 
@@ -127,6 +128,25 @@ class HealthObservation(Strict):
     extra_lives: int = Field(ge=0)
 
 
+class FloorProgress(Strict):
+    capability_version: Literal[1]
+    curses: int | None = Field(default=None, ge=0)
+    can_pick_red: bool | None = None
+    can_pick_soul: bool | None = None
+    controls_enabled: bool | None = None
+    extra_animation_finished: bool | None = None
+
+
+class ExitObservation(Strict):
+    instance_id: str
+    grid_index: int
+    type: int
+    variant: int
+    state: int
+    collision: int
+    pos: Vec
+
+
 class WorldSnapshot(Observed):
     schema_version: Literal[1, 2]
     run_id: str
@@ -154,12 +174,14 @@ class WorldSnapshot(Observed):
     inventory_coverage: InventoryCoverage | None = None
     floor: FloorObservation | None = None
     health_observation: HealthObservation | None = None
+    floor_progress: FloorProgress | None = None
+    exit_observations: list[ExitObservation] | None = None
 
     @model_validator(mode="before")
     @classmethod
     def lua_tables(cls, value):
         d = dict(value)
-        for k in ("enemies", "bombs", "hazards", "pickups"):
+        for k in ("enemies", "bombs", "hazards", "pickups", "exit_observations"):
             if d.get(k) == {}: d[k] = []
         if d.get("movement_inheritance") == []: d["movement_inheritance"] = {}
         for key in ("weapons", "effects", "inventory_coverage"):

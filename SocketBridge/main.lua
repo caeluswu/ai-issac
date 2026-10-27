@@ -953,6 +953,33 @@ function Helpers.floorObservation()
     return result
 end
 
+-- Optional floor-control capability. Missing vanilla APIs stay unknown.
+function Helpers.optionalBoolean(fn)
+    local value = Helpers.optional(fn)
+    if type(value) == "boolean" then return value end
+    return nil
+end
+function Helpers.floorProgress(player)
+    return {capability_version=1,
+        curses=Helpers.optional(function() return Game():GetLevel():GetCurses() end),
+        can_pick_red=Helpers.optionalBoolean(function() return player:CanPickRedHearts() end),
+        can_pick_soul=Helpers.optionalBoolean(function() return player:CanPickSoulHearts() end),
+        controls_enabled=Helpers.optionalBoolean(function() return player.ControlsEnabled end),
+        extra_animation_finished=Helpers.optionalBoolean(function() return player:IsExtraAnimationFinished() end)}
+end
+
+function Helpers.exitObservations(layout)
+    local result = {}
+    for key, grid in pairs(layout.grid) do
+        if grid.type == 17 or grid.type == 18 or grid.type == 23 then
+            table.insert(result, {instance_id=State.runId..":"..State.roomVisit..":grid:"..key,
+                grid_index=grid.grid_index, type=grid.type, variant=grid.variant, state=grid.state,
+                collision=grid.collision, pos={x=grid.x,y=grid.y}})
+        end
+    end
+    return result
+end
+
 function Helpers.pickupObservation(entity, player)
     local pickup = entity:ToPickup()
     local visibility, reason, subtype = "visible", "visible_variant", entity.SubType
@@ -1195,6 +1222,11 @@ function CustomCollectors.ROOM_LAYOUT()
             local doorPos = door.Position
             doors[tostring(slot)] = {
                 target_room = door.TargetRoomIndex, target_room_type = door.TargetRoomType,
+                target_list_index = Helpers.optional(function()
+                    local floor = Helpers.floorObservation()
+                    if floor.dimension == nil then return nil end
+                    return Game():GetLevel():GetRoomByIdx(door.TargetRoomIndex, floor.dimension).ListIndex
+                end),
                 is_open = door:IsOpen(), is_locked = door:IsLocked(),
                 x = doorPos.X, y = doorPos.Y,
             }
@@ -1634,10 +1666,12 @@ function CustomCollectors.COMBAT_FRAME()
     local inventory = CustomCollectors.PLAYER_INVENTORY()[1]
     local healthObservation = {dead=position.dead}
     for name, value in pairs(health) do healthObservation[name]=value end
+    local layout = CustomCollectors.ROOM_LAYOUT()
     return {schema_version = 2, run_id = State.runId,
         room_visit_id = State.runId .. ":" .. tostring(State.roomVisit),
         frame = State.updateCount, paused = Game():IsPaused(), mode = State.controlMode,
-        room = CustomCollectors.ROOM_INFO(), layout = CustomCollectors.ROOM_LAYOUT(),
+        room = CustomCollectors.ROOM_INFO(), layout = layout,
+        floor_progress=Helpers.floorProgress(player), exit_observations=Helpers.exitObservations(layout),
         player=position, stats=stats, health=health, inventory=inventory,
         weapons=stats.weapons, effects=Helpers.effectObservation(player), floor=Helpers.floorObservation(),
         pickups=pickups, inventory_coverage=inventory.inventory_coverage, health_observation=healthObservation,
