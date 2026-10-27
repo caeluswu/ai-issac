@@ -2,14 +2,14 @@
 import asyncio
 import time
 from combat.builds import digest
-from combat.catalog import default_plan
+from combat.catalog import default_plan, compile_plan
 from combat.controller import JointActionSolver
 from combat.models import Vec
 from combat.navigation import DoorNavigator
 from combat.supervision import ProgressSupervisor
 from .graph import FloorGraph
 from .judge import FloorJudge, clear_of_threats
-from .models import FloorContext, FloorReport, FloorObjective, RoomKey, TransitionReceipt
+from .models import FloorContext, FloorReport, FloorObjective, RoomKey, TransitionReceipt, RoomResult
 
 
 class FloorDirector:
@@ -24,6 +24,9 @@ class FloorDirector:
         self.rooms = []
         self.exit_executing = False
         self.displacement_errors = 0
+        self.diagnostic_task = None
+        self.diagnostic_plan = None
+        self.diagnosed = set()
         self.began = time.monotonic()
         session.floor_mode = True
         session.bridge.on_message(self.judge.on_raw)
@@ -38,7 +41,7 @@ class FloorDirector:
         if not self.session.bridge.connected: raise ConnectionError("DISCONNECTED")
         if time.monotonic()-self.session.observation.received_at > 2:
             heartbeat = self.session.heartbeat
-            if not (self.session.pause_owned and heartbeat and heartbeat.get("paused") and time.monotonic()-self.session.heartbeat_at < 1):
+            if not (self.session.transition_paused() or (self.session.pause_owned and heartbeat and heartbeat.get("paused") and time.monotonic()-self.session.heartbeat_at < 1)):
                 raise TimeoutError("STALE_OBSERVATION")
         if s.run_id != self.start.run_id: raise RuntimeError("RUN_CHANGED")
         if s.frame-self.start.frame >= self.game_limit: raise TimeoutError("FLOOR_GAME_TIMEOUT")
@@ -46,6 +49,26 @@ class FloorDirector:
         if s.floor.instance_id != self.start.floor.instance_id and not self.exit_executing:
             raise RuntimeError("UNAUTHORIZED_FLOOR_CHANGE")
         if self.session.death_observed: raise RuntimeError("DEAD")
+
+    def diagnose(self,s,build,watcher,reason=None):
+        if self.diagnostic_task and self.diagnostic_task.done():
+            try:
+                self.diagnostic_plan=compile_plan(self.diagnostic_task.result(),self.session.context_ref(s,build))
+                self.session.log("floor_diagnosis_installed",state=self.state,plan=self.diagnostic_plan.model_dump())
+            except Exception as exc: self.session.log("floor_diagnosis_rejected",error=str(exc))
+            self.diagnostic_task=None
+        reasons=[e.kind for e in watcher.events if e.age_ticks>=60]
+        if reason: reasons.append(reason)
+        key=s.room_visit_id,self.state
+        if reasons and self.session.planner and not self.diagnostic_task and key not in self.diagnosed:
+            self.diagnosed.add(key)
+            self.diagnostic_task=asyncio.create_task(asyncio.wait_for(self.session.planner.plan(s,build,self.session.revision,
+                {"scope":self.state,"reasons":reasons,"progress":watcher.feedback()}),20))
+            self.session.log("floor_diagnosis_started",state=self.state,reasons=reasons)
+        if self.diagnostic_plan:
+            try: return compile_plan(self.diagnostic_plan,self.session.context_ref(s,build))
+            except ValueError: self.diagnostic_plan=None
+        return default_plan(self.session.context_ref(s,build))
 
     async def next(self,s):
         fresh = await self.session.next_snapshot(after=s.snapshot_id)
@@ -160,7 +183,13 @@ class FloorDirector:
             failure = watcher.observe(s,previous,require_progress=True)
             if failure: raise TimeoutError("EXIT_"+failure)
             build = self.session.build_resolver.update(s)
-            action = await asyncio.to_thread(solver.solve,s,default_plan(self.session.context_ref(s,build)),build,True,found.pos)
+            if build.revision != intent.context_ref.build_revision: raise RuntimeError("EXIT_BUILD_CHANGED")
+            solver.recovery_level=watcher.recovery_level
+            plan=self.diagnose(s,build,watcher)
+            action = await asyncio.to_thread(solver.solve,s,plan,build,True,found.pos,(),(found.grid_index,))
+            if s.player.pos.distance(found.pos)<45 and self.session.transition_wait is None:
+                self.session.transition_wait={"kind":"floor_transition","visit":s.room_visit_id,"expires":time.monotonic()+15}
+                self.session.log("transition_wait_authorized",kind_of_wait="floor_transition",room_visit_id=s.room_visit_id,wall_limit=15)
             await self.send(s,action.move,action.model_dump())
             previous = action
             s = await self.next(s)
@@ -177,6 +206,7 @@ class FloorDirector:
         origin = s.player.pos.model_copy()
         goal = origin+Vec(x=40,y=0)
         while not self.judge.success:
+            if s.mode == "MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
             if s.frame-began > 300 or time.monotonic()-wall > 15: raise TimeoutError("NEXT_FLOOR_NOT_ACTIONABLE")
             if not clear_of_threats(s): raise RuntimeError("NEXT_FLOOR_NOT_SAFE")
             build = self.session.build_resolver.update(s)
@@ -201,8 +231,11 @@ class FloorDirector:
             if s.blocking_combat:
                 self.enter_state("RESOLVE_ROOM",s)
                 result = await self.session.execute_room(s)
-                self.rooms.append({"room_key":RoomKey.from_snapshot(s).text(),**self.session.room_executor.results[-1]})
-                if result != "CLEARED": raise RuntimeError(result)
+                row = {"room_key":RoomKey.from_snapshot(s).text(),**self.session.room_executor.results[-1]}
+                row.update({k:self.judge.visits.get(s.room_visit_id,{}).get(k,row[k]) for k in ("damage","bones_lost")})
+                contract = RoomResult.model_validate({k:row[k] for k in RoomResult.model_fields if k in row})
+                self.rooms.append(row)
+                if result != "CLEARED" or not contract.actionable or not contract.alive: raise RuntimeError(result)
                 s = self.session.observation.latest
             elif not s.room["is_clear"]:
                 self.enter_state("RESOLVE_ENVIRONMENT",s)
@@ -214,6 +247,7 @@ class FloorDirector:
             if self.session.learning:
                 s = await self.session.learning.collect(self.session,s)
                 self.check(s)
+                if not clear_of_threats(s): s = await self.settle(s)
                 if not clear_of_threats(s): raise RuntimeError("POST_CLEAR_INTERACTION_UNSAFE")
             self.graph.observe(s)
             if not self.rooms or self.rooms[-1]["room_visit_id"] != s.room_visit_id:
@@ -221,6 +255,7 @@ class FloorDirector:
                 row = {"room_key":RoomKey.from_snapshot(s).text(),"room_visit_id":s.room_visit_id,
                     "result":"CLEARED","combat_result":"NOT_REQUIRED","post_clear_result":"SAFE",
                     "terminal_snapshot_id":s.snapshot_id,"alive":s.alive,"actionable":True,
+                    "damage":self.judge.visits.get(s.room_visit_id,{}).get("damage",0),
                     "damage_since_classification":self.session.task_judge.health.damage-damage_before,
                     "build_revision":build.revision,"experience_revision":build.experience_revision}
                 self.rooms.append(row)
@@ -266,9 +301,23 @@ class FloorDirector:
             result = "CANCELLED" if isinstance(exc,asyncio.CancelledError) else "FAILED"
             self.session.log("floor_failed",state=self.state,error=error)
         finally:
-            try: await self.session.close()
+            if self.diagnostic_task:
+                self.diagnostic_task.cancel()
+                await asyncio.gather(self.diagnostic_task,return_exceptions=True)
+            try:
+                await self.session.close()
+                cleanup.extend(self.session.cleanup_errors)
             except Exception as exc: cleanup.append(str(exc))
+        if result == "FLOOR_COMPLETED" and not self.judge.success:
+            result="FLOOR_TERMINAL_NOT_PROVEN"
+            error=self.judge.failure or "Terminal proof invalidated during cleanup"
         if cleanup: result = "CLEANUP_FAILED"
+        recorded={row["room_visit_id"] for row in self.rooms}
+        combat={row["room_visit_id"]:row for row in self.session.room_executor.results}
+        for visit,observed in self.judge.visits.items():
+            if visit not in recorded:
+                self.rooms.append({**combat.get(visit,{"result":result,"combat_result":"NOT_FINISHED","post_clear_result":"NOT_FINISHED"}),
+                    **observed,"actionable":False})
         last = self.session.observation.latest
         return FloorReport(result=result,success=result == "FLOOR_COMPLETED",error=error,
             seed=self.start.seed if self.start else None,context=self.context,rooms=self.rooms,

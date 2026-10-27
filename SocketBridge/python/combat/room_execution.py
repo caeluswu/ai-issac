@@ -7,6 +7,7 @@ from .catalog import compile_plan, default_plan
 from .controller import JointActionSolver
 from .observation import CombatJudge
 from .supervision import ProgressSupervisor
+from .boundary_safety import boundary_danger
 
 
 @dataclass
@@ -88,8 +89,8 @@ class RoomExecutor:
                 elif self.session.death_observed or not current.alive: result = "DEAD"
                 elif self.session.death_event_frame is not None: result = "REVIVAL_UNCONFIRMED"
                 elif not self.session.bridge.connected: result = "DISCONNECTED"
-                elif result == "CLEARED" and (current.blocking_combat or current.hostiles or not current.room["is_clear"]): result = "POST_CLEAR_NEW_THREAT"
-                elif result == "CLEARED" and (current.bombs or current.hazards or current.projectiles.get("enemy_projectiles") or any(x.get("is_enemy",True) for x in current.projectiles.get("lasers") or [])): result = "POST_CLEAR_UNSAFE"
+                elif result == "CLEARED" and (current.blocking_combat or not current.room["is_clear"]): result = "POST_CLEAR_NEW_THREAT"
+                elif result == "CLEARED" and boundary_danger(current): result = "POST_CLEAR_UNSAFE"
                 post_result = "SAFE" if result == "CLEARED" else result
             except Exception as exc:
                 result = post_result = "ITEM_BOUNDARY_FAILED"
@@ -171,7 +172,7 @@ class RoomExecutor:
                     session.plan = compile_plan(value, session.context_ref(s, build))
                     session.revision += 1
                     session.solver.profile_name = None
-                    session.log("plan_installed", source="deepseek_replan", plan=session.plan.model_dump())
+                    session.log("plan_installed",source=getattr(session.planner,"last_source","deepseek")+"_replan",plan=session.plan.model_dump())
                 except Exception as exc:
                     session.log("replan_rejected", error=type(exc).__name__+": "+str(exc))
                 session.pending = None

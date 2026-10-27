@@ -91,6 +91,8 @@ class FloorReport(Strict):
     resources_spent: dict = Field(default_factory=dict)
     game_ticks: int = 0
     wall_seconds: float = 0
+    process_wall_seconds: float = 0
+    evaluation_mode: str = "normal_random"
     pause_seconds: float = 0
     llm_configured: bool = False
     fallback_count: int = 0

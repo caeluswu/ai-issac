@@ -6,6 +6,8 @@ from .builds import collectibles, digest
 from .catalog import default_plan
 from .controller import JointActionSolver
 from .item_knowledge import pickup_authority
+from .boundary_safety import boundary_danger
+from .supervision import ProgressSupervisor
 
 
 class PickupExecutor:
@@ -23,6 +25,7 @@ class PickupExecutor:
         resources = {k:start.inventory.get(k) for k in ("coins","keys","bombs")}
         current = start
         empty_since = None
+        watcher, previous_action = ProgressSupervisor(), None
         self.learning.active_pickup = (start.run_id,start.room_visit_id,pickup.instance_id,pickup.sub_type,pickup.price)
         try:
             if decision.decision != "take" or decision.build_revision != build.revision: raise ValueError("PICKUP_NOT_AUTHORIZED")
@@ -42,7 +45,7 @@ class PickupExecutor:
                 deadline = decision.deadline_frame + (90 if empty_since is not None else 0)
                 if current.frame > deadline: raise TimeoutError("PICKUP_DEADLINE")
                 if current.blocking_combat or current.hostiles or not current.alive: raise RuntimeError("PICKUP_NEW_THREAT_OR_DEATH")
-                if current.bombs or current.hazards or current.projectiles.get("enemy_projectiles") or any(x.get("is_enemy",True) for x in current.projectiles.get("lasers") or []):
+                if boundary_danger(current):
                     raise RuntimeError("PICKUP_NEW_HAZARD")
                 if current.hp < start.hp or current.health["bone_hearts"] < start.health["bone_hearts"]:
                     raise RuntimeError("PICKUP_UNEXPECTED_HEALTH_LOSS")
@@ -79,11 +82,16 @@ class PickupExecutor:
                 updated = session.build_resolver.update(current)
                 if updated.revision != build.revision: raise RuntimeError("PICKUP_BUILD_CHANGED")
                 if decision.target_signature != pickup_authority(current,updated,instance): raise RuntimeError("PICKUP_TARGET_NOT_AUTHORIZED")
+                failure = watcher.observe(current,previous_action,require_progress=True)
+                if failure or any(e.age_ticks >= 30 and e.kind in ("idle","blocked","stall") for e in watcher.events):
+                    session.log("pickup_boundary",reason="PICKUP_NO_PROGRESS",frame=current.frame,progress=watcher.feedback())
+                    raise RuntimeError("PICKUP_NO_PROGRESS")
                 self.learning.mask(current)
                 action = await asyncio.to_thread(solver.solve,current,default_plan(session.context_ref(current,build)),build,True,instance.pos)
                 try: await session.send_action(current,action.move,(0,0),action.model_dump())
                 except TimeoutError as exc:
                     if "STALE_ACTION" not in str(exc): raise
+                previous_action = action
                 current = await session.next_snapshot(after=current.snapshot_id)
             raise TimeoutError("PICKUP_UPDATE_LIMIT")
         except (ValueError,RuntimeError,TimeoutError,ConnectionError) as exc:

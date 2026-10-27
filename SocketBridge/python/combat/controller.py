@@ -135,7 +135,7 @@ class JointActionSolver:
         if shot == (0, 0): return 0.
         return self.registry.create(profile.fire).hit_score(s, build, self.registry.create(profile.aim), target, shot, velocity, geometry)
 
-    def solve(self, s, plan, build, movement_only=False, navigation_goal=None, allowed_devices=()):
+    def solve(self, s, plan, build, movement_only=False, navigation_goal=None, allowed_devices=(), allowed_exits=()):
         started = time.perf_counter()
         ref = plan.context_ref
         floor_id = s.floor.instance_id if s.floor else None
@@ -158,9 +158,9 @@ class JointActionSolver:
         portals = tuple(sorted((slot, d['x'], d['y']) for slot, d in (s.layout['doors'] or {}).items()
                                if d['is_open'] and not d['is_locked']))
         pickup_key = tuple((p["id"],p["x"],p["y"],p["radius"]) for p in getattr(s,"pickup_exclusions",[]))
-        geometry_key = (s.room_visit_id, s.stats["can_fly"], s.player.collision_radius, str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices), fire_cells, portals, pickup_key)
+        geometry_key = (s.room_visit_id, s.stats["can_fly"], s.player.collision_radius, str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices),tuple(allowed_exits),fire_cells,portals,pickup_key)
         if geometry_key != self.geometry_key:
-            self.geometry, self.geometry_key = GeometryService(s, allowed_devices), geometry_key
+            self.geometry, self.geometry_key = GeometryService(s,allowed_devices,allowed_exits), geometry_key
         g = self.geometry
         if modules["recovery"].reject_goal(s.frame, self.recovery_level, self.last_recovery_route):
             if self.last_route_goal: self.failed_goals.append(self.last_route_goal)

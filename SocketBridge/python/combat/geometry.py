@@ -12,7 +12,7 @@ def segment_distance(point: Vec, start: Vec, end: Vec) -> float:
 
 
 class GeometryService:
-    def __init__(self, snapshot: WorldSnapshot, allowed_devices=()):
+    def __init__(self, snapshot: WorldSnapshot, allowed_devices=(), allowed_exits=()):
         self.cells = snapshot.layout["cells"]
         self.width = int(snapshot.layout["width"])
         self.fly = snapshot.stats["can_fly"]
@@ -31,7 +31,9 @@ class GeometryService:
         # Spikes, trapdoors and pressure devices are not navigated in phase one.
         grid = snapshot.layout["grid"] or {}
         for i, c in grid.items():
-            if c["type"] in (8, 9, 17, 20, 23, 25) and not (c["type"] == 20 and int(i) in allowed_devices):
+            authorized = (c["type"] == 20 and int(i) in allowed_devices) or (
+                c["type"] == 17 and c.get("variant") == 0 and int(i) in allowed_exits)
+            if c["type"] in (8, 9, 17, 20, 23, 25) and not authorized:
                 self.dangerous.add(int(i))
         self.dangerous.update(self.cell(Vec(**h["pos"])) for h in snapshot.hazards
                               if h.get("type") == "FIREPLACE" and not h.get("is_extinguished", False))

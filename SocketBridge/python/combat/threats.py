@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import math
 import numpy as np
 from .models import Vec
+from .projectile_effects import PROJECTILE_EFFECTS
 
 
 @dataclass(frozen=True)
@@ -158,6 +159,8 @@ class ThreatField:
         for i, p in enumerate(s.projectiles["enemy_projectiles"] or []):
             self.threats.append(ThreatForecast("bullet:"+str(p.get("instance_id", i)),
                 p["pos"]["x"], p["pos"]["y"], p["vel"]["x"], p["vel"]["y"], p["collision_radius"], uncertainty=5))
+        for projectile in s.projectiles["enemy_projectiles"] or []:
+            self.threats.extend(PROJECTILE_EFFECTS.forecast(projectile,s))
         for b in s.bombs:
             known = b.get("timer_known", False)
             self.threats.append(ThreatForecast("bomb:"+str(b.get("id", 0)), b["pos"]["x"], b["pos"]["y"],

@@ -3,8 +3,10 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
+from types import SimpleNamespace
 import httpx
 from facade import SocketBridge
 from campaign.budget import RequestBudget, BudgetExceeded, diagnostic_request
@@ -165,8 +167,22 @@ class SimulatedFloor(SimulatedRoom):
         super().__init__();self.s=floor_snapshot();self.s.mode="MANUAL"
         self.s.layout["doors"]={"2":door(85)}
         self.visits=1
+        self.boss_intro_until=None
+        self.boss_intro_done=False
+        self.floor_intro_until=None
+        self.floor_intro_done=False
 
     def enter(self,index,stage=1):
+        if stage == 2 and not self.floor_intro_done:
+            self.floor_intro_until=time.monotonic()+3
+            self.floor_intro_done=True
+            self.s.paused=True
+            return
+        if index == 86 and not self.boss_intro_done:
+            self.boss_intro_until=time.monotonic()+3
+            self.boss_intro_done=True
+            self.s.paused=True
+            return
         self.visits+=1
         self.s=floor_snapshot(index,self.s.frame,boss=index==86,clear=index==84,stage=stage)
         self.s.room_visit_id+=f":{self.visits}"
@@ -177,6 +193,12 @@ class SimulatedFloor(SimulatedRoom):
     async def frames(self):
         while True:
             await asyncio.sleep(1/30)
+            if self.floor_intro_until and time.monotonic() >= self.floor_intro_until:
+                self.floor_intro_until=None
+                self.enter(84,stage=2)
+            if self.boss_intro_until and time.monotonic() >= self.boss_intro_until:
+                self.boss_intro_until=None
+                self.enter(86)
             if self.s.paused:
                 await self.send({"type":"HEARTBEAT","paused":True,"frame":self.s.frame,"room_visit_id":self.s.room_visit_id,"mode":self.s.mode})
                 continue
@@ -190,7 +212,8 @@ class SimulatedFloor(SimulatedRoom):
             if self.hit_ticks>=6:
                 self.s.enemies=[];self.s.room.update(enemy_count=0,is_clear=True)
                 if self.s.room["room_idx"]==86:
-                    self.s.exit_observations=[ExitObservation(instance_id="trapdoor",grid_index=70,type=17,variant=0,state=1,collision=0,pos=Vec(x=440,y=160))]
+                    self.s.layout["grid"]["71"]={"type":17,"variant":0,"state":1,"collision":0,"x":440,"y":160}
+                    self.s.exit_observations=[ExitObservation(instance_id="trapdoor",grid_index=71,type=17,variant=0,state=1,collision=0,pos=Vec(x=440,y=160))]
             if self.s.floor.stage==1 and self.s.room["room_idx"]<86 and self.s.player.pos.x>=530:
                 self.enter(self.s.room["room_idx"]+1)
             elif self.s.floor.stage==1 and self.s.room["room_idx"]==86 and self.s.exit_observations and self.s.player.pos.distance(self.s.exit_observations[0].pos)<18:
@@ -199,6 +222,29 @@ class SimulatedFloor(SimulatedRoom):
 
 
 class TestFloorTCP(unittest.IsolatedAsyncioTestCase):
+    async def test_cleanup_failure_blocks_an_otherwise_complete_result(self):
+        s=floor_snapshot()
+        session=SimpleNamespace(bridge=SimpleNamespace(on_message=lambda cb:None),action_auditors=[],
+            open=AsyncMock(return_value=s),close=AsyncMock(),cleanup_errors=["mode_restore_failed"],
+            observation=SimpleNamespace(latest=s),room_executor=SimpleNamespace(results=[]),
+            task_judge=SimpleNamespace(health=SimpleNamespace(damage=0,bones_lost=0)),
+            resources=SimpleNamespace(spent={}),pause_seconds=0,llm_configured=False,fallbacks=0,
+            log=lambda *args,**kwargs:None)
+        director=FloorDirector(session)
+        director.start=s
+        director.judge.completed_boss={"proven":True}
+        director.judge.departure={"proven":True}
+        director.judge.actionable={"proven":True}
+        director.supervised=AsyncMock()
+        report=await director.run()
+        self.assertFalse(report.success)
+        self.assertEqual(report.result,"CLEANUP_FAILED")
+        session.cleanup_errors=[]
+        session.close.side_effect=lambda:setattr(director.judge,"failure","DEAD")
+        report=await director.run()
+        self.assertFalse(report.success)
+        self.assertEqual(report.result,"FLOOR_TERMINAL_NOT_PROVEN")
+
     async def test_full_floor_on_one_tcp_connection_and_release(self):
         with tempfile.TemporaryDirectory() as directory:
             game=SimulatedFloor();bridge=SocketBridge(port=0);log=RunLog(Path(directory)/"run")

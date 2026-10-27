@@ -67,7 +67,9 @@ class RunLog:
                  "dependencies": {name: importlib.metadata.version(name) for name in ("pydantic", "httpx", "numpy")},
                  "model": model, "game_expected": "Repentance 1.7.9b.J835", "normal_inputs_only": True,
                  "source_hashes": {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}}
-        try: value["git_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+        try:
+            value["git_commit"] = subprocess.check_output(["git","rev-parse","HEAD"],cwd=root,text=True).strip()
+            value["git_dirty"] = bool(subprocess.check_output(["git","status","--porcelain"],cwd=root,text=True).strip())
         except (OSError, subprocess.CalledProcessError): value["git_commit"] = None
         (self.directory/"manifest.json").write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -308,6 +310,8 @@ class CombatSession:
         self.visited = set()
         self.latest_acted = None
         self.action_auditors = []
+        self.transition_wait = None
+        self.cleanup_errors = []
         self.started_at = time.monotonic()
         self.task_judge = CombatJudge()
         self.resources = ResourceLedger()
@@ -386,15 +390,28 @@ class CombatSession:
         result = await self.rpc("SET_CONTROL_MODE", {"mode": mode})
         if result.get("mode") != mode: raise RuntimeError("Mode confirmation mismatch")
 
+    def transition_paused(self):
+        wait = self.transition_wait
+        heartbeat = self.heartbeat
+        return bool(wait and time.monotonic() < wait["expires"] and heartbeat
+            and heartbeat.get("paused") and heartbeat.get("mode") == "FORCE_AI"
+            and heartbeat.get("room_visit_id") == wait["visit"]
+            and time.monotonic()-self.heartbeat_at < 1)
+
     async def next_snapshot(self, after=None, timeout=2):
         end = time.monotonic()+timeout
-        while time.monotonic() < end:
+        while True:
             s = self.observation.latest
-            if s and s.snapshot_id != after and self.observation.fresh(): return s
+            if s and s.snapshot_id != after and self.observation.fresh():
+                if self.transition_wait and s.room_visit_id != self.transition_wait["visit"]: self.transition_wait = None
+                return s
+            if self.transition_paused(): end = max(end,self.transition_wait["expires"])
+            if time.monotonic() >= end: break
             self.changed.clear()
-            try: await asyncio.wait_for(self.changed.wait(), min(.1, max(.001, end-time.monotonic())))
+            try: await asyncio.wait_for(self.changed.wait(),min(.1,max(.001,end-time.monotonic())))
             except asyncio.TimeoutError: pass
-        raise TimeoutError("STALE_OBSERVATION: no fresh atomic combat snapshot")
+        detail = ": "+self.observation.error if self.observation.error else ""
+        raise TimeoutError("STALE_OBSERVATION: no fresh atomic combat snapshot"+detail)
 
     async def release(self):
         await self.bridge.send_input(move=(0, 0), shoot=(0, 0))
@@ -491,11 +508,14 @@ class CombatSession:
             if self.learning:
                 build = await self.learning.apply(frozen,self.build_resolver,build)
                 await self.learning.prepare_room(frozen,build)
-            if self.planner is None: raise ValueError("Local-only run requested")
-            self.plan = await asyncio.wait_for(self.planner.plan(frozen, build, self.revision), 180)
-            source = getattr(self.planner,"last_source","deepseek")
-            if source in ("deepseek","deepseek_template"): self.llm_configured = True
-            else: self.fallbacks += 1
+            if self.planner is None:
+                self.plan = default_plan(self.context_ref(frozen,build))
+                source = "local"
+            else:
+                self.plan = await asyncio.wait_for(self.planner.plan(frozen,build,self.revision),180)
+                source = getattr(self.planner,"last_source","deepseek")
+                if source in ("deepseek","deepseek_template"): self.llm_configured = True
+                else: self.fallbacks += 1
             self.log("plan_installed", source=source, plan=self.plan.model_dump())
         except Exception as exc:
             self.fallbacks += 1
@@ -560,6 +580,7 @@ class CombatSession:
         prior = s
         try:
             while s.room_visit_id == room:
+                if getattr(self,"floor_mode",False) and s.mode == "MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
                 if self.task_judge.health.state == "dead": raise RuntimeError("DEAD_DURING_NAVIGATION")
                 if self.task_judge.health.state == "reviving":
                     await self.release(); s = await self.next_snapshot(after=s.snapshot_id); continue
@@ -593,6 +614,9 @@ class CombatSession:
                 elapsed = (time.perf_counter()-started)*1000
                 self.navigation_timings.append(elapsed)
                 action.diagnostics["decision_wall_ms"] = elapsed
+                if getattr(self,"floor_mode",False) and action.state == "NAVIGATE_PORTAL" and self.transition_wait is None:
+                    self.transition_wait = {"kind":"door_intro","visit":s.room_visit_id,"expires":time.monotonic()+15}
+                    self.log("transition_wait_authorized",kind_of_wait="door_intro",room_visit_id=s.room_visit_id,wall_limit=15)
                 try: await self.send_action(s, action.move, (0, 0), action.model_dump())
                 except TimeoutError as exc:
                     if "STALE_ACTION" not in str(exc): raise
@@ -717,12 +741,19 @@ class CombatSession:
         if self.bridge.connected:
             if self.pause_owned and self.heartbeat and time.monotonic()-self.heartbeat_at < 1 and self.heartbeat.get("paused"):
                 try:
-                    await self.pause.toggle()
-                    self.pause_owned = False
-                except Exception as exc: self.log("cleanup_error", error="resume: "+str(exc))
+                    if getattr(self,"floor_mode",False): await self.resume_owned_pause(self.observation.latest)
+                    else:
+                        await self.pause.toggle()
+                        self.pause_owned = False
+                except Exception as exc:
+                    self.cleanup_errors.append("resume: "+str(exc))
+                    self.log("cleanup_error",error=self.cleanup_errors[-1])
             try:
                 await self.release(); await self.set_mode("MANUAL")
-            except Exception as exc: self.log("cleanup_error", error=str(exc))
+            except Exception as exc:
+                self.cleanup_errors.append(str(exc))
+                self.log("cleanup_error",error=str(exc))
+        if self.pause_owned: self.cleanup_errors.append("PAUSE_OWNERSHIP_NOT_RELEASED")
         await self.bridge.stop()
         self.opened = False
 

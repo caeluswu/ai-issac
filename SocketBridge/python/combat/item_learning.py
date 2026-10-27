@@ -3,6 +3,7 @@ import asyncio
 import math
 from .builds import digest, observed_build
 from .item_interaction import PickupExecutor
+from .boundary_safety import boundary_danger
 
 
 class ItemLearning:
@@ -11,6 +12,7 @@ class ItemLearning:
         self.active_pickup = None
         self.authorized_exit = None
         self.decisions = {}
+        self.attempted = set()
         self.scope = None
         self.pickups = PickupExecutor(self)
         self.active_experiments = False
@@ -28,7 +30,7 @@ class ItemLearning:
 
     async def prepare_room(self, s, build):
         scope = (s.run_id,s.room_visit_id)
-        if self.scope != scope: self.scope, self.decisions = scope, {}
+        if self.scope != scope: self.scope, self.decisions, self.attempted = scope, {}, set()
         self.mask(s)
         for pickup in s.pickups or []:
             decision = await asyncio.to_thread(self.gateway.decide,s,build,pickup)
@@ -40,20 +42,22 @@ class ItemLearning:
 
     async def collect(self, session, snapshot):
         current = snapshot
-        if current.blocking_combat or current.hostiles or current.bombs or current.hazards: return current
+        if current.blocking_combat or current.hostiles or boundary_danger(current): return current
         # Learning may inspect many candidates, but only a bounded number are
         # approached in one clear-room boundary. No active item actions exist.
         for _ in range(4):
             build = session.build_resolver.update(current)
             build = await self.apply(current,session.build_resolver,build)
             await self.prepare_room(current,build)
-            choice = next(((p,self.decisions[(p.instance_id,p.sub_type,p.price)]) for p in current.pickups or []
-                          if self.decisions[(p.instance_id,p.sub_type,p.price)].decision=="take"),None)
-            if choice is None: break
-            pickup, decision = choice
+            candidates = [(p,self.decisions[(p.instance_id,p.sub_type,p.price)]) for p in current.pickups or []
+                if (p.instance_id,p.sub_type,p.price) not in self.attempted
+                and self.decisions[(p.instance_id,p.sub_type,p.price)].decision == "take"]
+            if not candidates: break
+            pickup,decision = min(candidates,key=lambda pair:(pair[0].variant != 10,current.player.pos.distance(pair[0].pos)))
+            self.attempted.add((pickup.instance_id,pickup.sub_type,pickup.price))
             result = await self.pickups.execute(session,current,build,pickup,decision)
             current = await session.next_snapshot(after=current.snapshot_id)
-            if result["result"] != "confirmed": break
+            if result["result"] != "confirmed" and (current.blocking_combat or not current.alive or boundary_danger(current)): break
         return current
 
     async def record_room(self, s, build, result):

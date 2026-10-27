@@ -1,14 +1,13 @@
 """Outcome proof from raw observations and applied input, independent of Director."""
 from combat.observation import SnapshotAssembler
 from combat.ledgers import HealthLedger
+from combat.boundary_safety import boundary_danger
 from .models import RoomKey
 
 
 def clear_of_threats(s):
-    return (s.alive and not s.blocking_combat and not s.hostiles and s.room["is_clear"]
-            and not s.bombs and not s.hazards and not s.projectiles.get("enemy_projectiles")
-            and not any(x.get("is_enemy",True) for x in s.projectiles.get("lasers") or [])
-            and not getattr(s,"environment_residuals",[]))
+    return (s.alive and not s.blocking_combat and s.room["is_clear"]
+            and not boundary_danger(s))
 
 
 class FloorJudge:
@@ -19,6 +18,7 @@ class FloorJudge:
         self.health = HealthLedger()
         self.actions = {}
         self.bosses = {}
+        self.visits = {}
         self.completed_boss = None
         self.clear_since = None
         self.armed = None
@@ -51,7 +51,15 @@ class FloorJudge:
 
     def observe(self,s):
         if s.run_id != self.start.run_id: self.failure = "RUN_CHANGED"; return
-        if self.health.observe(s).state == "dead": self.failure = "DEAD"; return
+        delta = self.health.observe(s)
+        if s.floor.instance_id == self.start.floor.instance_id:
+            if len(self.visits)>=128 and s.room_visit_id not in self.visits:
+                self.failure="FLOOR_VISIT_LIMIT";return
+            row=self.visits.setdefault(s.room_visit_id,{"room_key":RoomKey.from_snapshot(s).text(),
+                "room_visit_id":s.room_visit_id,"entered_frame":s.frame,"damage":0,"bones_lost":0})
+            row["damage"]+=delta.damage;row["bones_lost"]+=delta.bones_lost
+            row.update(last_frame=s.frame,terminal_snapshot_id=s.snapshot_id,alive=s.alive)
+        if delta.state == "dead": self.failure = "DEAD"; return
         if self.previous and s.frame <= self.previous.frame: return
         key = RoomKey.from_snapshot(s)
         action = self.actions.get(s.applied_action_id)
@@ -59,7 +67,7 @@ class FloorJudge:
             if self.departure: self.failure = "UNEXPECTED_RETURN_TO_SOURCE_FLOOR"
             if s.room.get("room_type") == 5:
                 bosses = [e for e in s.hostiles if e.is_boss is True]
-                if s.hostiles or not s.room["is_clear"]: self.completed_boss = None
+                if s.blocking_combat or not s.room["is_clear"]: self.completed_boss = None
                 if bosses:
                     row = self.bosses.setdefault(key.text(),{"visit":s.room_visit_id,"first_frame":s.frame,
                         "identities":[],"engaged":False,"hp":{}})
