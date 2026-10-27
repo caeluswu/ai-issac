@@ -761,6 +761,7 @@ class CombatSession:
         self.log("run_start", seed=initial.seed, snapshot_id=initial.snapshot_id)
         self.task_started, self.task_start_frame = True, initial.frame
         self.task_judge.observe(initial)
+        self.log.damage_observe(initial,{"damage":0,"bones_lost":0,"voluntary_spend":0,"container_loss":0})
         if on_ready:
             await on_ready(self)
             initial = await self.next_snapshot(after=initial.snapshot_id)
@@ -788,6 +789,7 @@ class CombatSession:
         await self.bridge.stop()
         self.opened = False
         await asyncio.to_thread(self.log.damage.finish,"session_closed")
+        if not self.log.file.closed:self.log("damage_capture_finished",episodes=len(self.log.damage.index),errors=list(self.log.damage.errors))
 
     async def run(self, bootstrap=None, startup_only=False, on_ready=None):
         result, error = "ABORTED", None

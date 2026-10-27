@@ -111,3 +111,26 @@ class TestDamageCapture(unittest.TestCase):
         self.assertEqual(comparison["counterfactual_status"],"old_model_prediction_not_proof_of_avoidability")
         self.assertTrue(comparison["lower_predicted_risk_alternatives"])
         self.assertIn("SELECTED_ACTION_APPLICATION_UNCONFIRMED",a["missing_evidence"])
+
+    def test_post_damage_action_is_not_used_as_cause(self):
+        c=DamageCapture(self.root,authoritative=False,background=False)
+        self.frame(c,1);self.frame(c,2,5)
+        c.consume({"kind":"action_sent","sequence":999,"frame":2,"action_id":7,"sent":True,"move":[1,0],"shoot":[1,0]})
+        c.finish()
+        a=json.loads(Path(c.index[0]["artifact"]).with_suffix(".analysis.json").read_text())
+        self.assertIn("ACTION_NOT_RECORDED",a["missing_evidence"])
+
+    def test_artifact_hash_matches_name_and_original_trace_reference(self):
+        import hashlib
+        c=DamageCapture(self.root,authoritative=False,background=False,trace_path=self.root/"original.jsonl")
+        self.frame(c,1);self.frame(c,2,5);c.finish()
+        path=Path(c.index[0]["artifact"]);sha=hashlib.sha256(path.read_bytes()).hexdigest()
+        self.assertIn(sha[:16],path.name)
+        self.assertEqual(json.loads(path.read_text())["trace_ref"],str((self.root/"original.jsonl").resolve()))
+
+    def test_background_persistence_failure_does_not_escape_to_control(self):
+        from unittest.mock import patch
+        c=DamageCapture(self.root,authoritative=False,background=True)
+        with patch.object(Path,"write_text",side_effect=OSError("disk full")):
+            self.frame(c,1);self.frame(c,2,5);c.finish()
+        self.assertTrue(any("disk full" in e for e in c.errors))

@@ -39,7 +39,10 @@ def compact_snapshot(s):
             "projectiles":{k:(v or [])[:128] for k,v in s.projectiles.items()},
             "bombs":s.bombs[:32],"hazards":s.hazards[:32]}
     return {"snapshot_id":s.snapshot_id,"run_id":s.run_id,"room_visit_id":s.room_visit_id,"frame":s.frame,
-        "player":s.player.model_dump(),"health":dict(s.health),"stats":dict(s.stats),
+        "player":s.player.model_dump(),"health":dict(s.health),"stats":dict(s.stats),"mode":s.mode,
+        "weapons":s.weapons.model_dump() if s.weapons else None,
+        "effects":s.effects.model_dump() if s.effects else None,
+        "floor_instance_id":s.floor.instance_id if s.floor else None,
         "inventory":deepcopy(s.inventory),"applied_action_id":s.applied_action_id,
         "weapon_feedback":deepcopy(s.weapon_feedback),
         "room":dict(s.room),"entities":deepcopy(groups),
@@ -155,7 +158,7 @@ class DamageCapture:
             outcome=json.loads(report.read_text(encoding="utf-8"))
             value["run_outcome"]={k:outcome.get(k) for k in ("result","success","damage_half_hearts","combat_ticks","wall_seconds")}
         raw=encoded(value)+"\n";window_sha=hashlib.sha256(raw.encode()).hexdigest()
-        path=directory/(value["episode_id"]+"."+window_sha[:16]+".json");path.write_text(raw,encoding="utf-8")
+        path=directory/(value["episode_id"]+"."+window_sha[:16]+".json");path.write_bytes(raw.encode("utf-8"))
         analysis=analyze_episode(value)
         path.with_suffix(".analysis.json").write_text(encoded(analysis)+"\n",encoding="utf-8")
         index={k:value[k] for k in ("episode_id","run_id","room_visit_id","start_frame","end_frame","loss","closure")}
@@ -175,7 +178,8 @@ class DamageCapture:
             try:job.result()
             except Exception as exc:self.errors.append(type(exc).__name__+": "+str(exc))
         if self.index or self.errors:
-            (self.directory/"damage-index.json").write_text(encoded({"schema_version":1,"episodes":self.index,"errors":self.errors})+"\n",encoding="utf-8")
+            try:(self.directory/"damage-index.json").write_text(encoded({"schema_version":1,"episodes":self.index,"errors":self.errors})+"\n",encoding="utf-8")
+            except OSError as exc:self.errors.append(type(exc).__name__+": "+str(exc))
 
 
 def extract_trace(trace,destination,*,store_path=None):

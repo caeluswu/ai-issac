@@ -40,6 +40,7 @@ artifacts/knowledge/
 artifacts/agent-state/
 artifacts/mechanism-probes/
 artifacts/skill-development/
+artifacts/damage-attribution/
 
 # agent
 .dsh/
