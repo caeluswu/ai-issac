@@ -1,5 +1,7 @@
 # 战斗组件合同 v1
 
+当前 M2-C 首轮仅增加受伤采集、归因和独立审核，不改变组件执行权限或现有69支持范围。常驻JS批处理、局内加载与更宽的能力组合属于 [后续设计](item-knowledge-and-skill-evolution.zh-CN.md)，尚未接入本合同的实时执行路径。
+
 适用：M2-A 的可信本地组件与 M2-B 的受限时序接缝。代码定义位于 `SocketBridge/python/combat/component_contracts.py`；七槽位与参数仍由 catalog 管理。普通可信组件不提供任意代码隔离，模型程序只能通过下述有界解释器运行。
 
 ## 能力与输入

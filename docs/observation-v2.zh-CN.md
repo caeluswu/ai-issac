@@ -62,6 +62,8 @@ Boss 入场或下楼可能只收到 paused 心跳。它们只有在门口/已授
 
 ## M2-B 可选武器反馈
 
+M2-C 增加可选的伤害来源事件字段和弹体/激光/炸弹实体身份，不提高 COMBAT_FRAME 的必填版本。PLAYER_DAMAGE_ATTEMPT 的 schema_version=2 保存 event_id、callback_frame、run/room 和可空 source_entity，来源实体不可读时明确为 unavailable。外层 frame 保留回调/入队帧，timestamp 仍是发送时刻。伤害尝试不代表实际扣血；归因使用健康账本。新字段经过 Lua 桩测试，本轮未增加引擎实机核验，接口与缺口见 [M2-C计划](phase-2c-plan.zh-CN.md)。
+
 V2 增加可选 `weapon_feedback`，其内部 `schema_version=1`、`provenance=engine_input_callback`。`history` 最多保存 32 个有射击输入查询的更新帧；每条包含 frame、room_visit_id、可空 action_id、queried 与 values 的 left/right/up/down 布尔值，以及 consistent。同帧动作身份或方向值变化时 consistent=false。只有四向查询齐全、值一致、房间身份匹配且帧早于当前快照的条目，才可用于已应用输入反馈；没有查询不能补成零输入。重置保留历史，消费端按房间和帧去重。
 
 反馈证明输入回调提供的值，不能直接证明内部蓄力进度。可选 fire_delay 为原版玩家 FireDelay 数值，fire_direction 为可读时的方向；均不能替代已校准的时序。己方泪弹额外导出 collision_damage 与 entity_frame_count；出生归属仍需实例、owner 与轨迹交叉核对，不直接把实体年龄当成与桥接计数完全等价的时间轴。真实可读性和暂停释放后果见 [机制探针](evidence/phase-2b-mechanism-probe.zh-CN.md)。缺少反馈的旧轨迹仍可读取，但不能用于声称蓄力已确认。

@@ -1,0 +1,344 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-27",
+  "scope": "M2-C attribution first delivery",
+  "capture_commit": "f0f2fb7",
+  "completed": "capture, offline attribution, API summaries, development-agent review",
+  "automatic_optimization_implemented": false,
+  "historical_runs": 3,
+  "episodes": 6,
+  "confirmed_loss_half_hearts": 7,
+  "reviews": [
+    {
+      "schema_version": 1,
+      "reviewer": "development_agent",
+      "method": "manual_trace_review_with_recomputed_geometry",
+      "summary_id": "c89dd715bcf53c174f83b437890cbf0fff2deacdfd74fcfd98587c751307843e",
+      "episodes": [
+        {
+          "episode_id": "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe",
+          "verdict": "partly_reasonable",
+          "reason": "爆炸类来源与小位移判断有依据，但损失2是两个半心即一颗心，不能写成2红心。动作诊断已记录blocked_steps=12，应优先考虑沿墙受阻，不应主要猜测回调未执行。所有候选不安全也未由摘要直接证明。",
+          "evidence_refs": [
+            "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe:1",
+            "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe:2",
+            "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe:3",
+            "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe:4",
+            "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe:6",
+            "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe:7",
+            "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe:9"
+          ],
+          "next_step": "用代码提供单位、相对方位/距离、碰撞余量、受阻和短时动作轨迹，再只对一个具体假设提出小改动与验证。"
+        },
+        {
+          "episode_id": "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165",
+          "verdict": "partly_reasonable",
+          "reason": "爆炸与近处16型敌人死亡相关的假设可供测试，但损失1是半心。API写同319帧死亡，原始recent_deaths标记318帧。类型名称不是所提供资料中的已观测事实。blocked_steps=9是已有约束证据，不能直接归结为缺少提前撤离。",
+          "evidence_refs": [
+            "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165:1",
+            "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165:2",
+            "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165:3",
+            "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165:4",
+            "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165:6",
+            "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165:7",
+            "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165:9"
+          ],
+          "next_step": "用代码提供单位、相对方位/距离、碰撞余量、受阻和短时动作轨迹，再只对一个具体假设提出小改动与验证。"
+        },
+        {
+          "episode_id": "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7",
+          "verdict": "partly_reasonable",
+          "reason": "来源226及接触假设有依据；重算中心距离25.37到约23.00像素，支持接近碰撞边界，但不确认唯一伤害实体。[-1,-1]为左上而非左下；损失与总损失均为半心单位。实际位移(-0.48,-4.33)不能单独支持移动回调未执行。",
+          "evidence_refs": [
+            "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7:1",
+            "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7:2",
+            "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7:3",
+            "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7:4",
+            "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7:6",
+            "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7:7",
+            "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7:9"
+          ],
+          "next_step": "用代码提供单位、相对方位/距离、碰撞余量、受阻和短时动作轨迹，再只对一个具体假设提出小改动与验证。"
+        }
+      ],
+      "automatic_component_changes": false
+    },
+    {
+      "schema_version": 1,
+      "reviewer": "development_agent",
+      "method": "manual_trace_review_with_recomputed_geometry",
+      "summary_id": "b45e8a99a74dccc3aa4da5b3f7ecb58c0ea65a74012a5b244843ee1ad807db7b",
+      "episodes": [
+        {
+          "episode_id": "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973",
+          "verdict": "partly_reasonable",
+          "reason": "半心单位与来源类型正确，接触假设有几何依据：距离24.01到22.61像素，半径和23。敌人相对位置为右下而非右上，受伤前距离并非约20像素。来源实例未直接记录，不能把最近实例当成已确认来源。",
+          "evidence_refs": [
+            "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973:1",
+            "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973:2",
+            "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973:3",
+            "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973:4",
+            "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973:6",
+            "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973:7",
+            "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973:9"
+          ],
+          "next_step": "用代码提供单位、相对方位/距离、碰撞余量、受阻和短时动作轨迹，再只对一个具体假设提出小改动与验证。"
+        },
+        {
+          "episode_id": "acab154434a2742199c229e865e1c11c236f2580920b65b838b41a1bec589bb7",
+          "verdict": "partly_reasonable",
+          "reason": "半心、动作右下、blocked_steps=11及局部受阻假设合理。中心距离重算24.11到22.48像素；反证引用混入另一受伤事件846925c9的证据，协议检查正确拒绝。868的接近不能覆盖引擎报告的226来源。",
+          "evidence_refs": [
+            "acab154434a2742199c229e865e1c11c236f2580920b65b838b41a1bec589bb7:1",
+            "acab154434a2742199c229e865e1c11c236f2580920b65b838b41a1bec589bb7:2",
+            "acab154434a2742199c229e865e1c11c236f2580920b65b838b41a1bec589bb7:3",
+            "acab154434a2742199c229e865e1c11c236f2580920b65b838b41a1bec589bb7:4",
+            "acab154434a2742199c229e865e1c11c236f2580920b65b838b41a1bec589bb7:6",
+            "acab154434a2742199c229e865e1c11c236f2580920b65b838b41a1bec589bb7:7"
+          ],
+          "next_step": "用代码提供单位、相对方位/距离、碰撞余量、受阻和短时动作轨迹，再只对一个具体假设提出小改动与验证。"
+        },
+        {
+          "episode_id": "e3f4d23cc0ade07b5c23c9dc1c439c5eed7afe509291608e7b5dbed1283be525",
+          "verdict": "partly_reasonable",
+          "reason": "半心与来源226正确；敌人相对位置是左上而非下方。反证引用完全来自另一个事件，应排除。玩家实际左移3.42像素，move_dir=0不应暗示静止；实际中心距离28.25到约23像素支持接近碰撞边界，尚不证明哪种回避策略可避免。",
+          "evidence_refs": [
+            "e3f4d23cc0ade07b5c23c9dc1c439c5eed7afe509291608e7b5dbed1283be525:1",
+            "e3f4d23cc0ade07b5c23c9dc1c439c5eed7afe509291608e7b5dbed1283be525:2",
+            "e3f4d23cc0ade07b5c23c9dc1c439c5eed7afe509291608e7b5dbed1283be525:3",
+            "e3f4d23cc0ade07b5c23c9dc1c439c5eed7afe509291608e7b5dbed1283be525:4",
+            "e3f4d23cc0ade07b5c23c9dc1c439c5eed7afe509291608e7b5dbed1283be525:6",
+            "e3f4d23cc0ade07b5c23c9dc1c439c5eed7afe509291608e7b5dbed1283be525:7"
+          ],
+          "next_step": "用代码提供单位、相对方位/距离、碰撞余量、受阻和短时动作轨迹，再只对一个具体假设提出小改动与验证。"
+        }
+      ],
+      "automatic_component_changes": false
+    }
+  ],
+  "recomputed_geometry": [
+    {
+      "episode_id": "846925c929992601da789f3de861e482b05d0b36bb74270d0f7e0672b30bb973",
+      "recomputed_geometry": [
+        {
+          "at": "local_context_before",
+          "candidate_entity_id": "2153284920:3",
+          "relative_dx": 15.030364990240002,
+          "relative_dy": 18.72917175293,
+          "distance_px": 24.014448698452007,
+          "surface_gap_px": 1.0144486984520071,
+          "exact_source_confirmed": false
+        },
+        {
+          "at": "local_context_after",
+          "candidate_entity_id": "2153284920:3",
+          "relative_dx": 15.799865722660002,
+          "relative_dy": 16.17523193359,
+          "distance_px": 22.611366278036275,
+          "surface_gap_px": -0.3886337219637248,
+          "exact_source_confirmed": false
+        }
+      ]
+    },
+    {
+      "episode_id": "3519b36b889d9f7b9a71d963f994724a9fa86c5e313cae3d94b38d8ee1561bbe",
+      "recomputed_geometry": []
+    },
+    {
+      "episode_id": "3c84d7e8ec19271788af4ae141372c7290c2e51a4d2ee53a3246e776281ea165",
+      "recomputed_geometry": [
+        {
+          "at": "local_context_before",
+          "candidate_entity_id": "3763096623:3",
+          "relative_dx": 14.009170532225994,
+          "relative_dy": 31.589401245109997,
+          "distance_px": 34.55643398884709,
+          "surface_gap_px": 11.55643398884709,
+          "exact_source_confirmed": false
+        },
+        {
+          "at": "local_context_after",
+          "candidate_entity_id": "2735570338:1",
+          "relative_dx": 6.344490051268991,
+          "relative_dy": 57.34848022461,
+          "distance_px": 57.698359925418465,
+          "surface_gap_px": 34.698359925418465,
+          "exact_source_confirmed": false
+        }
+      ]
+    },
+    {
+      "episode_id": "45126e1c42a6363c3036471dec2e944d3362ebb1b5315ac40d6fc4093cd9a3f7",
+      "recomputed_geometry": [
+        {
+          "at": "local_context_before",
+          "candidate_entity_id": "3316431093:4",
+          "relative_dx": -19.33197021484,
+          "relative_dy": -16.43374633789,
+          "distance_px": 25.37307807668541,
+          "surface_gap_px": 2.3730780766854096,
+          "exact_source_confirmed": false
+        },
+        {
+          "at": "local_context_after",
+          "candidate_entity_id": "3316431093:4",
+          "relative_dx": -18.701904296880002,
+          "relative_dy": -13.38800048828,
+          "distance_px": 22.999995247909165,
+          "surface_gap_px": -4.752090834614364e-06,
+          "exact_source_confirmed": false
+        }
+      ]
+    },
+    {
+      "episode_id": "acab154434a2742199c229e865e1c11c236f2580920b65b838b41a1bec589bb7",
+      "recomputed_geometry": [
+        {
+          "at": "local_context_before",
+          "candidate_entity_id": "3316431093:4",
+          "relative_dx": -14.372009277339998,
+          "relative_dy": -19.35284423828,
+          "distance_px": 24.10575098973426,
+          "surface_gap_px": 1.1057509897342612,
+          "exact_source_confirmed": false
+        },
+        {
+          "at": "local_context_after",
+          "candidate_entity_id": "3316431093:4",
+          "relative_dx": -14.76104736328,
+          "relative_dy": -16.95959472656,
+          "distance_px": 22.483691257223693,
+          "surface_gap_px": -0.5163087427763067,
+          "exact_source_confirmed": false
+        }
+      ]
+    },
+    {
+      "episode_id": "e3f4d23cc0ade07b5c23c9dc1c439c5eed7afe509291608e7b5dbed1283be525",
+      "recomputed_geometry": [
+        {
+          "at": "local_context_before",
+          "candidate_entity_id": "3316431093:4",
+          "relative_dx": -12.167541503910002,
+          "relative_dy": -25.491455078119998,
+          "distance_px": 28.246474970324744,
+          "surface_gap_px": 5.246474970324744,
+          "exact_source_confirmed": false
+        },
+        {
+          "at": "local_context_after",
+          "candidate_entity_id": "3316431093:4",
+          "relative_dx": -5.986938476559999,
+          "relative_dy": -22.207122802729998,
+          "distance_px": 22.99999424994809,
+          "surface_gap_px": -5.750051908393061e-06,
+          "exact_source_confirmed": false
+        }
+      ]
+    }
+  ],
+  "api_attempts": [
+    {
+      "summary_id": "6d4b677ef4c0ac84d2d13ab102e3c0965d4f6251b0808feb65d5cc74ec83ecb3",
+      "status": "failed",
+      "prompt_version": "damage-review-1",
+      "artifact": "D:\\internship1\\issac\\artifacts\\damage-attribution\\summaries\\6d4b677ef4c0ac84d2d13ab102e3c0965d4f6251b0808feb65d5cc74ec83ecb3\\attempts\\16ccdd64c92640fd8b9a2a22acbc627a",
+      "raw_response_sha256": "8c9da052783a96bb68891a5b667fda379530b103c03bcf76e735e58610ea81a9",
+      "validation_error": "1 validation error for SummaryBatch\n  Invalid JSON: key must be a string at line 1 column 588 [type=json_invalid, input_value='{\"episodes\":[{\"episode_i...1\"],\"kind\":\"unknown\"}]}', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/json_invalid"
+    },
+    {
+      "summary_id": "0295ed6e9a0c6a524d087ebed8c259e03cd2d0989ddc61e83950a0386bd980af",
+      "status": "failed",
+      "prompt_version": "damage-review-2",
+      "artifact": "D:\\internship1\\issac\\artifacts\\damage-attribution\\summaries\\0295ed6e9a0c6a524d087ebed8c259e03cd2d0989ddc61e83950a0386bd980af\\attempts\\ac4a20ad311f468fb1abdb65737933d7",
+      "raw_response_sha256": "771914ace8087076fa2139a1f04da97644cf8be0125f0337b37d1fb0a23c72b6",
+      "validation_error": "6 validation errors for SummaryBatch\nepisodes.0.counterevidence.0\n  Input should be an object [type=model_type, input_value='3519b36b889d9f7b9a71d963...在可避免动作。', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nepisodes.0.counterevidence.1\n  Input should be an object [type=model_type, input_value='3519b36b889d9f7b9a71d963...控制逻辑缺陷。', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nepisodes.1.counterevidence.0\n  Input should be an object [type=model_type, input_value='3c84d7e8ec19271788af4ae1...必然导致伤害。', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nepisodes.1.counterevidence.1\n  Input should be an object [type=model_type, input_value='3c84d7e8ec19271788af4ae1...知总量3中的1点。', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nepisodes.2.counterevidence.0\n  Input should be an object [type=model_type, input_value='45126e1c42a6363c3036471d...作可避免伤害。', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nepisodes.2.counterevidence.1\n  Input should be an object"
+    },
+    {
+      "summary_id": "b45e8a99a74dccc3aa4da5b3f7ecb58c0ea65a74012a5b244843ee1ad807db7b",
+      "status": "failed",
+      "prompt_version": "damage-review-3",
+      "artifact": "D:\\internship1\\issac\\artifacts\\damage-attribution\\summaries\\b45e8a99a74dccc3aa4da5b3f7ecb58c0ea65a74012a5b244843ee1ad807db7b\\attempts\\06c6ad3b8dae48c3bfd2db2475974d31",
+      "raw_response_sha256": "c98595097f890c07b821bc92d36ccb7b229130e2f4ef000cc1b4868187155983",
+      "validation_error": "SUMMARY_UNKNOWN_EVIDENCE_REFERENCE"
+    }
+  ],
+  "api_raw_content_unchanged": true,
+  "local_compatibility_revalidation_requests": 0,
+  "first_round_request_limit": 3,
+  "budget": {
+    "limits": {
+      "requests": 24,
+      "input": 240000,
+      "output": 98304,
+      "damage_review_requests": 3,
+      "damage_review_output": 12288
+    },
+    "requests": 3,
+    "phase": "damage_review",
+    "phase_requests": 3,
+    "input_actual": 48818,
+    "output_actual": 6507,
+    "unknown_usage_attempts": 0,
+    "cost": null,
+    "attempts": [
+      {
+        "id": 1,
+        "phase": "damage_review",
+        "reserved_input": 70045,
+        "reserved_output": 4096,
+        "actual_input": 24078,
+        "actual_output": 1644,
+        "settled": 1
+      },
+      {
+        "id": 2,
+        "phase": "damage_review",
+        "reserved_input": 37395,
+        "reserved_output": 4096,
+        "actual_input": 12702,
+        "actual_output": 2726,
+        "settled": 1
+      },
+      {
+        "id": 3,
+        "phase": "damage_review",
+        "reserved_input": 35188,
+        "reserved_output": 4096,
+        "actual_input": 12038,
+        "actual_output": 2137,
+        "settled": 1
+      }
+    ]
+  },
+  "fresh_game_samples": 0,
+  "lua_damage_fields_validation": "actual Lua callbacks tested in stubs; not freshly verified against game engine",
+  "tests": {
+    "full_suite": 346,
+    "full_suite_seconds": 86.43,
+    "post_review_damage_tests": 21,
+    "lua_tests": 14,
+    "session_tests": 10,
+    "session_seconds": 34.945
+  },
+  "capture_microbenchmark": {
+    "samples": 230,
+    "p50_ms": 0.07385,
+    "p95_ms": 0.1134,
+    "p99_ms": 0.2023,
+    "scope": "two-enemy recorded snapshot; capture and delta trace write only"
+  },
+  "next_decision": "Add deterministic spatial/motion and threat-identity summaries, then trial one reviewed optimization hypothesis; do not directly automate code modification from current causal prose.",
+  "api_and_review_commit": "9c413c3",
+  "structured_reference_checks": {
+    "batch_a": {
+      "accepted_after_local_text_compatibility": 3
+    },
+    "batch_b": {
+      "valid": 1,
+      "cross_episode_reference_errors": 2,
+      "status": "needs_review"
+    }
+  },
+  "next_round_authorized_or_executed": false
+}

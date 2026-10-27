@@ -86,6 +86,23 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 批次入口 `run_phase1_batch.py` 未加 `--local-only` 时会调用付费模型，当前不将其列为常规验收步骤。
 
+## 受伤归因与审核（M2-C 首轮）
+
+运行会自动收集确认受伤前后窗口、实际动作、候选与来源信息，并在后台写入运行目录 `damage/` 和智能体经验库。连续受伤独立记录，归因不改变健康计分。API 总结目前使用显式离线入口，正常游玩不会自动增加诊断费用。
+
+```powershell
+# 从已结束的运行重建事件和本地分析，不调用 API
+.\.venv\Scripts\python.exe analyze_damage.py extract artifacts/runs/<run>/trace.jsonl
+
+# 查看持久预算，不调用 API
+.\.venv\Scripts\python.exe analyze_damage.py budget
+
+# 显式付费：对选定目录的 1～8 个事件作简要总结；更多事件用 --episode 选择
+.\.venv\Scripts\python.exe analyze_damage.py summarize artifacts/runs/<run>/damage
+```
+
+首轮已审核三次历史运行中的六次受伤，实际使用3次请求，已达到本轮子上限；M2-C总上限24次，不能通过重启重置。API原文、失败、用量和开发Agent审核分别保存。六例结论均为部分合理：能支持来源与部分接触假设，但存在单位、方位或跨案例引用错误。详见 [归因审核与下一步](docs/evidence/phase-2c-attribution-review.zh-CN.md) 和 [M2-C实施计划](docs/phase-2c-plan.zh-CN.md)。当前停止于审核交付，JS通用组件、当局加载与自动改代码尚未实现，M3暂缓。
+
 ## 机制程序开发（M2-B）
 
 启用道具功能的正常流程遇到未支持且已识别的道具时，记录带构筑和观测身份的缺口任务。开发进程消费任务；程序经过有界解释器、独立检查和实机试用后才能发布，后续会话加载，战斗中不热替换。
@@ -108,7 +125,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 ## 文档导航
 
-完整目录及文档职责见 [docs 文档索引](docs/README.md)。M2-B 的实现边界从计划与验收进入，后续 M3-A 见阶段路线；当前首层能力见运行手册和验收证据。历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
+完整目录及文档职责见 [docs 文档索引](docs/README.md)。当前任务从 M2-C 计划和归因审核进入，M3 暂缓；M2-B 和首层能力分别以各自验收为准。历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
 
 | 入口 | 解决的问题 |
 |---|---|
@@ -116,6 +133,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 | [P0–P6 实现审查](docs/phase-2a-preparation.zh-CN.md) | 当前能做什么，四个已复现问题及准入状态 |
 | [M2-A 详细实施计划](docs/phase-2a-plan.zh-CN.md) | A0–A7 的模块、预算与验收合同 |
 | [M2-B 详细计划](docs/phase-2b-plan.zh-CN.md) / [验收证据](docs/evidence/phase-2b-validation.zh-CN.md) | 蓄力时序程序的合同、发布复用、全部失败、语法恢复和 API 总账 |
+| [M2-C实施计划](docs/phase-2c-plan.zh-CN.md) / [归因审核](docs/evidence/phase-2c-attribution-review.zh-CN.md) | 受伤事实、API诊断、独立审核与后续局内能力扩展 |
 | [首层运行手册](docs/phase-2a-runbook.zh-CN.md) / [验收证据](docs/evidence/phase-2a-validation.zh-CN.md) | 实际入口、完整首层证明及覆盖限制 |
 | [第二、三阶段路线](docs/phase-2-3-roadmap.zh-CN.md) | M2-B 模型开发组件与 M3 连续推进至 Mom 的边界 |
 | [运行手册](docs/phase-1-runbook.zh-CN.md) | 已实现入口的配置、启动和排错 |
