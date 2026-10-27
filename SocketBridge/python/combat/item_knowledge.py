@@ -113,7 +113,7 @@ class KnowledgeGateway:
         if experience["experience_revision"] != build.experience_revision: raise ValueError("EXPERIENCE_SNAPSHOT_CHANGED")
         modes = getattr(self, "evidence_modes", {"normal_play", "development_initialization"})
         for key in ("local_claims", "counterexamples"):
-            experience[key] = [c for c in experience[key] if c.get("source_mode") in modes]
+            experience[key] = [c for c in experience[key] if c.get("source_mode") in modes and c.get("sample_identity_verified") is True]
         return {"bundle_schema_version":2,"bundle_id":digest([self.package.dataset_id,experience["experience_revision"],s.snapshot_id,subjects,purpose]),
             "dataset_id":self.package.dataset_id,"knowledge_revision":1,
             "context_ref":{"run_id":s.run_id,"floor_instance_id":s.floor.instance_id if s.floor else None,"room_visit_id":s.room_visit_id,

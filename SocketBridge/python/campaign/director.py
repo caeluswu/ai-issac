@@ -188,7 +188,7 @@ class FloorDirector:
             plan=self.diagnose(s,build,watcher)
             action = await asyncio.to_thread(solver.solve,s,plan,build,True,found.pos,(),(found.grid_index,))
             if s.player.pos.distance(found.pos)<45 and self.session.transition_wait is None:
-                self.session.transition_wait={"kind":"floor_transition","visit":s.room_visit_id,"expires":time.monotonic()+15}
+                self.session.transition_wait={"kind":"floor_transition","visit":s.room_visit_id,"run_id":s.run_id,"floor_instance_id":s.floor.instance_id,"expires":time.monotonic()+15}
                 self.session.log("transition_wait_authorized",kind_of_wait="floor_transition",room_visit_id=s.room_visit_id,wall_limit=15)
             await self.send(s,action.move,action.model_dump())
             previous = action

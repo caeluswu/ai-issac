@@ -200,7 +200,9 @@ class SimulatedFloor(SimulatedRoom):
                 self.boss_intro_until=None
                 self.enter(86)
             if self.s.paused:
-                await self.send({"type":"HEARTBEAT","paused":True,"frame":self.s.frame,"room_visit_id":self.s.room_visit_id,"mode":self.s.mode})
+                # J835 loading can suspend both updates and render heartbeats.
+                if not self.floor_intro_until or self.floor_intro_until-time.monotonic()>2:
+                    await self.send({"type":"HEARTBEAT","paused":True,"frame":self.s.frame,"room_visit_id":self.s.room_visit_id,"mode":self.s.mode})
                 continue
             self.s.frame+=1
             if self.s.frame-self.last_action_frame>3:self.move=self.shoot=(0,0)

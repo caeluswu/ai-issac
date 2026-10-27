@@ -391,12 +391,15 @@ class CombatSession:
         if result.get("mode") != mode: raise RuntimeError("Mode confirmation mismatch")
 
     def transition_paused(self):
-        wait = self.transition_wait
-        heartbeat = self.heartbeat
-        return bool(wait and time.monotonic() < wait["expires"] and heartbeat
-            and heartbeat.get("paused") and heartbeat.get("mode") == "FORCE_AI"
-            and heartbeat.get("room_visit_id") == wait["visit"]
-            and time.monotonic()-self.heartbeat_at < 1)
+        wait, heartbeat = self.transition_wait,self.heartbeat
+        if not (wait and heartbeat and time.monotonic()<wait["expires"] and heartbeat.get("paused")
+                and self.heartbeat_at>=wait["expires"]-15): return False
+        source = heartbeat.get("mode")=="FORCE_AI" and heartbeat.get("room_visit_id")==wait["visit"]
+        # A new-floor callback resets MANUAL before normal updates resume.
+        destination = (wait["kind"]=="floor_transition" and heartbeat.get("mode")=="MANUAL"
+            and heartbeat.get("run_id")==wait.get("run_id") and heartbeat.get("floor_instance_id")
+            and heartbeat["floor_instance_id"]!=wait.get("floor_instance_id"))
+        return bool(source or destination)
 
     async def next_snapshot(self, after=None, timeout=2):
         end = time.monotonic()+timeout

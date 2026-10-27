@@ -90,18 +90,22 @@ class AgentStore:
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             modes = set()
+            verified = True
             for ref in evidence_refs:
                 evidence = db.execute("SELECT signature,metric,body FROM measurements WHERE id=?",(ref,)).fetchone()
                 if evidence is None or evidence[:2] != (signature,metric): raise ValueError("Missing or mismatched measurement")
                 observed = json.loads(evidence[2])
                 if observed.get("value") != value: raise ValueError("Claim value differs from measurement")
                 modes.add(observed.get("source_mode","unknown"))
+                ids=observed.get("sample_ids",[])
+                verified = verified and observed.get("extractor_version")==2 and len(ids)>=3 and len(set(ids))==len(ids)
             if len(modes) != 1: raise ValueError("Mixed evidence modes")
             body["source_mode"] = modes.pop()
+            body["sample_identity_verified"] = verified
             rows = db.execute("SELECT id,body FROM claims WHERE signature=? AND metric=? AND active=1",(signature,metric)).fetchall()
             for old_id, encoded in rows:
                 old = json.loads(encoded)
-                if old.get("source_mode") == body["source_mode"] and old["value"] == value:
+                if old.get("source_mode") == body["source_mode"] and old["value"] == value and old.get("sample_identity_verified",False) == verified:
                     old["evidence_refs"] = sorted(set(old["evidence_refs"]+evidence_refs))
                     db.execute("UPDATE claims SET body=? WHERE id=?",(json.dumps(old,allow_nan=False),old_id))
                     return old_id
@@ -126,6 +130,6 @@ class AgentStore:
             counters = []
             for claim_id, claim_body, _ in rows:
                 mode = json.loads(claim_body).get("source_mode","unknown")
-                counters.extend({**json.loads(body),"claim_id":claim_id,"source_mode":mode} for (body,) in db.execute("SELECT body FROM counterexamples WHERE claim_id=? ORDER BY rowid DESC LIMIT 8",(claim_id,)))
+                counters.extend({**json.loads(body),"claim_id":claim_id,"source_mode":mode,"sample_identity_verified":json.loads(claim_body).get("sample_identity_verified",False)} for (body,) in db.execute("SELECT body FROM counterexamples WHERE claim_id=? ORDER BY rowid DESC LIMIT 8",(claim_id,)))
         return {"experience_revision":revision,"local_claims":[json.loads(body) for _,body,active in rows if active],
                 "counterexamples":counters,"hypotheses":[],"support_limits":["exact_signature_match","not_global_item_facts"]}

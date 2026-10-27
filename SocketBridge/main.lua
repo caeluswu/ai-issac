@@ -1869,6 +1869,7 @@ mod:AddCallback(ModCallbacks.MC_POST_RENDER, function()
         pumpCommands()
         if State.renderCount % 6 == 0 then
             Network.send({type = "HEARTBEAT", paused = true, frame = State.updateCount,
+                run_id=State.runId, floor_instance_id=State.runId..":floor:"..State.floorGeneration,
                 room_visit_id = State.runId .. ":" .. tostring(State.roomVisit),
                 mode = State.controlMode})
         end

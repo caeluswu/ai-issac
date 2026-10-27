@@ -71,9 +71,9 @@ class ItemLearning:
         ref, measured_value = observed
         previous = await asyncio.to_thread(self.gateway.store.retrieve,build.calibration_key)
         modes = self.evidence_modes()
-        if any(c.get("source_mode") in modes for c in previous["counterexamples"]): return
+        if any(c.get("source_mode") in modes and c.get("sample_identity_verified") is True for c in previous["counterexamples"]): return
         for claim in previous["local_claims"]:
-            if claim.get("source_mode") in modes and claim["metric"] == "launch_speed" and abs(claim["value"]-measured_value)>max(1.,abs(claim["value"])*.35):
+            if claim.get("sample_identity_verified") is True and claim.get("source_mode") in modes and claim["metric"] == "launch_speed" and abs(claim["value"]-measured_value)>max(1.,abs(claim["value"])*.35):
                 await asyncio.to_thread(self.gateway.store.contradict,claim["claim_id"],{"measurement_id":ref,"reason":"prediction_residual","snapshot_id":s.snapshot_id})
                 return
         await asyncio.to_thread(self.gateway.store.accept_claim,build.calibration_key,"launch_speed",measured_value,[ref])
@@ -84,7 +84,7 @@ class ItemLearning:
     def restore(self, build):
         evidence = self.gateway.store.retrieve(build.calibration_key)
         modes = self.evidence_modes()
-        usable = [c for c in evidence["local_claims"] if c["metric"]=="launch_speed" and c.get("source_mode") in modes
+        usable = [c for c in evidence["local_claims"] if c["metric"]=="launch_speed" and c.get("sample_identity_verified") is True and c.get("source_mode") in modes
                   and type(c["value"]) in (float,int) and math.isfinite(c["value"]) and .1<=c["value"]<=1000]
         return {"experience_revision":evidence["experience_revision"],"calibration":usable[:1],"counterexamples":evidence["counterexamples"]}
 
