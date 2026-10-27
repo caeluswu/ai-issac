@@ -17,9 +17,11 @@ def main():
     items=ET.parse(game/"items.xml").getroot()
     collectible_types={int(e.get("id")):e.tag for e in items if e.get("id","").isdigit()
                        and e.tag in ("passive","familiar","active")}
-    pool=next(p for p in ET.parse(game/"itempools.xml").getroot().findall("Pool")
-              if p.get("Name")=="boss")
-    boss={int(item.get("Id")) for item in pool.findall("Item")}
+    pools={p.get("Name"):{int(item.get("Id")) for item in p.findall("Item")}
+           for p in ET.parse(game/"itempools.xml").getroot().findall("Pool")}
+    boss,treasure=pools["boss"],pools["treasure"]
+    treasure_passives={i for i in treasure if collectible_types.get(i) in ("passive","familiar")}
+    takeable=set(ITEM_SUPPORT)-{105}
     records={}
     with sqlite3.connect(f"file:{knowledge}?mode=ro",uri=True) as db:
         for item_id,raw in db.execute("SELECT id,record FROM records WHERE kind='collectible' AND language='en-US'"):
@@ -31,8 +33,11 @@ def main():
     }
     result={"game_build":config["build"],"eid_dataset_id":config["dataset_id"],
             "supported_collectible_ids":len(ITEM_SUPPORT)-1,
-            "boss_pool_supported":len(boss&ITEM_SUPPORT.keys()),"boss_pool_total":len(boss),
-            "boss_pool_unsupported":[{"id":i,"name":records.get(i,{}).get("name")} for i in sorted(boss-ITEM_SUPPORT.keys())],
+            "boss_pool_supported":len(boss&takeable),"boss_pool_total":len(boss),
+            "boss_pool_unsupported":[{"id":i,"name":records.get(i,{}).get("name")} for i in sorted(boss-takeable)],
+            "treasure_pool_takeable":len(treasure&takeable),"treasure_pool_total":len(treasure),
+            "treasure_passive_familiar_takeable":len(treasure_passives&takeable),
+            "treasure_passive_familiar_total":len(treasure_passives),
             "failures":failures}
     print(json.dumps(result,ensure_ascii=False,indent=2))
     return int(any(failures.values()))

@@ -76,7 +76,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 道具按 ID 查询；动态/运行时说明不保证覆盖，缺资料或不完整解析会明确返回状态。`partial` 表示已有说明而条件/协同未穷尽，并不等于查询失败；未知 ID 不制造知识条目。SQLite 写入失败返回错误，不宣称入库成功。安装包缺失时先执行准备脚本。排错与复现见 [EID 单道具验证](docs/evidence/eid-item-knowledge-validation.zh-CN.md)。
 
-`--with-items` 启用本地说明、拾取、避让和被动记录。限定收藏品支持 1/4/12/27/32/50 的实际属性、20 的飞行、69 的校准蓄力程序，以及不使用主动效果的 105。已发布的妈妈的菜刀 114 JS 组件可在普通拾取后加载，经无怪短测校准再进入战斗；114 与 69 的组合仍不支持。其他未知机制、饰品和健康交易不能由面板变化自动放行。普通资源按已验证子型处理，首层另支持有限红/魂心；这仍是有限策略。范围和固定种子证据见 [M2-C 道具适配记录](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git。
+`--with-items` 启用本地说明、拾取、避让和被动记录。普通泪弹路线登记 231 个被动或跟班 ID，拾取前逐件核对 EID 与构筑，拾取后读取实际面板和库存；不使用主动效果的 105 仍不拾取。69 使用校准蓄力程序，已发布的妈妈的菜刀 114 JS 组件可在普通拾取后加载，经无怪短测校准再进入战斗；114 与 69 的组合仍不支持。其他未知机制、饰品和健康交易不能由面板变化自动放行。普通资源按已验证子型处理，首层另支持有限红/魂心；这仍是有限策略。范围和固定种子证据见 [M2-C 道具适配记录](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git。
 
 开发用实机核验入口为 `scripts/validate_m2_preparation_live.py`：会自动重开固定场景，并在记录的初始化环节生成道具，再正常拾取和战斗。其结果仅验证机制，不是正常随机对局胜率；不作为日常启动命令。
 
@@ -115,11 +115,11 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 菜刀基础构筑有确认的中距离投掷命中；上述属性组合已清房并确认刀伤，但那次运行没有确认投掷命中。详情见 [道具适配证据](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。
 
-## J835 被动道具与 Boss 奖励
+## J835 被动道具、Boss 奖励与宝箱房
 
-当前普通泪弹路线登记 155 个被动/跟班道具 ID。拾取前查询 EID，拾取后按实际面板、库存、生命与武器类型重新绑定；主武器机制改变的道具仍需专属组件。模组在第 1～6 层普通维度、非失明诅咒下提供可见底座身份，失明时隐藏 ID。
+当前普通泪弹路线登记 231 个被动/跟班道具 ID。拾取前查询 EID，拾取后按实际面板、库存、生命与武器类型重新绑定；主武器机制改变的道具仍需专属组件。模组在第 1～6 层普通维度、非失明诅咒下提供可见底座身份，失明时隐藏 ID。
 
-本机 J835 `resources-dlc3/itempools.xml` 的 Boss 奖励池共有 59 个唯一 ID，当前能力表覆盖 59 个。覆盖是拾取与通用控制的准入范围，不代表逐个道具实机验证或收益评估。静态核对 EID 记录与游戏道具类型：
+本机 J835 `resources-dlc3/itempools.xml` 的 Boss 奖励池共有 59 个唯一 ID，当前能力表覆盖 59 个；宝箱房池有 407 个唯一 ID，137 个可进入正常拾取流程。已发现的宝箱房优先于 Boss；尚未发现时先探索未进入的普通房，锁门需有钥匙。该顺序由可替换的路由策略提供，为以后加入商店购买和隐藏房决策保留接缝。覆盖是拾取与通用控制的准入范围，不代表逐个道具实机验证或收益评估。静态核对 EID 记录与游戏道具类型：
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/audit_item_support.py

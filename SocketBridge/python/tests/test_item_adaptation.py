@@ -37,9 +37,22 @@ class TestItemCapabilities(unittest.TestCase):
         self.assertTrue(r.supports_pickup(s,pickup(167)))
         self.assertTrue(r.supports_pickup(s,pickup(240)))
         self.assertTrue(r.supports_pickup(s,pickup(538)))
+        for item_id in (8,17,75,98,108,154,169,213,313,581):
+            self.assertTrue(r.supports_pickup(s,pickup(item_id)),item_id)
         self.assertFalse(r.supports_pickup(s,pickup(48)))
         self.assertEqual(r.update(s).signature,old.signature)
         self.assertNotIn("32",s.inventory["collectibles"])
+
+    def test_treasure_attack_modifier_rebinds_without_changing_weapon_family(self):
+        s=snapshot();r=BuildResolver();before=r.update(s)
+        s.inventory["collectibles"]["154"]=1
+        after=r.update(s)
+        self.assertEqual(after.family,"normal_tears")
+        self.assertIn("left_eye_damage",after.modifiers)
+        self.assertNotEqual(before.calibration_key,after.calibration_key)
+        s.inventory["collectibles"]["8"]=1
+        familiar=r.update(s)
+        self.assertEqual(after.calibration_key,familiar.calibration_key)
 
     def test_boss_stat_reward_rebinds_from_actual_panel_and_familiar_keeps_calibration(self):
         s=snapshot();r=BuildResolver();before=r.update(s)

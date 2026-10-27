@@ -151,6 +151,15 @@ class ThreatField:
         self.adapters = adapters or EnemyAdapters()
         self.threats = []
         for enemy in s.hostiles: self.threats.extend(self.adapters.resolve(enemy).forecast(enemy, s))
+        # Little Horn's moving pitfalls have zero HP and zero contact damage.
+        # They are omitted from hostiles, but their observed motion can carry
+        # the player into a damaging teleport well after the boss disappears.
+        for entity in s.enemies:
+            if entity.type == 291 and entity.variant in (0,1,2) and not entity.dead:
+                self.threats.append(ThreatForecast(
+                    "pitfall:"+entity.instance_id,entity.pos.x,entity.pos.y,
+                    entity.vel.x,entity.vel.y,entity.collision_radius,
+                    uncertainty=8,source="moving_pitfall_observed_motion"))
         for enemy in s.hostiles:
             radius = self.adapters.resolve(enemy).death_radius(enemy)
             if radius and enemy.hp <= float(s.stats.get("damage", 3.5)) and s.projectiles["player_tears"]:

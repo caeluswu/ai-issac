@@ -1,11 +1,12 @@
 import json
 from pathlib import Path
 import unittest
-from combat.models import WorldSnapshot
+from combat.models import WorldSnapshot, Enemy, Vec
 from combat.threats import ThreatField, EnemyAdapters
+from combat.boundary_safety import boundary_danger
 from combat.controller import JointActionSolver, BuildResolver
 from combat.catalog import default_plan
-from tests.combat_fixtures import context
+from tests.combat_fixtures import context, snapshot
 
 
 class TestRecordedEnemyEffects(unittest.TestCase):
@@ -37,3 +38,18 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         self.assertTrue(any(t.identity == "death:"+target.instance_id for t in ThreatField(s).threats))
         target.variant = 0
         self.assertEqual(EnemyAdapters().resolve(target).death_radius(target), 0)
+
+    def test_little_horn_moving_pitfall_is_forecast_despite_zero_hp(self):
+        s=snapshot(enemies=False)
+        s.player.pos=Vec(x=401,y=319)
+        pit=Enemy(instance_id="pitfall:observed",type=291,variant=2,
+                  pos=Vec(x=541,y=320),vel=Vec(x=-8.7,y=0),hp=0,max_hp=0,
+                  collision_radius=30,vulnerable=False,friendly=False,dead=False,
+                  collision_class=0,contact_damage=0,can_shut_doors=False)
+        s.enemies=[pit]
+        self.assertEqual(s.hostiles,[])
+        field=ThreatField(s)
+        self.assertTrue(any(t.source=="moving_pitfall_observed_motion" for t in field.threats))
+        self.assertLess(field.gap((401,319),(401,319),15,10),0)
+        pit.collision_class=3;pit.pos=Vec(x=407,y=319)
+        self.assertTrue(boundary_danger(s))

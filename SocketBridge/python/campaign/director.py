@@ -13,10 +13,11 @@ from .models import FloorContext, FloorReport, FloorObjective, RoomKey, Transiti
 
 
 class FloorDirector:
-    def __init__(self,session,budget=None,wall_limit=1800,game_limit=900*30):
+    def __init__(self,session,budget=None,wall_limit=1800,game_limit=900*30,route_policy=None):
         self.session,self.budget = session,budget
         self.wall_limit,self.game_limit = wall_limit,game_limit
-        self.graph,self.judge = FloorGraph(),FloorJudge()
+        self.route_policy = route_policy
+        self.graph,self.judge = FloorGraph(route_policy),FloorJudge()
         self.context = None
         self.start = None
         self.state = "WAIT_READY"
@@ -34,7 +35,7 @@ class FloorDirector:
 
     def reset_for_floor(self, stage):
         """Retain the one session and registered judge callback across floors."""
-        self.graph = FloorGraph()
+        self.graph = FloorGraph(self.route_policy)
         self.judge.__init__(expected_stage=stage)
         self.context = self.start = None
         self.state = "WAIT_READY"

@@ -9,23 +9,29 @@ from dataclasses import dataclass
 # Attack stats can change aim, damage or cadence, so their ID is part of the
 # ordinary-tear calibration scope. Extra benign effects may be undervalued.
 ATTACK_ATTRIBUTES=frozenset({
-    1,4,6,7,12,14,29,30,32,50,51,62,70,72,79,80,90,101,109,120,
-    121,138,143,165,176,183,189,193,194,196,197,216,240,254,255,259,
-    309,310,339,341,342,345,355,359,370,381,411,415,438,442,443,
-    455,465,493,513,547,564,567,573,600,601,621,644,659,695,708,
-    730,731,732,
+    1,4,6,7,12,14,29,30,32,50,51,62,70,72,79,
+    80,90,101,109,120,121,138,143,154,165,169,176,183,189,193,
+    194,196,197,213,216,228,240,254,255,259,301,304,307,309,310,
+    339,341,342,345,355,359,370,381,411,415,438,442,443,455,465,
+    493,513,547,564,567,573,600,601,621,644,659,695,708,730,731,
+    732,
 })
 MOVEMENT_ATTRIBUTES=frozenset({20,27,28,71,82,232,340,571,590,632})
 HEALTH_AND_UTILITY=frozenset({
-    15,16,22,23,24,25,26,31,92,119,129,141,184,195,198,218,219,
-    226,253,312,334,343,344,346,354,428,456,501,538,541,591,614,624,707,
+    15,16,17,19,22,23,24,25,26,31,46,75,76,91,92,
+    108,119,129,141,142,162,173,184,190,195,198,218,219,223,225,
+    226,242,253,303,312,313,334,335,343,344,346,354,375,428,456,
+    501,538,541,591,614,624,676,690,707,724,
 })
 # These add autonomous damage/defence. They do not replace Isaac's normal
 # movement or tear input. Their contribution is observed, not promised DPS.
 SUPPLEMENTAL_PASSIVES=frozenset({
-    10,57,73,112,128,151,167,172,207,211,217,234,247,248,264,274,
-    275,279,280,318,319,322,360,361,363,364,387,403,412,413,430,509,
-    525,526,528,542,645,661,693,698,702,717,
+    8,10,57,67,73,88,94,95,96,98,99,100,112,113,117,
+    128,131,148,151,155,163,167,170,172,174,178,180,188,207,211,
+    217,234,247,248,264,265,266,267,268,269,270,271,274,275,277,
+    279,280,318,319,322,350,360,361,362,363,364,387,390,403,404,
+    405,412,413,430,435,436,467,469,470,471,473,509,511,525,526,
+    528,542,581,607,608,610,615,629,645,649,661,693,698,702,717,
 })
 assert not any(a & b for a,b in (
     (ATTACK_ATTRIBUTES,MOVEMENT_ATTRIBUTES),
@@ -42,8 +48,10 @@ for _items,_class in ((ATTACK_ATTRIBUTES,"attributes"),
                       (SUPPLEMENTAL_PASSIVES,"supplemental_passive")):
     ITEM_SUPPORT.update({item:_class for item in _items})
 MECHANISMS={69:"charge",114:"knife"}
-PASSIVE_MODIFIERS={240:"random_stat_tradeoff",254:"left_eye_damage",
-                   538:"trinket_generation",600:"left_eye_fire_rate",731:"right_eye_damage"}
+PASSIVE_MODIFIERS={154:"left_eye_damage",169:"overkill_pierce",
+                   213:"tear_projectile_interception",240:"random_stat_tradeoff",
+                   254:"left_eye_damage",538:"trinket_generation",
+                   600:"left_eye_fire_rate",731:"right_eye_damage"}
 
 
 @dataclass(frozen=True)

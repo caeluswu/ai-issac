@@ -11,7 +11,7 @@ import httpx
 from facade import SocketBridge
 from campaign.budget import RequestBudget, BudgetExceeded, diagnostic_request
 from campaign.director import FloorDirector
-from campaign.graph import FloorGraph
+from campaign.graph import FloorGraph, TreasureFirstRoutePolicy
 from campaign.judge import FloorJudge
 from campaign.models import RoomKey
 from campaign.planning import FloorPlanner
@@ -72,6 +72,28 @@ class TestFloorGraph(unittest.TestCase):
         slot,target=FloorGraph().choose(s)
         self.assertEqual(slot,2)
         self.assertEqual(target.target_room_type,4)
+
+    def test_unexplored_normal_frontier_precedes_boss_until_treasure_found(self):
+        s=floor_snapshot()
+        s.layout["doors"]={"0":door(85,kind=5,x=0),"2":door(86)}
+        graph=FloorGraph()
+        self.assertEqual(graph.choose(s)[1].target_room_type,1)
+        origin=RoomKey.from_snapshot(s)
+        corridor=floor_snapshot(86);corridor.layout["doors"]={"0":door(84,x=0),"2":door(87,kind=4)}
+        graph.confirm(origin,2,corridor)
+        slot,door_observation=graph.choose(corridor)
+        self.assertEqual(door_observation.target_room_type,4)
+        self.assertEqual(slot,2)
+
+    def test_locked_treasure_requires_key_and_route_policy_is_replaceable(self):
+        s=floor_snapshot();s.inventory["keys"]=0
+        s.layout["doors"]={"0":door(85,kind=5,x=0),"2":{**door(86,kind=4),"is_locked":True,"is_open":False}}
+        self.assertEqual(FloorGraph().choose(s)[1].target_room_type,5)
+        s.inventory["keys"]=1
+        self.assertEqual(FloorGraph().choose(s)[1].target_room_type,4)
+        class BossFirst(TreasureFirstRoutePolicy):
+            priorities={4:1,1:2,5:0}
+        self.assertEqual(FloorGraph(BossFirst()).choose(s)[1].target_room_type,5)
 
 
 class TestFloorJudge(unittest.TestCase):

@@ -11,6 +11,11 @@ def boundary_danger(s):
         if enemy.can_shut_doors: return True
         if enemy.collision_class != 0 and s.player.pos.distance(enemy.pos) <= s.player.collision_radius+enemy.collision_radius+8:
             return True
+    for entity in s.enemies:
+        if (entity.type == 291 and entity.variant in (0,1,2) and not entity.dead
+                and entity.collision_class != 0
+                and s.player.pos.distance(entity.pos) <= s.player.collision_radius+entity.collision_radius+8):
+            return True
     for hazard in s.hazards:
         if hazard.get("is_extinguished") is True: continue
         static = (hazard.get("type") == "FIREPLACE" and hazard.get("is_shooting") is False) or (
