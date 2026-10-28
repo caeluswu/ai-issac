@@ -1,6 +1,6 @@
 # 文档索引与维护边界
 
-当前实现包括单房、首层与同局连续两层控制、J835 被动道具能力表、DeepSeek 蓄力时序程序、受伤归因，以及妈妈的菜刀 JavaScript 组件的短测、加载、实机清房、战后保留决策与复用。模型修订后的局内试用和第三层至 Mom 的连续运行仍缺独立验收。最新四层尝试及当前阻塞见[第二、三阶段路线的推进状态](phase-2-3-roadmap.zh-CN.md#当前推进状态)；实机覆盖、全部失败与 API 用量以证据为准。
+当前实现包括单房、首层与同局连续四层控制、J835 被动道具能力表、DeepSeek 蓄力时序程序、受伤归因，以及妈妈的菜刀 JavaScript 组件的短测、加载、实机清房、战后保留决策与复用。固定种子四层可行性见[M3-B 验收](evidence/phase-3b-four-floor-validation.zh-CN.md)；模型修订后的局内试用、随机种子稳定性与到 Mom 的连续运行仍缺独立验收。实机覆盖、全部失败与 API 用量以证据为准。
 
 建议阅读顺序：任务契约 → 总体架构 → M2-A 验收 → M2-B 计划 → 需要的专项合同。日常启动与付费验证政策从 [项目 README](../README.md) 进入。
 
@@ -45,6 +45,7 @@
 | [M2-C 道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md) | 属性、69、菜刀114的实机矩阵、模型来源、失败和适用边界 |
 | [J835 被动道具支持](evidence/j835-passive-item-support.zh-CN.md) | Boss 与宝箱房道具池准入、拾取确认、路线顺序和普通构筑适配 |
 | [M3-A 连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md) | 同一 run、两层 Boss 与正常出口、第三层可行动、生命损失和元数据边界 |
+| [M3-B 连续四层验证](evidence/phase-3b-four-floor-validation.zh-CN.md) | 固定种子同局完成四层、Host 清房、逐层损失及适用边界 |
 | [当前准备审查诊断 JSON](../artifacts/validation/m2-readiness-audit.json) | 合成场景复现四项边界缺陷；不是游戏损失记录 |
 
 ## 归档方案与源码参考

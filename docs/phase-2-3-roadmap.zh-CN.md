@@ -1,12 +1,12 @@
 # 第二、三阶段路线：首层、模型扩展与 Mom
 
-当前：M1、M2-A 首层、M2-B 蓄力程序、M2-C 有限道具扩展及 M3-A 连续两层均有工程可行性证据。M2-C 的归因审核与菜刀组件见[归因审核](evidence/phase-2c-attribution-review.zh-CN.md)和[道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md)；M3-A 同局结果见[连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md)。M3-B 至第四层与 M3-C 至 Mom 仍待实证。本文件维护里程碑与跨阶段取舍。
+当前：M1、M2-A 首层、M2-B 蓄力程序、M2-C 有限道具扩展、M3-A 连续两层及 M3-B 连续四层均有工程可行性证据。M2-C 见[归因审核](evidence/phase-2c-attribution-review.zh-CN.md)和[道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md)；M3-A 见[连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md)，M3-B 见[连续四层验证](evidence/phase-3b-four-floor-validation.zh-CN.md)。M3-C 至 Mom 仍待实证。本文件维护里程碑与跨阶段取舍。
 
 ### 当前推进状态
 
 - J835 的 Boss 奖励池 59/59 个唯一 ID、宝箱房池 137/407 个唯一 ID 已进入拾取准入表；准入不等于逐件实战验证。[范围与首层证据](evidence/j835-passive-item-support.zh-CN.md)。
 - Little Horn 的移动陷阱 `291/2` 曾在 Boss 死亡附近与玩家重叠，旧运行失去 1 个半心。现有危险场已读取该实体的位置、速度和碰撞半径，清房边界也保留近身威胁。修复后的正常首层运行最小边缘间距约 15.7 像素、零失血、正常离层；该问题已有针对性修复和证据，不再作为当前阻塞。[旧反例与修复证据](evidence/j835-passive-item-support.zh-CN.md)。
-- 最近一次同局四层实机尝试依次完成前三层，于第四层普通房 `room_idx=109` 以 `STALL_UNRECOVERED` 结束；总损失 9 个半心，未调用 DeepSeek。[运行报告](../artifacts/runs/m3b-treasure-pitfall-gurgle-retest/run-report.json)。该房剩余 3 个关闭的 Host `27/0`，当前目标选择仅接受 `vulnerable` 敌人，因此没有交战目标和移动路线，连续输出零移动、零射击。下一项工作是为关闭的 Host 提供可替换的接近/等待开口策略，并用该快照回归；随后重跑 M3-B。现有监督器正确将长时间无进展判为失败，不应延长超时来掩盖问题。
+- 固定种子 `3BYH A82R` 的同局四层运行已完成 M3-B：第四层 Host 房清理、Boss 击杀与正常出口均有证据；累计损失 7 个半心，0 次 DeepSeek 请求。[四层验收](evidence/phase-3b-four-floor-validation.zh-CN.md)。当前优先推进 Mom 阶段与随机种子泛化，第三层的高失血仍需后续优化。
 - M3-C 的 Mom 终点判定仍处于开发状态，尚无从第一层到 Mom 的连续成功证据。不要把前三层完成、一次 Boss 击杀或开发场景初始化等同于 M3-B/M3-C 验收。
 
 ## 1. 里程碑与独立成功证据
@@ -17,7 +17,7 @@
 | M2-B | DeepSeek 编写一个非平凡机制程序，经独立验证试用并复用 | 实际程序/作者/行为变化、离线验证与实机试用、另一次启动复用；调参或选择现成 ID 不算 |
 | M2-C | 受伤归因与审核；属性、69及114的局内短测/采用与复用 | 六例审核、菜刀模型实机清房/底座拾取/进程复用、战后保留决策；修订后的局内试用未验证 |
 | M3-A | 同一局连续完成第一、二层；跨层状态和全局资源预算 | 已有 J835 固定种子正常实机：两层 Boss 与出口、第三层可行动、累计损失 5 个半心；随机覆盖待测 |
-| M3-B | 连续推进至主线第四层完成；新敌人、地形与装备组合 | 逐层损失/资源/耗时/失败和机制覆盖，不拼接独立局结果 |
+| M3-B | 连续推进至主线第四层完成；新敌人、地形与装备组合 | 固定种子同局四层已通过；逐层损失与机制证据见 M3-B 验收，随机泛化待测 |
 | M3-C | 正常第一层开局至主线 Mom | Mom 实体/阶段/结束证据与存活可行动状态，同一 run 连续轨迹 |
 
 主线目标是 Mom，不混用 Mom's Heart、It Lives 或 Mother。XL 会改变实际地图数量，不能用“换层六次”判终点；替代路线、Home、Boss Rush 等不是默认目标。具体构建、存档和辅助边界以 [任务契约](task-contract.zh-CN.md) 为准。
