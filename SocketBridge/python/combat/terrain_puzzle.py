@@ -139,7 +139,7 @@ class TimedTerrainPuzzle:
         route = geometry.path(snapshot.player.pos,goal)
         if not route: raise RuntimeError("PUZZLE_NO_STATIC_TOPOLOGY")
         start_cell = geometry.cell(snapshot.player.pos)
-        if start_cell not in geometry.walkable:
+        if start_cell not in geometry.walkable or not geometry.portal_path_clear(snapshot.player.pos,snapshot.player.pos):
             # The native entry pose is inside an unauthorized door guard.
             # First withdraw onto legal ground, without granting that door
             # permission or crossing unobserved spikes to reach a cell center.

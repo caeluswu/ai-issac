@@ -17,7 +17,7 @@ class TestPortalAuthority(unittest.TestCase):
     def test_guard_is_not_a_solid_wall_and_does_not_block_shots(self):
         s = snapshot()
         g = GeometryService(s, allowed_portals=())
-        start, end = Vec(x=490, y=160), Vec(x=510, y=160)
+        start, end = Vec(x=500, y=160), Vec(x=526, y=160)
         self.assertFalse(g.motion_clear(start, end))
         self.assertTrue(g.sweep(start, end-start)[3])
         self.assertTrue(g.line_clear(start, end, shot=True))
@@ -43,8 +43,8 @@ class TestPortalAuthority(unittest.TestCase):
         original = solver.geometry
         solver.solve(s, plan, build, True, allowed_portals=(2,))
         self.assertIsNot(solver.geometry, original)
-        self.assertTrue(solver.geometry.motion_clear(Vec(x=490, y=160), Vec(x=510, y=160)))
-        self.assertFalse(solver.geometry.motion_clear(Vec(x=70, y=160), Vec(x=50, y=160)))
+        self.assertTrue(solver.geometry.motion_clear(Vec(x=500, y=160), Vec(x=526, y=160)))
+        self.assertFalse(solver.geometry.motion_clear(Vec(x=60, y=160), Vec(x=34, y=160)))
         s.player.pos = Vec(x=525, y=160)
         a = DoorNavigator(2, s.layout['doors']['2']).step(s, plan, build)
         self.assertEqual(a.move, (1, 0))
@@ -67,8 +67,19 @@ class TestPortalAuthority(unittest.TestCase):
     def puzzle_entry(self):
         return WorldSnapshot.model_validate(json.loads((Path(__file__).parent/'fixtures/puzzle_portal_start.json').read_text(encoding='utf8')))
 
+    def test_pit_lane_by_open_bottom_door_remains_reachable(self):
+        s = WorldSnapshot.model_validate(json.loads((Path(__file__).parent/'fixtures/portal_nav_stall.json').read_text(encoding='utf8')))
+        build = BuildResolver().update(s)
+        nav = DoorNavigator(2, s.layout['doors']['2'])
+        a = nav.step(s, default_plan(context(s)), build)
+        self.assertTrue(nav.solver.geometry.path(s.player.pos, nav.goal))
+        self.assertNotEqual(a.move,(0,0))
+        self.assertFalse(a.diagnostics['no_safe_candidate'])
+        self.assertEqual(nav.solver.geometry.allowed_portals,frozenset((2,)))
+
     def test_timed_room_native_entry_retreats_before_temporal_search(self):
-        s = self.puzzle_entry(); build = BuildResolver().update(s)
+        s = self.puzzle_entry(); s.player.pos.y = 150
+        build = BuildResolver().update(s)
         nav = DoorNavigator(2, s.layout['doors']['2'])
         first = nav.step(s, default_plan(context(s)), build)
         self.assertEqual(first.diagnostics['puzzle_phase'], 'entry_retreat')
@@ -87,9 +98,10 @@ class TestPortalAuthority(unittest.TestCase):
         self.assertEqual(a.diagnostics['puzzle_phase'], 'cross')
 
     def test_entry_cannot_cross_an_unobserved_spike_and_has_deadline(self):
-        s = self.puzzle_entry(); build = BuildResolver().update(s)
-        cell = s.layout['cells']['37']
-        s.layout['grid']['37'] = dict(type=9,variant=0,state=0,collision=0,x=cell['x'],y=cell['y'])
+        s = self.puzzle_entry(); s.player.pos.y = 150
+        build = BuildResolver().update(s)
+        cell = s.layout['cells']['22']
+        s.layout['grid']['22'] = dict(type=9,variant=0,state=0,collision=0,x=cell['x'],y=cell['y'])
         puzzle = TimedTerrainPuzzle(s.room_visit_id)
         # Walls on both sides leave only the unknown spike on the inward path.
         for index in ('21','23'):

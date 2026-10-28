@@ -47,7 +47,10 @@ class GeometryService:
         self.portals = tuple((int(slot), Vec(x=d['x'], y=d['y'])) for slot, d in (snapshot.layout['doors'] or {}).items()
                              if d['is_open'] and not d['is_locked'])
         self.allowed_portals = None if allowed_portals is None else frozenset(allowed_portals)
-        self.portal_guard_radius = 48+self.physical_radius
+        # J835 pull was observed around 30px from the portal center. A 36px
+        # center guard plus swept rollout avoids that region without removing
+        # the 40px interior lane between a door and an adjacent pit row.
+        self.portal_guard_radius = max(36,self.physical_radius+22)
         self.walkable -= self.dangerous
         self.motion_cells = set(self.walkable)
         self.walkable = {i for i in self.walkable if self.portal_path_clear(self.positions[i],self.positions[i])
