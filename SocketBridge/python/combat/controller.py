@@ -308,9 +308,9 @@ class JointActionSolver:
             gaps = threats.path_gaps(trajectory, s.player.collision_radius+extra)
             # A valid observation may already lie inside an open aperture,
             # outside the interior grid. Holding there is not a verified safe
-            # stance. Prefer an admissible inward retreat over twelve blocked
-            # rollout steps that merely freeze the model at that invalid cell.
-            invalid_pose_stall = (blocked_steps == 12 and position.distance(s.player.pos) < .1
+            # stance. Prefer an admissible inward retreat over a rollout that
+            # freezes there, including an immediately rejected portal step.
+            invalid_pose_stall = (blocked_steps > 0 and position.distance(s.player.pos) < .1
                                   and g.cell(s.player.pos) not in g.walkable)
             wall = wall or invalid_pose_stall
             clearance = min(gaps, default=1000.)
