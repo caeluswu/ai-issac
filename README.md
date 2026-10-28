@@ -2,7 +2,7 @@
 
 面向《以撒的结合：忏悔》原版 `1.7.9b.J835`，使用 SocketBridge 读取结构化状态，由可替换的底层控制组件执行移动与射击。启用模型规划时，DeepSeek 负责选择组件、填写参数和必要的异常诊断，也可通过独立开发流程编写有界机制程序。
 
-当前入口包括单房 `run_first_room.py`、首层 `run_floor.py`、连续两层 `run_two_floors.py` 和目标层 2–6 的主线 `run_mainline.py`。固定种子已有同局四层成功证据；最近长途在第五层中止，随机探索则在首层死亡，第一层至 Mom 和随机稳定通关均未验收。Host 连续交战与三种无怪地形通路已有实机证据。阶段状态、阻塞和下一步统一见 [当前进度](docs/progress.zh-CN.md)。原生入房暂停与战中异步诊断均受预算约束。
+当前入口包括单房 `run_first_room.py`、首层 `run_floor.py`、连续两层 `run_two_floors.py` 和目标层 2–6 的主线 `run_mainline.py`。固定种子已有同局四层成功证据，第一层至 Mom 和随机稳定通关仍未验收。Host 连续交战、三种无怪地形通路、金币购买与天使房往返已有实机证据；门口吸附与原生 Boss 动画的集成修复正在主线复核。阶段状态、阻塞和下一步统一见 [当前进度](docs/progress.zh-CN.md)。原生入房暂停与战中异步诊断均受预算约束。
 
 P0–P6 的四项审查缺陷已修复并加入回归。道具采用固定 EID 说明与有样本身份的本地经验，支持范围仍有限；通用自主实验 P7 关闭，69/114 的必要局内短测另有受限流程。M2-B 已完成巧克力牛奶的模型时序程序、实机清房和另一个进程复用，采用显式语法恢复，范围与全部失败见 [M2-B 验收](docs/evidence/phase-2b-validation.zh-CN.md)。首层覆盖见 [M2-A 证据](docs/evidence/phase-2a-validation.zh-CN.md)，操作见 [首层运行手册](docs/phase-2a-runbook.zh-CN.md)。
 
@@ -76,7 +76,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 道具按 ID 查询；动态/运行时说明不保证覆盖，缺资料或不完整解析会明确返回状态。`partial` 表示已有说明而条件/协同未穷尽，并不等于查询失败；未知 ID 不制造知识条目。SQLite 写入失败返回错误，不宣称入库成功。安装包缺失时先执行准备脚本。排错与复现见 [EID 单道具验证](docs/evidence/eid-item-knowledge-validation.zh-CN.md)。
 
-`--with-items` 启用本地说明、拾取、避让和被动记录。普通泪弹路线登记 231 个被动或跟班 ID，拾取前逐件核对 EID 与构筑，拾取后读取实际面板和库存；不使用主动效果的 105 仍不拾取。69 使用校准蓄力程序，已发布的妈妈的菜刀 114 JS 组件可在普通拾取后加载，经无怪短测校准再进入战斗；114 与 69 的组合仍不支持。其他未知机制、饰品和健康交易不能由面板变化自动放行。普通资源按已验证子型处理，首层另支持有限红/魂心；这仍是有限策略。范围和固定种子证据见 [M2-C 道具适配记录](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git。
+`--with-items` 启用本地说明、拾取、避让和被动记录。普通泪弹路线登记 248 个被动或跟班 ID，拾取前逐件核对 EID 与构筑，拾取后读取实际面板和库存；不使用主动效果的 105 仍不拾取。69 使用校准蓄力程序，已发布的妈妈的菜刀 114 JS 组件可在普通拾取后加载，经无怪短测校准再进入战斗；114 与 69 的组合仍不支持。其他未知机制、饰品和健康交易不能由面板变化自动放行。普通资源按已验证子型处理，支持有限红/魂/黑心；这仍是有限策略。范围和固定种子证据见 [M2-C 道具适配记录](docs/evidence/phase-2c-item-adaptation.zh-CN.md)。EID 来源包与智能体经验分存于 `artifacts/knowledge/` 和 `artifacts/agent-state/agent.sqlite`，均不进入 Git。
 
 开发用实机核验入口为 `scripts/validate_m2_preparation_live.py`：会自动重开固定场景，并在记录的初始化环节生成道具，再正常拾取和战斗。其结果仅验证机制，不是正常随机对局胜率；不作为日常启动命令。
 
@@ -117,13 +117,15 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 ## J835 被动道具、Boss 奖励与宝箱房
 
-当前普通泪弹路线登记 231 个被动/跟班道具 ID。拾取前查询 EID，拾取后按实际面板、库存、生命与武器类型重新绑定；主武器机制改变的道具仍需专属组件。模组在第 1～6 层普通维度、非失明诅咒下提供可见底座身份，失明时隐藏 ID。
+当前普通泪弹路线登记 248 个被动/跟班道具 ID。拾取前查询 EID，拾取后按实际面板、库存、生命与武器类型重新绑定；主武器机制改变的道具仍需专属组件。模组在第 1～6 层普通维度、非失明诅咒下提供可见底座身份，失明时隐藏 ID。
 
-本机 J835 `resources-dlc3/itempools.xml` 的 Boss 奖励池共有 59 个唯一 ID，当前能力表覆盖 59 个；宝箱房池有 407 个唯一 ID，137 个可进入正常拾取流程。已发现的宝箱房优先于 Boss；尚未发现时先探索未进入的普通房，锁门需有钥匙。该顺序由可替换的路由策略提供，为以后加入商店购买和隐藏房决策保留接缝。覆盖是拾取与通用控制的准入范围，不代表逐个道具实机验证或收益评估。静态核对 EID 记录与游戏道具类型：
+本机 J835 `resources-dlc3/itempools.xml` 的 Boss 奖励池共有 59 个唯一 ID，当前能力表覆盖 59 个；宝箱房池有 407 个唯一 ID，140 个可进入正常拾取流程。主线与首层入口采用可替换的运营策略：金币 ≥15 时优先考虑可达商店，宝箱房未完成决策时预留一把钥匙；已知可用回血在低血量时优先。商品和选一组底座先比较再逐件取得，支持金币购买兼容被动、钥匙/炸弹和红/魂/黑心。Boss 后实际出现天使门时，先进入并返回再下楼；商店、天使与隐藏房不能混为一种任意目的地。商店池当前准入 17/95、天使池 34/66。覆盖是拾取与通用控制的准入范围，不代表逐个道具实机验证或收益评估。静态核对 EID 记录与游戏道具类型：
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/audit_item_support.py
 ```
+
+商品比较使用本地启发式，尚未接入单独的 DeepSeek 购物抉择。15 币购买、血量资源购买、Sacred Heart 选一及正常地图天使门往返已有诊断证据；初始化与正常通关分开，见[运营验证](docs/evidence/phase-3c-economy-validation.zh-CN.md)。
 
 实机拾取、构筑变化与未验证边界见 [被动道具支持证据](docs/evidence/j835-passive-item-support.zh-CN.md)。
 
@@ -189,7 +191,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 | [M2-B 详细计划](docs/phase-2b-plan.zh-CN.md) / [验收证据](docs/evidence/phase-2b-validation.zh-CN.md) | 蓄力时序程序的合同、发布复用、全部失败、语法恢复和 API 总账 |
 | [M2-C实施计划](docs/phase-2c-plan.zh-CN.md) / [归因审核](docs/evidence/phase-2c-attribution-review.zh-CN.md) | 受伤事实、API诊断、独立审核与后续局内能力扩展 |
 | [首层运行手册](docs/phase-2a-runbook.zh-CN.md) / [验收证据](docs/evidence/phase-2a-validation.zh-CN.md) | 实际入口、完整首层证明及覆盖限制 |
-| [M3-C 完整流程计划](docs/phase-3c-completion-plan.zh-CN.md) | 商店/天使房适配、钱大于 15 时的商店优先及至 Mom 的验收 |
+| [M3-C 完整流程计划](docs/phase-3c-completion-plan.zh-CN.md) | 商店/天使房适配、钱大于等于 15 时的商店优先及至 Mom 的验收 |
 | [第二、三阶段路线](docs/phase-2-3-roadmap.zh-CN.md) | M2-B 模型开发组件与 M3 连续推进至 Mom 的边界 |
 | [运行手册](docs/phase-1-runbook.zh-CN.md) | 已实现入口的配置、启动和排错 |
 | [EID 与本地经验](docs/eid-local-learning-plan.zh-CN.md) / [知识 SDK](knowledge_project/README.md) | 说明、观测和学习证据如何分开，当前接口如何使用 |

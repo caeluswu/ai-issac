@@ -62,3 +62,16 @@ GeometryService/JointActionSolver 的 allowed_exits 是宿主专用参数，只�
 无怪踏板目标由 `EnvironmentController` 选择，周期尖刺交 `TimedTerrainPuzzle` 做全房时序搜索；解谜输出正常 `ActionFrame`，不增加输入写入者。房间清理不自动使动态地形安全，缓存周期不等于复用旧相位。
 
 攻击提案的 90 更新等待上限保持不变。宿主监督器另接纳带证据及绝对截止帧的 `known_invulnerability`（最多 120 更新）、`terrain_observation/terrain_phase`（最多 600 更新）；它们不由模型自由扩大。没有实际进展时等待额度不能重领，且不能取消阶段/房间总期限。范围与实机边界见[Host/地形证据](evidence/phase-3c-host-terrain-generalization.zh-CN.md)。
+
+
+## 运营与购买
+
+`EconomyRoutePolicy` 通过 `rank/can_unlock` 提供合法优先级与钥匙准入，图只保存已观察连接。金币 ≥15 是新商店优先条件；已观察商品在资源变化或紧急回血时可触发回访，报价仍需现场重验。天使房通过独立有界往返任务管理，不解除普通图对任意负索引目的地的过滤。
+
+`KnowledgeGateway.decide` 默认拒绝非零选择组，宿主选择流程可用 `allow_choice=True` 比较候选，再持久化组内唯一许可，其余返回 skip。`PickupDecision` 的目标签名包含实例、subtype、报价、选择组与构筑，动作执行仍由唯一输入通道完成。`PickupChoicePolicy` 当前为本地启发式，不代表统计期望或已接入模型购物决策。
+
+购买支持实际金币报价，不付血。取得证据由商品消耗和库存/生命增量共同确认；报价、实际净金币变化与无法分拆的同时收入分别记录，不把净额伪造为毛支出。新商品有短暂 wait 时在安全边界有界等待，不跳过所有商品，也不能无限等冷却。实机与失败见[运营验证](evidence/phase-3c-economy-validation.zh-CN.md)。
+
+### 门口权限
+
+普通战斗、拾取和无怪解谜不授权穿门，局部几何避开开放门的吸附范围；仅 `DoorNavigator` 授权当前目标门槽。位于入口范围内的初始姿态可向室内撤离。门口是策略禁区，不是实体墙，预测越界不能按引擎碰撞截停处理。门槽授权参与几何缓存键，不能复用上一任务的出门许可。时序解谜从原生入口保护区落点开始时，先在 90 更新内撤离到合法内部网格，再进行时空搜索；该步骤不允许穿越相位未知的尖刺。

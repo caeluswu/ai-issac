@@ -27,7 +27,7 @@ V2 保留 V1 的 room、layout、player、stats、health、inventory、敌人及
 
 ## 上下文与生命周期
 
-`floor.instance_id` 由 run 和地图生成计数构成，`MC_POST_NEW_LEVEL` 更新地图实例并独立释放输入、回到 MANUAL。房间变化同时比较地图生成序号、当前房间 ListIndex 与入口索引，避免同索引的不同实例复用 room visit。
+`floor.instance_id` 由 run 和地图生成计数构成，`MC_POST_NEW_LEVEL` 更新地图实例并独立释放输入、回到 MANUAL。房间变化结合 MC_POST_NEW_ROOM 引擎事件代数、地图生成序号、当前房间 ListIndex 与网格索引，避免特殊/调试房复用描述符和索引时沿用旧 visit。输入立即清零，原生过渡期间保留源模式，目标布局成功后切 MANUAL。
 
 `ContextRef` 包含可空 floor_instance_id，目录修订可为正整数或非空版本字符串。运行器、规划器与求解器均绑定楼层身份、构筑和经验修订；显式过期提案或缺少当前 V2 楼层身份的计划不可执行。BuildResolver 根据实际观测发布构筑修订，不依赖描述文字加算属性。
 

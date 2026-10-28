@@ -31,7 +31,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 .\.venv\Scripts\python.exe run_floor.py --local-only --seed "XXXX XXXX" --output-dir artifacts/runs/my-debug-run
 ```
 
-不提供计时中的控制台或改血/改伤害选项。药丸、卡牌、炸弹使用、主动道具、未知收藏品/饰品与复杂武器不自动启用；商店消费预算为 0。普通资源及有限红/魂心须满足子型、容量、代价和消费后证明，拾取不可达可以跳过。P7 主动实验关闭。
+不提供计时中的控制台或改血/改伤害选项。药丸、卡牌、炸弹使用、主动道具、未知收藏品/饰品与复杂武器不自动启用；首层与主线现可在商店进行受限金币购买，钱 ≥15 时优先考虑进入，血量与选择组策略见[运营验证](evidence/phase-3c-economy-validation.zh-CN.md)。普通资源及有限红/魂/黑心须满足子型、容量、代价和消费后证明，拾取不可达可以跳过。P7 主动实验关闭。
 
 ## 连续多层入口
 
