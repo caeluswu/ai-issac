@@ -347,6 +347,7 @@ class CombatSession:
         self.navigation_metrics = deque(maxlen=128)
         self.navigation_replan_requests = 0
         self.navigation_devices = {}
+        self.navigation_puzzles = {}
         bridge.on_message(self.on_message)
         if skill_store is not None:
             from mechanisms.integration import load_session_skills
@@ -629,7 +630,8 @@ class CombatSession:
         raise RuntimeError("NO_COMBAT_ROOM_FOUND")
 
     async def navigate_door(self, s, slot, door, initial_run):
-        navigator = DoorNavigator(slot, door, self.navigation_devices.get(s.room_visit_id, ()))
+        navigator = DoorNavigator(slot, door, self.navigation_devices.get(s.room_visit_id, ()),
+                                  self.navigation_puzzles.get(s.room_visit_id))
         watcher = ProgressSupervisor()
         began, room, previous = s.frame, s.room_visit_id, None
         request, requests, plan = None, 0, None
@@ -688,6 +690,9 @@ class CombatSession:
 
     async def resolve_environment(self, s):
         controller, solver = EnvironmentController(), JointActionSolver()
+        puzzle = None
+        puzzle_goal = None
+        puzzle_plate = None
         began = progress = s.frame
         signature = controller.signature(s)
         goal_key, best_distance = None, float("inf")
@@ -699,8 +704,13 @@ class CombatSession:
             while not s.blocking_combat and not s.room["is_clear"]:
                 if self.task_judge.health.state == "dead": raise RuntimeError("DEAD_DURING_ENVIRONMENT")
                 if s.frame-began >= 600: raise TimeoutError("ENVIRONMENT_TIMEOUT")
-                if s.frame-progress >= 240: raise TimeoutError("ENVIRONMENT_STALL_UNRECOVERED")
+                if s.frame-progress >= 240 and puzzle is None: raise TimeoutError("ENVIRONMENT_STALL_UNRECOVERED")
                 objective = controller.objective(s)
+                if objective.kind == "timed_pressure_plate" and puzzle is None:
+                    from .terrain_puzzle import TimedTerrainPuzzle
+                    puzzle = TimedTerrainPuzzle(s.room_visit_id)
+                    puzzle_goal = objective.goal
+                    puzzle_plate = objective.allowed_devices[0]
                 authorized_devices.update(objective.allowed_devices)
                 current_signature = controller.signature(s)
                 if signature != current_signature:
@@ -726,8 +736,13 @@ class CombatSession:
                     self.log("environment_replan_started", frame=s.frame, feedback=feedback)
                 build = self.build_resolver.update(s)
                 solver.recovery_level = 2 if s.frame-progress >= 120 else 1 if s.frame-progress >= 30 else 0
-                action = await asyncio.to_thread(solver.solve, s, default_plan(self.context_ref(s, build),family=build.family), build,
-                                                True, objective.goal, objective.allowed_devices)
+                plan = default_plan(self.context_ref(s, build),family=build.family)
+                if puzzle:
+                    action = await asyncio.to_thread(puzzle.step,s,build,puzzle_goal,
+                                                     puzzle_plate,plan)
+                else:
+                    action = await asyncio.to_thread(solver.solve,s,plan,build,True,
+                                                     objective.goal,objective.allowed_devices)
                 action.state = "ENVIRONMENT"
                 action.diagnostics["environment_objective"] = objective.kind
                 try: await self.send_action(s, action.move, (0, 0), action.model_dump())
@@ -741,6 +756,8 @@ class CombatSession:
             self.log("environment_resolved", frame=s.frame, is_clear=s.room["is_clear"], blocking_combat=s.blocking_combat)
             if s.room["is_clear"]:
                 self.navigation_devices[s.room_visit_id] = tuple(sorted(authorized_devices))
+                if puzzle:
+                    self.navigation_puzzles[s.room_visit_id] = (puzzle,puzzle_plate)
             await self.release()
             # Environmental damage is in the whole-task ledger. The combat
             # clock begins at actual combat, not at an empty pressure-plate room.

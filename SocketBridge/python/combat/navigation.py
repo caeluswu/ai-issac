@@ -47,11 +47,12 @@ class RoomExplorer:
 
 
 class DoorNavigator:
-    def __init__(self, slot, door, allowed_devices=()):
+    def __init__(self, slot, door, allowed_devices=(), puzzle=None):
         self.slot = slot
         self.goal = Vec(x=door["x"], y=door["y"])
         self.solver = JointActionSolver()
         self.allowed_devices = allowed_devices
+        self.puzzle = puzzle
 
     def step(self, s, plan, build):
         began = time.perf_counter()
@@ -75,7 +76,13 @@ class DoorNavigator:
                     diagnostics={"route_goal": [self.goal.x, self.goal.y], "route_remaining": delta.length(),
                                  "movement_target": "door:"+str(self.slot), "no_safe_candidate": False, "blocked_steps": 0,
                                  "fire_reason": "navigation_move_only", "portal_exit": True})
-        action = self.solver.solve(s, plan, build, True, self.goal, self.allowed_devices)
+        if self.puzzle:
+            controller, plate_index = self.puzzle
+            inward = ((1, 0), (0, 1), (-1, 0), (0, -1))[self.slot % 4]
+            interior = self.goal + Vec(x=inward[0]*40, y=inward[1]*40)
+            action = controller.step(s, build, interior, plate_index, plan)
+        else:
+            action = self.solver.solve(s, plan, build, True, self.goal, self.allowed_devices)
         action.state = "NAVIGATE"
         action.diagnostics["movement_target"] = "door:"+str(self.slot)
         return action

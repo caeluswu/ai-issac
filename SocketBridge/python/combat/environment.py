@@ -28,12 +28,25 @@ class EnvironmentController:
             geometry = GeometryService(snapshot, (index,))
             path = geometry.path(snapshot.player.pos, point)
             if path: choices.append((sum(a.distance(b) for a, b in zip([snapshot.player.pos]+path, path)), index, point))
+        if choices:
+            _, index, goal = min(choices, key=lambda item: (item[0], item[1]))
+            return EnvironmentObjective("activate_pressure_plate", goal, (index,))
+        # A plate can be reachable through timed spikes even when no static
+        # path exists. The puzzle controller handles timing; this only checks
+        # topology and never authorizes crossing a permanently raised spike.
+        timed = tuple(int(i) for i,c in grid.items() if c["type"] == 9)
+        for index, plate in plates:
+            point = Vec(x=plate["x"], y=plate["y"])
+            path = GeometryService(snapshot,(index,),(),timed).path(snapshot.player.pos,point)
+            if path:
+                distance = sum(a.distance(b) for a,b in zip([snapshot.player.pos]+path,path))
+                choices.append((distance,index,point))
         if not choices: return EnvironmentObjective("unknown_environment")
-        _, index, goal = min(choices, key=lambda item: (item[0], item[1]))
-        return EnvironmentObjective("activate_pressure_plate", goal, (index,))
+        _, index, goal = min(choices, key=lambda item:(item[0],item[1]))
+        return EnvironmentObjective("timed_pressure_plate",goal,(index,))
 
     @staticmethod
     def signature(snapshot):
         return (len(snapshot.bombs), tuple(sorted((i, c["state"], c["collision"]) for i, c in
-                (snapshot.layout["grid"] or {}).items() if c["type"] in (12, 20))),
+                (snapshot.layout["grid"] or {}).items() if c["type"] in (9, 12, 20))),
                 snapshot.room["is_clear"], snapshot.room["enemy_count"])
