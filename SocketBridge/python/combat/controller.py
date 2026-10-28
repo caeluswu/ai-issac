@@ -237,6 +237,7 @@ class JointActionSolver:
                 _, index, position, route = best_blocker
                 target = Enemy(instance_id="terrain:"+index, type=0, variant=0, pos=position, vel=ZERO,
                                hp=1, max_hp=1, collision_radius=18, vulnerable=True, friendly=False, dead=False, collision_class=0)
+                movement_focus = target
         repositioning = False
         if target and not route and not movement_only:
             relocate = getattr(modules["position"], "reposition", None)

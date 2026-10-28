@@ -1,4 +1,4 @@
-"""Enemy-specific movement goals while no enemy is currently attackable."""
+"""Persistent enemy-specific engagement; weapon components own attack timing."""
 from dataclasses import dataclass, replace
 
 from .models import Enemy, Vec
@@ -28,6 +28,10 @@ class ClosedHost:
             proposal = position.route(geometry, snapshot, enemy.pos, build, weapon)
             if proposal.waypoints:
                 return EngagementRoute(enemy, tuple(proposal.waypoints), "closed_host_retry_firing_stance")
+        # Let the ordinary obstruction pipeline break reachable plain poop
+        # instead of hiding the missing firing lane behind a reposition route.
+        if enemy.vulnerable:
+            return None
         reposition = getattr(position, "reposition", None)
         if reposition is None:
             return None
@@ -41,7 +45,7 @@ class EngagementPlanner:
     """Replaceable per-enemy engagement adapters; attack permission stays separate."""
 
     def __init__(self, adapters=None):
-        self.adapters = {(27, 0): ClosedHost()} if adapters is None else dict(adapters)
+        self.adapters = {(27, 0): ClosedHost(), (27, 1): ClosedHost()} if adapters is None else dict(adapters)
         self.preferred_id = None
         self.memory = {}
         self.scope = None

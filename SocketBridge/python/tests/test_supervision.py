@@ -68,3 +68,12 @@ class TestProgress(unittest.TestCase):
         for frame in range(241):
             result = monitor.observe(snapshot(frame=frame), action(wait={"reason": "llm_says_wait", "deadline_frame": 99999}))
         self.assertEqual(result, "STALL_UNRECOVERED")
+
+    def test_terrain_observation_wait_has_a_nonrenewable_deadline(self):
+        monitor = ProgressSupervisor()
+        for frame in range(841):
+            result = monitor.observe(snapshot(frame=frame), action(wait={
+                "reason":"terrain_observation", "deadline_frame":frame+600,
+                "evidence":"unlearned_type9"}),require_progress=True)
+        self.assertEqual(result,"STALL_UNRECOVERED")
+        self.assertLessEqual(monitor.wait_credit,600)

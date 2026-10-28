@@ -348,6 +348,7 @@ class CombatSession:
         self.navigation_replan_requests = 0
         self.navigation_devices = {}
         self.navigation_puzzles = {}
+        self.terrain_knowledge = {}
         bridge.on_message(self.on_message)
         if skill_store is not None:
             from mechanisms.integration import load_session_skills
@@ -631,7 +632,7 @@ class CombatSession:
 
     async def navigate_door(self, s, slot, door, initial_run):
         navigator = DoorNavigator(slot, door, self.navigation_devices.get(s.room_visit_id, ()),
-                                  self.navigation_puzzles.get(s.room_visit_id))
+                                  self.navigation_puzzles.get(s.room_visit_id), self.terrain_knowledge)
         watcher = ProgressSupervisor()
         began, room, previous = s.frame, s.room_visit_id, None
         request, requests, plan = None, 0, None
@@ -644,7 +645,7 @@ class CombatSession:
                     await self.release(); s = await self.next_snapshot(after=s.snapshot_id); continue
                 if s.run_id != initial_run: raise RuntimeError("RUN_CHANGED")
                 if s.blocking_combat and not s.room.get("is_starting_room"): return s, prior
-                if s.frame-began >= 750: raise TimeoutError("DOOR_NAVIGATION_TIMEOUT")
+                if s.frame-began >= (1800 if navigator.puzzle else 750): raise TimeoutError("DOOR_NAVIGATION_TIMEOUT")
                 failure = watcher.observe(s, previous, require_progress=True)
                 if failure: raise TimeoutError("NAVIGATION_"+failure)
                 build = self.build_resolver.update(s)
@@ -693,24 +694,31 @@ class CombatSession:
         puzzle = None
         puzzle_goal = None
         puzzle_plate = None
-        began = progress = s.frame
+        began = progress = phase_began = s.frame
         signature = controller.signature(s)
         goal_key, best_distance = None, float("inf")
         request, requests, last_request = None, 0, -1000
         authorized_devices = set()
+        puzzle_wait_until = 0
         await self.set_mode("FORCE_AI")
         self.log("environment_entered", frame=s.frame, room_visit_id=s.room_visit_id)
         try:
             while not s.blocking_combat and not s.room["is_clear"]:
                 if self.task_judge.health.state == "dead": raise RuntimeError("DEAD_DURING_ENVIRONMENT")
-                if s.frame-began >= 600: raise TimeoutError("ENVIRONMENT_TIMEOUT")
+                if s.frame-began >= 1800: raise TimeoutError("ENVIRONMENT_TIMEOUT")
+                if s.frame-phase_began >= 600: raise TimeoutError("ENVIRONMENT_PHASE_TIMEOUT")
                 if s.frame-progress >= 240 and puzzle is None: raise TimeoutError("ENVIRONMENT_STALL_UNRECOVERED")
                 objective = controller.objective(s)
                 if objective.kind == "timed_pressure_plate" and puzzle is None:
-                    from .terrain_puzzle import TimedTerrainPuzzle
-                    puzzle = TimedTerrainPuzzle(s.room_visit_id)
+                    from .terrain_puzzle import TimedTerrainPuzzle, terrain_identity
+                    puzzle = TimedTerrainPuzzle(s.room_visit_id,self.terrain_knowledge.get(terrain_identity(s)))
                     puzzle_goal = objective.goal
                     puzzle_plate = objective.allowed_devices[0]
+                if objective.goal is not None and (objective.goal != puzzle_goal or
+                        (objective.allowed_devices and objective.allowed_devices[0] != puzzle_plate)):
+                    puzzle_goal = objective.goal
+                    puzzle_plate = objective.allowed_devices[0] if objective.allowed_devices else None
+                    phase_began = s.frame
                 authorized_devices.update(objective.allowed_devices)
                 current_signature = controller.signature(s)
                 if signature != current_signature:
@@ -727,7 +735,7 @@ class CombatSession:
                         self.log("environment_diagnosis", frame=s.frame, plan=diagnosis.model_dump())
                     except Exception as exc: self.log("environment_diagnosis_failed", error=type(exc).__name__+": "+str(exc))
                     request = None
-                if s.frame-progress >= 60 and self.planner and request is None and requests < 2 and s.frame-last_request >= 90:
+                if s.frame-progress >= 60 and s.frame >= puzzle_wait_until and self.planner and request is None and requests < 2 and s.frame-last_request >= 90:
                     requests += 1; last_request = s.frame
                     build = self.build_resolver.update(s)
                     feedback = {"reasons": ["environment_no_progress"], "objective": objective.kind,
@@ -743,6 +751,8 @@ class CombatSession:
                 else:
                     action = await asyncio.to_thread(solver.solve,s,plan,build,True,
                                                      objective.goal,objective.allowed_devices)
+                wait = action.diagnostics.get("wait")
+                puzzle_wait_until = min(phase_began+600,wait["deadline_frame"]) if wait else 0
                 action.state = "ENVIRONMENT"
                 action.diagnostics["environment_objective"] = objective.kind
                 try: await self.send_action(s, action.move, (0, 0), action.model_dump())
@@ -758,6 +768,10 @@ class CombatSession:
                 self.navigation_devices[s.room_visit_id] = tuple(sorted(authorized_devices))
                 if puzzle:
                     self.navigation_puzzles[s.room_visit_id] = (puzzle,puzzle_plate)
+                    from .terrain_puzzle import terrain_identity
+                    self.terrain_knowledge[terrain_identity(s)] = dict(puzzle.phase.periods)
+                    if len(self.terrain_knowledge) > 128:
+                        self.terrain_knowledge.pop(next(iter(self.terrain_knowledge)))
             await self.release()
             # Environmental damage is in the whole-task ledger. The combat
             # clock begins at actual combat, not at an empty pressure-plate room.

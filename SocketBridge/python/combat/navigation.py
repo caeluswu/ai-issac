@@ -47,12 +47,13 @@ class RoomExplorer:
 
 
 class DoorNavigator:
-    def __init__(self, slot, door, allowed_devices=(), puzzle=None):
+    def __init__(self, slot, door, allowed_devices=(), puzzle=None, terrain_knowledge=None):
         self.slot = slot
         self.goal = Vec(x=door["x"], y=door["y"])
         self.solver = JointActionSolver()
         self.allowed_devices = allowed_devices
         self.puzzle = puzzle
+        self.terrain_knowledge = terrain_knowledge if terrain_knowledge is not None else {}
 
     def step(self, s, plan, build):
         began = time.perf_counter()
@@ -61,9 +62,10 @@ class DoorNavigator:
             timed = [cell for cell in grid.values() if cell["type"] == 9]
             plates = [int(index) for index,cell in grid.items()
                       if cell["type"] == 20 and cell["state"] == 3]
-            if timed and plates and all(cell["state"] == 1 for cell in timed):
-                from .terrain_puzzle import TimedTerrainPuzzle
-                self.puzzle = (TimedTerrainPuzzle(s.room_visit_id), min(plates))
+            if timed and not s.hostiles and not s.bombs:
+                from .terrain_puzzle import TimedTerrainPuzzle, terrain_identity
+                self.puzzle = (TimedTerrainPuzzle(s.room_visit_id,
+                    self.terrain_knowledge.get(terrain_identity(s))), min(plates) if plates else None)
         delta = self.goal-s.player.pos
         cross = abs(delta.y) if self.slot % 2 == 0 else abs(delta.x)
         door = (s.layout["doors"] or {}).get(str(self.slot), {})
@@ -89,6 +91,11 @@ class DoorNavigator:
             inward = ((1, 0), (0, 1), (-1, 0), (0, -1))[self.slot % 4]
             interior = self.goal + Vec(x=inward[0]*40, y=inward[1]*40)
             action = controller.step(s, build, interior, plate_index, plan)
+            from .terrain_puzzle import terrain_identity
+            if controller.phase.periods:
+                self.terrain_knowledge[terrain_identity(s)] = dict(controller.phase.periods)
+                if len(self.terrain_knowledge) > 128:
+                    self.terrain_knowledge.pop(next(iter(self.terrain_knowledge)))
         else:
             action = self.solver.solve(s, plan, build, True, self.goal, self.allowed_devices)
         action.state = "NAVIGATE"

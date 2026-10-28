@@ -99,8 +99,8 @@ class ProgressSupervisor:
             self.wait_credit = 0
             self.wait_until = None
         wait = action.diagnostics.get("wait") if action else None
-        if wait and not self.wait_consumed and wait.get("evidence") and wait.get("reason") in ("weapon_charge", "cooldown", "known_invulnerability"):
-            self.wait_until = min(s.frame+90, wait["deadline_frame"])
+        if wait and not self.wait_consumed and wait.get("evidence") and wait.get("reason") in ("weapon_charge", "cooldown", "known_invulnerability", "terrain_observation", "terrain_phase"):
+            self.wait_until = min(s.frame+(600 if wait["reason"].startswith("terrain_") else 120 if wait["reason"] == "known_invulnerability" else 90), wait["deadline_frame"])
             self.wait_consumed = True
         waiting = self.wait_until is not None and s.frame < self.wait_until
         if waiting and self.previous:

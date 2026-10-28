@@ -21,7 +21,7 @@ class EnvironmentController:
         if snapshot.bombs or getattr(snapshot, "environment_residuals", []):
             return EnvironmentObjective("explosion_withdrawal")
         grid = snapshot.layout["grid"] or {}
-        plates = [(int(i), c) for i, c in grid.items() if c["type"] == 20 and c["variant"] == 0]
+        plates = [(int(i), c) for i, c in grid.items() if c["type"] == 20 and c["variant"] == 0 and c["state"] != 3]
         choices = []
         for index, plate in plates:
             point = Vec(x=plate["x"], y=plate["y"])
@@ -48,5 +48,5 @@ class EnvironmentController:
     @staticmethod
     def signature(snapshot):
         return (len(snapshot.bombs), tuple(sorted((i, c["state"], c["collision"]) for i, c in
-                (snapshot.layout["grid"] or {}).items() if c["type"] in (9, 12, 20))),
+                (snapshot.layout["grid"] or {}).items() if c["type"] in (12, 20))),
                 snapshot.room["is_clear"], snapshot.room["enemy_count"])

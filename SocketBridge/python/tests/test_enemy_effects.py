@@ -186,3 +186,12 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         s.frame += 1
         planner.choose(None,s,None,None,None)
         self.assertFalse(planner.memory[enemy.instance_id]["blocked"])
+
+    def test_red_host_uses_route_control_without_waiting_for_a_shell(self):
+        s = self.load("closed_hosts_room109.json")
+        s.enemies = [s.enemies[0]]
+        s.enemies[0].variant = 1
+        s.enemies[0].vulnerable = True
+        action = JointActionSolver().solve(s,default_plan(context(s)),BuildResolver().update(s))
+        self.assertEqual(action.diagnostics["engagement_phase"],"attack")
+        self.assertIsNotNone(action.diagnostics["route_goal"])

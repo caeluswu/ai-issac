@@ -92,11 +92,11 @@ class TestTimedTerrainPuzzle(unittest.TestCase):
     def test_observed_phase_must_match_safe_window(self):
         model = SpikePhaseModel()
         grid = self.s.layout["grid"]
-        for frame,state in ((1,0),(8,1),(68,0),(128,1)):
+        for frame in range(1,129):
             self.s.frame = frame
-            grid["47"]["state"] = state
+            grid["47"]["state"] = 0 if frame < 8 or 68 <= frame < 128 else 1
             model.observe(self.s)
-        self.assertEqual(model.period,120)
+        self.assertEqual(model.cycle(47),120)
         self.assertFalse(model.safe(47,130))
         self.assertTrue(model.safe(47,140))
         self.assertFalse(model.safe(47,185))
@@ -119,7 +119,12 @@ class TestTimedTerrainPuzzle(unittest.TestCase):
         self.s.layout["grid"]["67"]["state"] = 3
         for cell in self.s.layout["grid"].values():
             if cell["type"] == 9:cell["state"] = 1
-        action = puzzle.step(self.s,self.build,Vec(x=320,y=160),67,None)
+        # Room clear alone must not disable future hazard checks. Verify that
+        # each spike actually stays retracted beyond the supported cycle range.
+        for frame in range(self.s.frame+1,self.s.frame+308):
+            self.s.frame = frame
+            puzzle.phase.observe(self.s)
+        action = puzzle.step(self.s,self.build,Vec(x=320,y=160),67,default_plan(context(self.s)))
         self.assertTrue(puzzle.solved)
         self.assertEqual(puzzle.schedule[-1][0],22)
         self.assertEqual(action.shoot,(0,0))
@@ -147,5 +152,69 @@ class TestTimedTerrainPuzzle(unittest.TestCase):
         navigator = DoorNavigator(1,door)
         action = navigator.step(self.s,default_plan(context(self.s)),self.build)
         self.assertIsNotNone(navigator.puzzle)
-        self.assertEqual(action.diagnostics["puzzle_phase"],"cross")
+        self.assertEqual(action.diagnostics["puzzle_phase"],"learning")
         self.assertEqual(action.shoot,(0,0))
+
+    def test_independent_cycles_and_missing_updates(self):
+        model = SpikePhaseModel()
+        for frame in range(1,361):
+            self.s.frame = frame
+            for index,period in ((47,120),(48,90)):
+                self.s.layout["grid"][str(index)].update(type=9,state=int(frame % period < period//2))
+            model.observe(self.s)
+        self.assertEqual(model.cycle(47),120)
+        self.assertEqual(model.cycle(48),90)
+        self.s.frame += 20
+        model.observe(self.s)
+        self.assertIsNone(model.cycle(47))
+        self.assertFalse(model.safe(47,self.s.frame+1))
+
+    def test_completed_plate_is_not_selected_again(self):
+        self.s.layout["grid"]["67"]["state"] = 3
+        self.assertEqual(EnvironmentController().objective(self.s).kind,"unknown_environment")
+
+    def test_clear_room_without_plate_still_uses_temporal_navigation(self):
+        self.s.room["is_clear"] = True
+        self.s.layout["grid"] = {i:c for i,c in self.s.layout["grid"].items() if c["type"] != 20}
+        door = {"x":320,"y":120,"is_open":True,"is_locked":False}
+        self.s.layout["doors"]["1"] = door
+        nav = DoorNavigator(1,door)
+        action = nav.step(self.s,default_plan(context(self.s)),self.build)
+        self.assertIsNotNone(nav.puzzle)
+        self.assertEqual(action.shoot,(0,0))
+
+    def test_next_untriggered_plate_is_selected(self):
+        self.s.layout["grid"]["67"]["state"] = 3
+        cell = self.s.layout["cells"]["22"]
+        self.s.layout["grid"]["22"] = dict(type=20,variant=0,state=0,collision=0,x=cell["x"],y=cell["y"])
+        self.assertEqual(EnvironmentController().objective(self.s).allowed_devices,(22,))
+
+    def test_temporal_path_supports_different_periods_on_successive_cells(self):
+        self.s.frame = 172
+        self.s.player.pos = Vec(x=320,y=364)
+        puzzle = TimedTerrainPuzzle(self.s.room_visit_id)
+        for index,retract,period in ((98,112,120),(83,100,100),(68,88,90)):
+            puzzle.phase.periods[index] = period
+            puzzle.phase.transitions[index] = [(retract,1),(retract+60,0)]
+        timed = tuple(int(i) for i,c in self.s.layout["grid"].items() if c["type"] == 9)
+        geometry = GeometryService(self.s,(67,),(),timed)
+        schedule = puzzle._plan(geometry,self.s,self.build,timed,67)
+        self.assertEqual(schedule[-1][0],67)
+        for cell,depart,arrival in schedule:
+            if cell in timed:
+                self.assertTrue(puzzle.phase.safe(cell,arrival))
+        self.assertTrue(any(right[1] > left[2] for left,right in zip(schedule,schedule[1:])))
+
+    def test_new_objective_gets_its_own_learning_deadline(self):
+        puzzle = TimedTerrainPuzzle(self.s.room_visit_id)
+        puzzle.learning_started = self.s.frame-599
+        puzzle.learning_goal = (320,400,67)
+        action = puzzle.step(self.s,self.build,self.goal,67,default_plan(context(self.s)))
+        self.assertEqual(puzzle.learning_started,self.s.frame)
+        self.assertEqual(action.shoot,(0,0))
+
+    def test_reentry_reuses_period_but_never_stale_phase(self):
+        puzzle = TimedTerrainPuzzle(self.s.room_visit_id,{47:120})
+        self.assertEqual(puzzle.phase.cycle(47),120)
+        self.assertIsNone(puzzle.phase.phase(47))
+        self.assertFalse(puzzle.phase.safe(47,self.s.frame))
