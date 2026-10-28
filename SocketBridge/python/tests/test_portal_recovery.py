@@ -6,6 +6,7 @@ from combat.geometry import GeometryService
 from combat.controller import JointActionSolver,BuildResolver
 from combat.catalog import default_plan
 from tests.combat_fixtures import context
+from tests.combat_fixtures import snapshot
 
 
 class TestPortalRecovery(unittest.TestCase):
@@ -34,4 +35,19 @@ class TestPortalRecovery(unittest.TestCase):
         solver.solve(s,plan,build)
         self.assertIsNot(solver.geometry,before)
         self.assertIn(2,[slot for slot,_ in solver.geometry.portals])
+
+    def test_new_boss_exit_allows_outward_retreat_without_authorizing_entry(self):
+        # Mirrors J835 floor 2: the trapdoor appears within the player's
+        # conservative body margin on the clear frame.
+        s=snapshot(enemies=False)
+        s.player.pos=Vec(x=292.2,y=201.1)
+        s.layout['grid']['83']={'type':17,'variant':0,'collision':0,'x':320,'y':200}
+        g=GeometryService(s)
+        self.assertTrue(g.motion_clear(s.player.pos,s.player.pos+Vec(x=-4,y=0)))
+        self.assertFalse(g.motion_clear(s.player.pos,s.player.pos+Vec(x=4,y=0)))
+        self.assertFalse(g.motion_clear(s.player.pos,s.player.pos))
+        solver=JointActionSolver()
+        action=solver.solve(s,default_plan(context(s)),BuildResolver().update(s))
+        self.assertLess(action.move[0],0)
+        self.assertFalse(action.diagnostics['no_safe_candidate'])
 

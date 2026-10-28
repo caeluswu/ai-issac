@@ -118,6 +118,7 @@ class GeometryService:
     def motion_clear(self, start, end):
         if not self.pickup_path_clear(start,end): return False
         if self.line_clear(start, end, radius=self.physical_radius): return True
+        if self.retreat_from_danger(start, end): return True
         if self.retreat_from_portal(start, end): return True
         # Entity.Size is the NPC contact radius, not an exact grid footprint.
         # Knockback can leave a valid observed position inside our conservative
@@ -141,6 +142,33 @@ class GeometryService:
                 nearest = self.positions[self.nearest(Vec(x=ax, y=ay))]
                 if (bx-nearest.x)**2+(by-nearest.y)**2 > (ax-nearest.x)**2+(ay-nearest.y)**2+1e-6: return False
         return self.cell(end) in self.walkable
+
+    def retreat_from_danger(self, start, end):
+        """Permit monotonic withdrawal from a newly occupied forbidden grid cell.
+
+        Boss exits and fire can appear under the observed player. The existing
+        overlap is not permission to move further into that cell or through a
+        different forbidden cell.
+        """
+        r = self.physical_radius
+        offsets = ((0, 0), (r, 0), (-r, 0), (0, r), (0, -r),
+                   (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707))
+        overlap = {cell for dx, dy in offsets
+                   if (cell := self.cell_xy(start.x+dx, start.y+dy)) in self.dangerous
+                   and cell in self.positions}
+        if not overlap: return False
+        steps = max(1, math.ceil(start.distance(end)/8))
+        allowed = self.motion_cells | overlap
+        previous = {cell: start.distance(self.positions[cell]) for cell in overlap}
+        for step in range(steps+1):
+            point = Vec(x=start.x+(end.x-start.x)*step/steps,
+                        y=start.y+(end.y-start.y)*step/steps)
+            if any(self.cell_xy(point.x+dx, point.y+dy) not in allowed for dx, dy in offsets):
+                return False
+            if step and any(point.distance(self.positions[cell]) <= previous[cell]+1e-3 for cell in overlap):
+                return False
+            previous = {cell: point.distance(self.positions[cell]) for cell in overlap}
+        return True
 
     def retreat_from_portal(self, start, end):
         """Allow an observed body in an open aperture to move into this room.
