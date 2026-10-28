@@ -72,7 +72,8 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         self.assertLess(field.gap((320,370),(320,370),10,10),0)
         body.state=3
         foot.state=3
-        self.assertFalse(any(t.source.startswith("mom_") for t in ThreatField(s).threats))
+        self.assertFalse(any(t.source.endswith("visible_windup") for t in ThreatField(s).threats))
+        self.assertTrue(any(t.source=="mom_wall_proximity_attack_bound" for t in ThreatField(s).threats))
 
         # Keep the same observed separation inside the small fixture's
         # walkable grid. A pre-impact warning must cause retreat, not a stall.
@@ -84,6 +85,20 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         action=JointActionSolver().solve(s,default_plan(context(s)),BuildResolver().update(s))
         self.assertLess(action.move[1],0)
         self.assertEqual(action.shoot,(0,0))
+
+    def test_mom_idle_wall_reserves_room_for_a_proximity_attack(self):
+        s=snapshot(enemies=False)
+        s.enemies=[Enemy(instance_id='wall',type=45,variant=0,state=3,state_frame=0,
+            pos=Vec(x=585,y=280),vel=Vec(x=0,y=0),hp=200,max_hp=500,
+            collision_radius=35,vulnerable=False,friendly=False,dead=False,
+            collision_class=0,contact_damage=2)]
+        field=ThreatField(s)
+        self.assertLess(field.gap((504,280),(504,280),1,8.5),0)
+        self.assertGreater(field.gap((440,280),(440,280),1,8.5),0)
+        foot=s.enemies[0].model_copy(update={'instance_id':'foot','variant':10,'state':7,
+            'state_frame':0,'collision_class':4,'pos':Vec(x=320,y=280)})
+        s.enemies=[foot]
+        self.assertLess(ThreatField(s).gap((320,280),(320,280),1,8.5),0)
 
     def test_closed_hosts_reposition_without_firing_then_yield_to_open_target(self):
         # Frame 17400 from the fourth-floor room that previously stalled.

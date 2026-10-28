@@ -156,9 +156,15 @@ class MomBody(GenericEnemy):
             # state 10 at 107, and became collidable at 113. Its radius was
             # already 47.25 during the windup, while collision_class was zero.
             return [ThreatForecast(enemy.instance_id+":body_windup", enemy.pos.x, enemy.pos.y,
-                enemy.vel.x, enemy.vel.y, max(47.25, enemy.collision_radius),
+                enemy.vel.x, enemy.vel.y, max(100, enemy.collision_radius),
                 uncertainty=8, source="mom_body_visible_windup")]
-        return super().forecast(enemy, snapshot)
+        # Seven observed losses came from wall parts, including state-9
+        # attempts at 73-88px source separation. Staying within a part's Size
+        # until its visible windup starts leaves too little braking time.
+        # This proximity-trigger envelope is empirical, not engine geometry.
+        return [ThreatForecast(enemy.instance_id+":wall_proximity",enemy.pos.x,enemy.pos.y,
+            enemy.vel.x,enemy.vel.y,max(100,enemy.collision_radius),uncertainty=8,
+            source="mom_wall_proximity_attack_bound")]
 
 
 class MomFoot(GenericEnemy):
@@ -169,7 +175,7 @@ class MomFoot(GenericEnemy):
             # The same room showed state 7 from frame 24; collision became
             # active at frame 51 and ended at 85. Do not infer a moving impact
             # location from this single stationary-foot observation.
-            return [ThreatForecast(enemy.instance_id+":foot_windup", enemy.pos.x, enemy.pos.y,
+            return super().forecast(enemy,snapshot)+[ThreatForecast(enemy.instance_id+":foot_windup", enemy.pos.x, enemy.pos.y,
                 enemy.vel.x, enemy.vel.y, enemy.collision_radius,
                 start=max(0, 25-(enemy.state_frame or 0)),
                 end=max(1, 65-(enemy.state_frame or 0)), uncertainty=8,

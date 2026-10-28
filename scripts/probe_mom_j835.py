@@ -12,20 +12,39 @@ sys.path.insert(0,str(ROOT/"SocketBridge/python"))
 from facade import SocketBridge
 from combat.launcher import GameLauncher
 from combat.runtime import CombatSession,NativePause,RunLog
+from campaign.judge import FloorJudge
 
 
-async def run(updates,seed):
+async def run(updates,seed,fight=False,current_build=False,loadout=()):
     directory=ROOT/"artifacts/runs"/datetime.now(timezone.utc).strftime("mom-probe-%Y%m%dT%H%M%S%fZ")
     log=RunLog(directory);log.manifest(ROOT,None)
     pause=NativePause(game_executable=ROOT/"The Binding of Isaac Rebirth Repentance/isaac-ng.exe")
     launcher=GameLauncher(ROOT,log,pause,slot=1,timeout=75)
-    session=CombatSession(SocketBridge(),None,pause,log,ready_timeout=75,new_run=True,seed=seed)
+    session=CombatSession(SocketBridge(),None,pause,log,ready_timeout=75,
+                          new_run=not current_build,seed=None if current_build else seed)
+    judge=FloorJudge(expected_stage=6)
+    session.bridge.on_message(judge.on_raw)
+    session.action_auditors.append(judge.action)
     print("Mom probe artifacts: "+str(directory),flush=True)
     report={"source_mode":"diagnostic_initialization","formal_run_proof":False,"seed":seed,
+            "current_build_retained":current_build,
             "commands":[],"observations":[],"frames":[],"result":"INCOMPLETE"}
     try:
-        s=await session.open(bootstrap=launcher)
-        if s.floor.stage!=1 or s.blocking_combat:raise RuntimeError("MOM_PROBE_START_NOT_CLEAR")
+        s=await session.open(bootstrap=None if current_build else launcher)
+        if s.blocking_combat or not s.alive or (not current_build and s.floor.stage!=1):
+            raise RuntimeError("MOM_PROBE_START_NOT_CLEAR")
+        if current_build and loadout:raise ValueError('CURRENT_BUILD_CANNOT_BE_MODIFIED')
+        for item in loadout:
+            count=s.inventory['collectibles'].get(str(item),0)
+            command=f'giveitem c{item}'
+            log('initialization_command',command=command,source_mode='diagnostic_initialization')
+            await session.rpc('EXEC_CONSOLE',{'command':command})
+            report['commands'].append(command)
+            deadline=time.monotonic()+5
+            while s.inventory['collectibles'].get(str(item),0)<=count:
+                if time.monotonic()>deadline:raise TimeoutError('LOADOUT_NOT_CONFIRMED')
+                s=await session.next_snapshot(after=s.snapshot_id)
+        report['initial_build']={'run_id':s.run_id,'seed':s.seed,'health':s.health,'stats':s.stats,'inventory':s.inventory}
         for command,target in (("stage 6",lambda x:x.floor and x.floor.stage==6 and x.room.get("is_starting_room")),
                                ("goto s.boss.1060",lambda x:x.floor and x.floor.stage==6 and x.room.get("room_type")==5)):
             log("initialization_command",command=command,source_mode="diagnostic_initialization")
@@ -35,6 +54,18 @@ async def run(updates,seed):
             while not target(s):
                 if time.monotonic()>deadline:raise TimeoutError("MOM_PROBE_TRANSITION_TIMEOUT: "+command)
                 s=await session.next_snapshot(after=s.snapshot_id,timeout=15)
+            if command == 'stage 6':judge.begin(s)
+        if fight:
+            result=await asyncio.wait_for(session.execute_room(s),120)
+            s=session.observation.latest
+            deadline=s.frame+90
+            while result=='CLEARED' and s.alive and not judge.success and s.frame<deadline:
+                await session.release()
+                s=await session.next_snapshot(after=s.snapshot_id)
+            report.update(result='MOM_DEFEATED' if result=='CLEARED' and judge.success else 'MOM_NOT_PROVEN' if result=='CLEARED' else result,
+                          fight_evidence=judge.evidence(),final_health=s.health,alive=s.alive,
+                          damage_half_hearts=session.task_judge.health.damage,final_frame=s.frame)
+            return 0 if report['result']=='MOM_DEFEATED' else 1
         began=s.frame;seen=set()
         while s.frame-began<updates and s.alive and s.floor.stage==6 and s.room.get("room_type")==5:
             report["frames"].append({"frame":s.frame,"player_pos":s.player.pos.model_dump(),
@@ -70,7 +101,7 @@ async def run(updates,seed):
     finally:
         try:await session.close()
         finally:
-            launcher.collect_evidence()
+            if not current_build:launcher.collect_evidence()
             (directory/"mom-probe.json").write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8")
             log.file.close()
             print(json.dumps({k:v for k,v in report.items() if k not in ("observations","frames")},ensure_ascii=False),flush=True)
@@ -80,6 +111,11 @@ if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--updates",type=int,default=120)
     parser.add_argument("--seed",default="3BYH A82R")
+    parser.add_argument("--fight",action="store_true",help="Normally fight Mom and require the independent floor outcome proof")
+    parser.add_argument("--current-build",action="store_true",help="Keep the current clear-room build; stage/goto remain diagnostic initialization")
+    parser.add_argument('--loadout',type=int,nargs='*',default=[],help='Diagnostic initial collectible IDs, in acquisition order')
     args=parser.parse_args()
     if not 1<=args.updates<=600:parser.error("updates must be 1..600")
-    raise SystemExit(asyncio.run(run(args.updates,args.seed)))
+    if args.current_build and args.loadout:parser.error('loadout cannot modify a retained current build')
+    if any(not 1<=item<=732 for item in args.loadout):parser.error('loadout IDs must be J835 IDs 1..732')
+    raise SystemExit(asyncio.run(run(args.updates,args.seed,args.fight,args.current_build,args.loadout)))
