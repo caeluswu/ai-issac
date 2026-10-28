@@ -28,6 +28,7 @@ class FloorDirector:
         self.diagnostic_task = None
         self.diagnostic_plan = None
         self.diagnosed = set()
+        self.angel_excursions = set()
         self.began = time.monotonic()
         session.floor_mode = True
         session.bridge.on_message(self.judge.on_raw)
@@ -45,6 +46,7 @@ class FloorDirector:
         self.displacement_errors = 0
         self.diagnostic_task = self.diagnostic_plan = None
         self.diagnosed = set()
+        self.angel_excursions = set()
         self.began = time.monotonic()
         self.session.transition_wait = None
 
@@ -137,7 +139,7 @@ class FloorDirector:
         cost = int(door.is_locked)
         intent = self.objective(s,"enter_room",door.model_dump(),cost=cost)
         before = s.inventory.get("keys")
-        if cost and (before is None or before < cost or door.target_room_type != 4):
+        if cost and (before is None or before < cost or not self.graph.route_policy.can_unlock(door,s)):
             raise ValueError("DOOR_COST_NOT_AUTHORIZED")
         s = await self.acquire(s)
         if not cost:
@@ -175,6 +177,47 @@ class FloorDirector:
             applied_action_id=prior.applied_action_id,matched_expected=matched,completed_frame=s.frame)
         self.transitions.append(receipt)
         self.session.log("floor_transition",**receipt.model_dump())
+        return s
+
+    async def visit_angel(self,s):
+        """Bounded special-room excursion; never insert transient nodes into BFS."""
+        source = RoomKey.from_snapshot(s)
+        doors = [(int(slot),door) for slot,door in (s.layout["doors"] or {}).items()
+                 if door["target_room_type"] == 15 and door["is_open"] and not door["is_locked"]]
+        if not doors or source in self.angel_excursions: return s
+        self.angel_excursions.add(source)
+        slot,door = min(doors)
+        original_index = s.room["room_idx"]
+        self.enter_state("ENTER_ANGEL",s,slot=slot)
+        s = await self.acquire(s)
+        s,_ = await asyncio.wait_for(self.session.navigate_door(s,slot,door,s.run_id),30)
+        if (s.room["room_type"] != 15 or s.floor.instance_id != source.floor
+                or s.floor.dimension != source.dimension):
+            raise RuntimeError("ANGEL_DESTINATION_MISMATCH")
+        self.session.log("angel_entered",source=source.text(),room_visit_id=s.room_visit_id,
+                         room_key=RoomKey.from_snapshot(s).text())
+        if s.blocking_combat: raise RuntimeError("UNEXPECTED_ANGEL_COMBAT")
+        s = await self.settle(s)
+        if self.session.learning: s = await self.session.learning.collect(self.session,s)
+        s = await self.settle(s)
+        build = self.session.build_resolver.update(s)
+        self.rooms.append({"room_key":RoomKey.from_snapshot(s).text(),"room_visit_id":s.room_visit_id,
+            "result":"CLEARED","combat_result":"NOT_REQUIRED","post_clear_result":"SAFE",
+            "terminal_snapshot_id":s.snapshot_id,"alive":s.alive,"actionable":True,
+            "damage":self.judge.visits.get(s.room_visit_id,{}).get("damage",0),
+            "build_revision":build.revision,"experience_revision":build.experience_revision})
+        returns = [(int(k),d) for k,d in (s.layout["doors"] or {}).items()
+                   if d["is_open"] and not d["is_locked"] and
+                   (d["target_room"] == original_index or d.get("target_list_index") == source.index)]
+        if not returns: raise RuntimeError("ANGEL_RETURN_DOOR_NOT_OBSERVED")
+        slot,door = min(returns)
+        self.enter_state("RETURN_FROM_ANGEL",s,slot=slot)
+        s = await self.acquire(s)
+        s,_ = await asyncio.wait_for(self.session.navigate_door(s,slot,door,s.run_id),30)
+        if RoomKey.from_snapshot(s) != source or s.room["room_type"] != 5:
+            raise RuntimeError("ANGEL_RETURN_MISMATCH")
+        s = await self.settle(s,45)
+        self.session.log("angel_returned",room_key=source.text(),room_visit_id=s.room_visit_id)
         return s
 
     async def exit(self,s):
@@ -285,6 +328,7 @@ class FloorDirector:
                     if not self.judge.success: raise RuntimeError("MOM_TERMINAL_NOT_PROVEN")
                     self.enter_state("COMPLETE",s)
                     return
+                s = await self.visit_angel(s)
                 self.enter_state("EXECUTE_EXIT",s)
                 s = await self.exit(s)
                 self.enter_state("COMPLETE",s)

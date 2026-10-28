@@ -56,9 +56,9 @@ class KnowledgeGateway:
             subjects=[{"kind":kind,"id":item_id}],purpose=purpose,language=language)
         return self.package.lookup(request,refresh=refresh)
 
-    def decide(self, s, build, pickup, *, reserve_coins=0):
+    def decide(self, s, build, pickup, *, reserve_coins=0, allow_choice=False):
         encounter = digest([s.run_id, s.room_visit_id, pickup.instance_id, pickup.sub_type])
-        decision_id = digest([encounter,s.snapshot_id,build.revision,pickup.price,pickup.wait,s.inventory.get("coins"),s.health,reserve_coins])
+        decision_id = digest([encounter,s.snapshot_id,build.revision,pickup.price,pickup.wait,s.inventory.get("coins"),s.health,reserve_coins,allow_choice])
         context = {"run_id":s.run_id,"floor_instance_id":s.floor.instance_id if s.floor else None,
                    "room_visit_id":s.room_visit_id,"frame":s.frame,"build_revision":build.revision,"build_signature":build.signature}
         self.store.record("encounter",encounter,{"context":context,"pickup":pickup.model_dump(),"inventory_before":s.inventory,"health_before":s.health})
@@ -68,9 +68,15 @@ class KnowledgeGateway:
         elif pickup.identity_visibility != "visible" or pickup.sub_type is None:
             reasons.append("IDENTITY_NOT_AVAILABLE")
         elif pickup.wait is None or pickup.price is None: reasons.append("INTERACTION_FACTS_UNKNOWN")
-        elif pickup.options_pickup_index not in (None,0): reasons.append("CHOICE_GROUP_NOT_SUPPORTED")
+        elif pickup.options_pickup_index not in (None,0) and not allow_choice: reasons.append("CHOICE_GROUP_NOT_SUPPORTED")
         elif pickup.price > 0 and getattr(self,"purchase_budget",None) is not None and pickup.price > self.purchase_budget:
             reasons.append("PURCHASE_BUDGET_EXCEEDED")
+        elif pickup.price > 0 and (s.inventory.get("coins") is None or s.inventory["coins"]-pickup.price < reserve_coins):
+            reasons.append("INSUFFICIENT_COINS_OR_RESERVE")
+        elif pickup.price > 0 and s.room.get("room_type") != 2:
+            reasons.append("PAID_ROOM_NOT_AUTHORIZED")
+        elif pickup.price < 0:
+            reasons.append("HEALTH_PAYMENT_NOT_AUTHORIZED")
         elif pickup.wait > 0:
             decision="defer"; reasons.append("PICKUP_NOT_READY")
         elif pickup.variant == 100:
@@ -91,13 +97,13 @@ class KnowledgeGateway:
                 benefits = [r["summary"]["text"] for r in records if r["summary"]["text"]]
         elif pickup.variant == 20 and pickup.sub_type in (1, 2, 3, 5) and pickup.price == 0 and (s.inventory.get("coins") or 0) < 99:
             decision="take"; reasons.append("FREE_COIN")
-        elif pickup.variant == 30 and pickup.sub_type in (1, 3) and pickup.price == 0 and (s.inventory.get("keys") or 0) < 99:
-            decision="take"; reasons.append("FREE_KEY")
-        elif pickup.variant == 40 and pickup.sub_type in (1, 2) and pickup.price == 0 and (s.inventory.get("bombs") or 0) < 99:
-            decision="take"; reasons.append("FREE_BOMB_PICKUP")
-        elif pickup.variant == 10 and pickup.sub_type in (1,2,3) and pickup.price == 0:
+        elif pickup.variant == 30 and pickup.sub_type in (1, 3) and (s.inventory.get("keys") or 0) < 99:
+            decision="take"; cost=pickup.price; reasons.append("FREE_KEY" if not cost else "BUY_KEY")
+        elif pickup.variant == 40 and pickup.sub_type in (1, 2) and (s.inventory.get("bombs") or 0) < 99:
+            decision="take"; cost=pickup.price; reasons.append("FREE_BOMB_PICKUP" if not cost else "BUY_BOMB")
+        elif pickup.variant == 10 and pickup.sub_type in (1,2,3):
             eligible = s.floor_progress and (s.floor_progress.can_pick_soul if pickup.sub_type == 3 else s.floor_progress.can_pick_red)
-            if eligible is True: decision="take"; reasons.append("SUPPORTED_FREE_HEALTH")
+            if eligible is True: decision="take"; cost=pickup.price; reasons.append("SUPPORTED_FREE_HEALTH" if not cost else "BUY_HEALTH")
             else: reasons.append("HEALTH_CAPACITY_FULL_OR_UNKNOWN")
         else: reasons.append("PICKUP_STRATEGY_NOT_IMPLEMENTED")
         value = PickupDecision(encounter,decision,tuple(reasons),build.revision,

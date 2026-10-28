@@ -1,6 +1,8 @@
 """Boundary-only knowledge writes and passive, scoped calibration memory."""
 import asyncio
 import math
+from dataclasses import asdict, replace
+from .economy import PickupChoicePolicy
 from .builds import digest, observed_build
 from .item_interaction import PickupExecutor, pickup_approach_allowed
 from .boundary_safety import boundary_danger
@@ -17,6 +19,8 @@ class ItemLearning:
         self.pickups = PickupExecutor(self)
         self.active_experiments = False
         self.source_mode = source_mode
+        self.choice_policy = PickupChoicePolicy()
+        self.angel_claimed = set()
         self.gateway.evidence_modes = self.evidence_modes()
 
     def mask(self, s):
@@ -33,8 +37,25 @@ class ItemLearning:
         if self.scope != scope: self.scope, self.decisions, self.attempted = scope, {}, set()
         self.mask(s)
         for pickup in s.pickups or []:
-            decision = await asyncio.to_thread(self.gateway.decide,s,build,pickup)
+            decision = await asyncio.to_thread(self.gateway.decide,s,build,pickup,allow_choice=True)
             self.decisions[(pickup.instance_id,pickup.sub_type,pickup.price)] = decision
+        groups = {}
+        angel_key = (s.run_id,s.floor.instance_id if s.floor else None,s.room.get("room_idx"))
+        for pickup in s.pickups or []:
+            group = pickup.options_pickup_index
+            if s.room.get("room_type") == 15 and pickup.variant == 100:
+                group = "angel"
+            if group:
+                groups.setdefault(group,[]).append((pickup,self.decisions[(pickup.instance_id,pickup.sub_type,pickup.price)]))
+        for group,pairs in groups.items():
+            winner = self.choice_policy.choose(s,[pair for pair in pairs if pair[1].decision == "take"])
+            for pickup,decision in pairs:
+                if decision.decision != "take": continue
+                if winner is None or pickup.instance_id != winner[0].instance_id or (group == "angel" and angel_key in self.angel_claimed):
+                    rejected = replace(decision,decision="skip",reason_codes=("CHOICE_OTHER_SELECTED",),
+                        decision_id=digest([decision.decision_id,"choice",group,winner[0].instance_id if winner else None]))
+                    self.decisions[(pickup.instance_id,pickup.sub_type,pickup.price)] = rejected
+                    await asyncio.to_thread(self.gateway.store.record,"decision",rejected.decision_id,asdict(rejected))
         subjects = [{"kind":"collectible","id":p.sub_type} for p in s.pickups or [] if p.variant==100 and p.identity_visibility=="visible" and p.sub_type is not None and p.sub_type>=0]
         bundle = await self.gateway.prepare_bundle(s,build,subjects)
         s.knowledge_bundle = bundle
@@ -43,6 +64,15 @@ class ItemLearning:
     async def collect(self, session, snapshot):
         current = snapshot
         if current.blocking_combat or current.hostiles or boundary_danger(current): return current
+        # Fresh shop stock has a short engine pickup cooldown. Leaving before
+        # it expires silently loses the entire shop visit.
+        wait_began = current.frame
+        while any(p.wait is not None and p.wait > 0 and p.is_empty is not True for p in current.pickups or []):
+            if current.frame-wait_began >= 30: break
+            await session.release()
+            current = await session.next_snapshot(after=current.snapshot_id)
+            if current.blocking_combat or current.hostiles or boundary_danger(current) or not current.alive:
+                return current
         if hasattr(session,"prepare_item_capabilities"):current=await session.prepare_item_capabilities(current)
         # Learning may inspect many candidates, but only a bounded number are
         # approached in one clear-room boundary. No active item actions exist.
@@ -55,10 +85,17 @@ class ItemLearning:
                 and self.decisions[(p.instance_id,p.sub_type,p.price)].decision == "take"
                 and pickup_approach_allowed(current,p)]
             if not candidates: break
-            pickup,decision = min(candidates,key=lambda pair:(pair[0].variant != 10,current.player.pos.distance(pair[0].pos)))
+            selected = self.choice_policy.choose(current,candidates)
+            if selected is None: break
+            pickup,decision = selected
+            session.log("pickup_compared",selected=pickup.instance_id,candidates=[{
+                "id":p.instance_id,"item":p.sub_type,"price":p.price,
+                "score":self.choice_policy.score(current,p)} for p,_ in candidates])
             self.attempted.add((pickup.instance_id,pickup.sub_type,pickup.price))
             result = await self.pickups.execute(session,current,build,pickup,decision)
             current = await session.next_snapshot(after=current.snapshot_id)
+            if result["result"]=="confirmed" and current.room.get("room_type") == 15 and pickup.variant == 100:
+                self.angel_claimed.add((current.run_id,current.floor.instance_id if current.floor else None,current.room.get("room_idx")))
             if result["result"]=="confirmed" and hasattr(session,"prepare_item_capabilities"):
                 current=await session.prepare_item_capabilities(current)
             if result["result"] != "confirmed" and (current.blocking_combat or not current.alive or boundary_danger(current)): break

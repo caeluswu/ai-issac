@@ -29,6 +29,27 @@ class TreasureFirstRoutePolicy:
             return None
         return self.priorities[door.target_room_type], depth
 
+    def can_unlock(self, door, snapshot):
+        return door.target_room_type == 4 and (snapshot.inventory.get("keys") or 0) >= 1
+
+
+class EconomyRoutePolicy(TreasureFirstRoutePolicy):
+    """Known shop at >=15 coins, while reserving the treasure-room key."""
+    def __init__(self): self.treasure_resolved = False
+
+    def can_unlock(self, door, snapshot):
+        keys = snapshot.inventory.get("keys") or 0
+        if door.target_room_type == 4: return keys >= 1
+        return (door.target_room_type == 2 and (snapshot.inventory.get("coins") or 0) >= 15
+                and keys >= (1 if self.treasure_resolved else 2))
+
+    def rank(self, door, snapshot, depth):
+        if door.target_room_type != 2: return super().rank(door,snapshot,depth)
+        if (snapshot.inventory.get("coins") or 0) < 15: return None
+        if door.is_locked and not self.can_unlock(door,snapshot): return None
+        if not door.is_locked and not door.is_open: return None
+        return -1, depth
+
 
 class FloorGraph:
     def __init__(self, route_policy=None):
@@ -36,7 +57,7 @@ class FloorGraph:
         self.grid_aliases = {}
         self.failures = {}
         self.floor = None
-        self.route_policy = route_policy or TreasureFirstRoutePolicy()
+        self.route_policy = route_policy or EconomyRoutePolicy()
 
     def observe(self, s):
         key = RoomKey.from_snapshot(s)
@@ -75,6 +96,8 @@ class FloorGraph:
     def choose(self, s):
         """BFS through observed directed links, then nearest available frontier."""
         current = self.observe(s)
+        if isinstance(self.route_policy,EconomyRoutePolicy):
+            self.route_policy.treasure_resolved = any(n.room_type == 4 for n in self.nodes.values())
         queue, seen, candidates = deque([(current.key,None,0)]),{current.key},[]
         while queue:
             key,first,depth = queue.popleft()

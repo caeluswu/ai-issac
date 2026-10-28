@@ -30,7 +30,7 @@ async def main(args):
     log = RunLog(args.output_dir or ROOT / "artifacts/runs" / stamp)
     log.manifest(ROOT,client.model if client else None)
     gateway = KnowledgeGateway.from_config(ROOT)
-    gateway.purchase_budget = 0
+    gateway.purchase_budget = None
     learning = ItemLearning(gateway)
     planner = FloorPlanner(Planner(client,KnowledgeStore(ROOT / "configs/knowledge"),log),log) if client else None
     pause = NativePause(game_executable=ROOT / "The Binding of Isaac Rebirth Repentance/isaac-ng.exe")

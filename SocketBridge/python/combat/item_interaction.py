@@ -72,8 +72,14 @@ class PickupExecutor:
                     acquired = resource is not None and resources[resource] is not None and current.inventory.get(resource,0)>resources[resource]
                 emptied = instance is None or instance.is_empty is True
                 if acquired and emptied:
-                    if pickup.price > 0 and (resources["coins"] is None or current.inventory.get("coins") != resources["coins"]-pickup.price):
-                        raise RuntimeError("PICKUP_COST_NOT_CONFIRMED")
+                    if pickup.price > 0:
+                        after_coins = current.inventory.get("coins")
+                        if resources["coins"] is None or after_coins is None:
+                            raise RuntimeError("PICKUP_COST_NOT_OBSERVED")
+                        net = resources["coins"]-after_coins
+                        if net > pickup.price: raise RuntimeError("PICKUP_COST_EXCEEDS_AUTHORIZATION")
+                        result.update(quoted_price=pickup.price,coins_before=resources["coins"],coins_after=after_coins,
+                            observed_net_spend=net,cost_evidence="matching_net" if net == pickup.price else "simultaneous_income_unresolved")
                     updated = session.build_resolver.update(current)
                     result.update(result="confirmed",reason="pickup_consumed_and_inventory_changed",build_revision=updated.revision,
                                   inventory_after=current.inventory,health_before=start.health,
