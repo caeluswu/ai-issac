@@ -694,10 +694,22 @@ SensorRegistry:register("ENEMIES", {
             local target = npc:GetPlayerTarget()
             if target then targetPos = Helpers.vectorToTable(target.Position) end
         end
+        local damageDirections = nil
+        if npc and entity.Type == 41 and type(npc.CanBeDamagedFromVelocity) == "function" then
+            damageDirections = {}
+            for _, direction in ipairs({{-1,-1},{0,-1},{1,-1},{-1,0},{1,0},{-1,1},{0,1},{1,1}}) do
+                local ok, allowed = pcall(npc.CanBeDamagedFromVelocity, npc, Vector(direction[1]*10,direction[2]*10))
+                if ok and type(allowed) == "boolean" then
+                    damageDirections[tostring(direction[1]) .. "," .. tostring(direction[2])] = allowed
+                end
+            end
+            if next(damageDirections) == nil then damageDirections = nil end
+        end
         return {
             id = entity.Index,
             instance_id = tostring(entity.InitSeed) .. ":" .. tostring(entity.Index),
             vulnerable = entity:IsVulnerableEnemy(),
+            damage_directions = damageDirections,
             can_shut_doors = npc == nil or npc.CanShutDoors,
             collision_class = entity.EntityCollisionClass,
             friendly = entity:HasEntityFlags(EntityFlag.FLAG_FRIENDLY),

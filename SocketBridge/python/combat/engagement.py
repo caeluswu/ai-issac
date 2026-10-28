@@ -45,7 +45,12 @@ class EngagementPlanner:
     """Replaceable per-enemy engagement adapters; attack permission stays separate."""
 
     def __init__(self, adapters=None):
-        self.adapters = {(27, 0): ClosedHost(), (27, 1): ClosedHost()} if adapters is None else dict(adapters)
+        if adapters is None:
+            from .directional_armor import DirectionalArmor
+            self.adapters = {(27,0):ClosedHost(),(27,1):ClosedHost(),
+                             **{(41,v):DirectionalArmor() for v in range(5)}}
+        else:
+            self.adapters = dict(adapters)
         self.preferred_id = None
         self.memory = {}
         self.scope = None

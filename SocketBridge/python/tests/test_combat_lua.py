@@ -104,6 +104,29 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(hazard.vel.x,3)
         self.assertEqual(hazard.max_radius,120)
 
+    def test_knight_directional_damage_queries_are_read_only_and_optional(self):
+        self.lua.execute('''
+            Vector=function(x,y) return {X=x,Y=y} end
+            calls=0
+            npc={GetPlayerTarget=function() return nil end,IsChampion=function() return false end,
+                 GetChampionColorIdx=function() return -1 end,
+                 CanBeDamagedFromVelocity=function(self,v) calls=calls+1;return v.Y<0 end}
+            knight={Type=41,Variant=0,SubType=0,Index=2,InitSeed=3,HitPoints=20,MaxHitPoints=20,
+                Size=13,CollisionDamage=1,EntityCollisionClass=4,
+                Position={X=200,Y=200},Velocity={X=0,Y=0},
+                ToNPC=function() return npc end,IsActiveEnemy=function() return true end,
+                IsVulnerableEnemy=function() return true end,HasEntityFlags=function() return false end,
+                IsDead=function() return false end,IsBoss=function() return false end}
+            row=api.Sensors.sensors.ENEMIES.extract(knight,nil)
+        ''')
+        row = self.lua.globals().row
+        self.assertEqual(self.lua.globals().calls,8)
+        self.assertTrue(row.damage_directions['0,-1'])
+        self.assertFalse(row.damage_directions['0,1'])
+        self.assertEqual(self.lua.globals().knight.HitPoints,20)
+        self.lua.execute('npc.CanBeDamagedFromVelocity=function() error("unavailable") end;row=api.Sensors.sensors.ENEMIES.extract(knight,nil)')
+        self.assertIsNone(self.lua.globals().row.damage_directions)
+
     def test_stale_room_action_rejected(self):
         self.lua.execute("api.Input.applyCommand({action_id=1,room_visit_id='wrong',observed_frame=0,move={x=1,y=0}})")
         self.assertFalse(self.lua.globals().lastSent.accepted)

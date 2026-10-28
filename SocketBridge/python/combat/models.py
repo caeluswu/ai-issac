@@ -47,6 +47,7 @@ class Enemy(Observed):
     max_hp: float
     collision_radius: float = Field(ge=0)
     vulnerable: bool
+    damage_directions: dict[str, bool] | None = None
     friendly: bool
     dead: bool
     collision_class: int

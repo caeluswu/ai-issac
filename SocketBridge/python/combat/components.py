@@ -207,6 +207,8 @@ class NormalTears:
     def hit_score(self, s, build, aim, target, shot, velocity, geometry):
         if target is None or not target.vulnerable: return 0.
         launch = self.launch_velocity(s, build, aim, shot, velocity)
+        from .directional_armor import damage_from_velocity
+        if damage_from_velocity(target, launch) is False: return 0.
         enemy_velocity = aim.velocity(target)
         relative = launch-enemy_velocity
         delta = target.pos-s.player.pos
