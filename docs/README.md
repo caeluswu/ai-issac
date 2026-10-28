@@ -46,6 +46,7 @@
 | [J835 被动道具支持](evidence/j835-passive-item-support.zh-CN.md) | Boss 与宝箱房道具池准入、拾取确认、路线顺序和普通构筑适配 |
 | [M3-A 连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md) | 同一 run、两层 Boss 与正常出口、第三层可行动、生命损失和元数据边界 |
 | [M3-B 连续四层验证](evidence/phase-3b-four-floor-validation.zh-CN.md) | 固定种子同局完成四层、Host 清房、逐层损失及适用边界 |
+| [M3-C 妈腿房诊断证据](evidence/phase-3c-mom-probe.zh-CN.md) | J835 房间实体阶段、预警依据与正式验收边界 |
 | [当前准备审查诊断 JSON](../artifacts/validation/m2-readiness-audit.json) | 合成场景复现四项边界缺陷；不是游戏损失记录 |
 
 ## 归档方案与源码参考

@@ -55,6 +55,36 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         pit.collision_class=3;pit.pos=Vec(x=407,y=319)
         self.assertTrue(boundary_danger(s))
 
+    def test_mom_parts_warn_before_contact_becomes_collidable(self):
+        s=snapshot(enemies=False)
+        s.player.pos=Vec(x=320,y=370)
+        body=Enemy(instance_id="mom_lower",type=45,variant=0,state=9,state_frame=0,
+                   pos=Vec(x=320,y=425),vel=Vec(x=0,y=0),hp=793.35,max_hp=793.35,
+                   collision_radius=47.25,vulnerable=False,friendly=False,dead=False,
+                   collision_class=0,contact_damage=2)
+        foot=body.model_copy(update={"instance_id":"mom_foot","variant":10,
+                                    "state":7,"state_frame":1,"pos":Vec(x=320,y=280),
+                                    "collision_radius":35})
+        s.enemies=[body,foot]
+        field=ThreatField(s)
+        self.assertTrue(any(t.source=="mom_body_visible_windup" for t in field.threats))
+        self.assertTrue(any(t.source=="mom_foot_visible_windup" for t in field.threats))
+        self.assertLess(field.gap((320,370),(320,370),10,10),0)
+        body.state=3
+        foot.state=3
+        self.assertFalse(any(t.source.startswith("mom_") for t in ThreatField(s).threats))
+
+        # Keep the same observed separation inside the small fixture's
+        # walkable grid. A pre-impact warning must cause retreat, not a stall.
+        body.state=9
+        body.pos=Vec(x=280,y=295)
+        s.enemies=[body]
+        s.player.pos=Vec(x=280,y=240)
+        s.room.update(is_clear=False,enemy_count=1,room_type=5)
+        action=JointActionSolver().solve(s,default_plan(context(s)),BuildResolver().update(s))
+        self.assertLess(action.move[1],0)
+        self.assertEqual(action.shoot,(0,0))
+
     def test_closed_hosts_reposition_without_firing_then_yield_to_open_target(self):
         # Frame 17400 from the fourth-floor room that previously stalled.
         s = self.load("closed_hosts_room109.json")

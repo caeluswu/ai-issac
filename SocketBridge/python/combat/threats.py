@@ -133,6 +133,36 @@ class ExplosiveBurst(LandingMover):
     death_effect_radius = 70
 
 
+class MomBody(GenericEnemy):
+    """Forecast a wall body part during its visible windup, before collision turns on."""
+
+    def forecast(self, enemy, snapshot):
+        if enemy.state in (8, 9, 10):
+            # J835 Mom room 1060: the lower part entered state 9 at frame 103,
+            # state 10 at 107, and became collidable at 113. Its radius was
+            # already 47.25 during the windup, while collision_class was zero.
+            return [ThreatForecast(enemy.instance_id+":body_windup", enemy.pos.x, enemy.pos.y,
+                enemy.vel.x, enemy.vel.y, max(47.25, enemy.collision_radius),
+                uncertainty=8, source="mom_body_visible_windup")]
+        return super().forecast(enemy, snapshot)
+
+
+class MomFoot(GenericEnemy):
+    """Keep the observed center foot dangerous through its early non-colliding phase."""
+
+    def forecast(self, enemy, snapshot):
+        if enemy.state == 7:
+            # The same room showed state 7 from frame 24; collision became
+            # active at frame 51 and ended at 85. Do not infer a moving impact
+            # location from this single stationary-foot observation.
+            return [ThreatForecast(enemy.instance_id+":foot_windup", enemy.pos.x, enemy.pos.y,
+                enemy.vel.x, enemy.vel.y, enemy.collision_radius,
+                start=max(0, 25-(enemy.state_frame or 0)),
+                end=max(1, 65-(enemy.state_frame or 0)), uncertainty=8,
+                source="mom_foot_visible_windup")]
+        return super().forecast(enemy, snapshot)
+
+
 class EnemyAdapters:
     def __init__(self):
         self.default = GenericEnemy()
@@ -140,7 +170,8 @@ class EnemyAdapters:
         # Use the conservative 100px envelope until its radius is calibrated.
         self.adapters = {(25, 0): ExplosiveDeath(), (16, 2): ContactExplosive(), (10, 0): Pursuer(), (18, 0): Pursuer(),
                          (85, 0): BurstMover(), (94, 0): BurstMover(), (250, 0): ExplosiveBurst(),
-                         (305, 0): BurstMover(), (29, 0): LandingMover()}
+                         (305, 0): BurstMover(), (29, 0): LandingMover(),
+                         (45, 0): MomBody(), (45, 10): MomFoot()}
     def resolve(self, enemy): return self.adapters.get((enemy.type, enemy.variant), self.default)
     def register(self, kind, variant, adapter): self.adapters[kind, variant] = adapter
 
