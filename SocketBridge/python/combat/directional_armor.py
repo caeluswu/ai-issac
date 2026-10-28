@@ -24,6 +24,7 @@ class DirectionalArmor:
         allowed = geometry.future_safe_cells(snapshot.hostiles,6)
         path = geometry.firing_route(snapshot.player.pos,enemy.pos,build.effective_range,
             excluded=excluded,allowed_cells=allowed,
+            target_radius=enemy.collision_radius+5,
             stance_filter=lambda p:damage_from_velocity(enemy,enemy.pos-p) is True)
         if not path:
             return self.route(geometry,snapshot,enemy,build,position,weapon,()) if excluded else None

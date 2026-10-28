@@ -1,4 +1,5 @@
 """Replaceable pure policy and weapon modules; no IO or controller references."""
+import math
 from .models import Vec, ZERO
 from .component_contracts import (
     CapabilitySet, MotionProposal, AttackProposal, WaitEvidence, WeaponAdapter, ProposalContext, HOST_LIMITS,
@@ -186,8 +187,11 @@ class NormalTears:
     capabilities = CapabilitySet("normal_tears", moving_attack=True, break_plain_poop=True)
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
     def __init__(self, params): self.params = params
+    def begin_frame(self, snapshot, build):
+        self.target_radii = {(e.pos.x,e.pos.y):e.collision_radius+5 for e in snapshot.hostiles if e.vulnerable}
     def firing_route(self, geometry, start, target, build, excluded=(), terrain=False):
-        return geometry.firing_route(start, target, build.effective_range, terrain=terrain, excluded=excluded)
+        radius = getattr(self,'target_radii',{}).get((target.x,target.y),0.) if not terrain else 0.
+        return geometry.firing_route(start, target, build.effective_range, terrain=terrain, excluded=excluded,target_radius=radius)
     def pending_damage(self, s, enemy):
         damage = 0.
         for tear in s.projectiles["player_tears"] or []:
@@ -217,12 +221,18 @@ class NormalTears:
         if ticks > forecast_ticks and enemy_velocity.length() > 0:
             delta = target.pos+enemy_velocity*forecast_ticks-s.player.pos
             ticks = delta.dot(launch)/max(1e-9, launch.dot(launch))
-        if ticks < 0 or ticks*launch.length() > build.effective_range: return 0.
+        launch_length = launch.length()
+        if ticks < 0 or ticks*launch_length > build.effective_range: return 0.
         hit = s.player.pos+launch*ticks
         miss = hit.distance(target.pos+enemy_velocity*min(ticks, aim.params["max_lead_ticks"]))
+        contact_back = math.sqrt(max(0,(target.collision_radius+5)**2-miss**2))
         miss += enemy_velocity.length()*max(0, ticks-forecast_ticks)*.2
         margin = target.collision_radius+5
-        end = hit-(hit-s.player.pos).unit()*22 if target.instance_id.startswith("terrain:") else hit
+        # Stop at first projected contact, not at a center embedded in a wall.
+        # Intervening solid terrain still blocks the entire incoming segment.
+        back = min(22 if target.instance_id.startswith("terrain:") else contact_back,ticks*launch_length)
+        scale = back/max(1e-9,launch_length)
+        end = Vec(x=hit.x-launch.x*scale,y=hit.y-launch.y*scale)
         if not geometry.line_clear(s.player.pos, end, shot=True): return 0.
         return max(0., 1-miss/(margin+8))*(1 if build.calibrated else .8)
 

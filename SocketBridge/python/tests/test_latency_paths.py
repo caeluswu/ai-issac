@@ -54,7 +54,13 @@ class TestExactLatencyPaths(unittest.TestCase):
 
     def test_terrain_target_pruning_preserves_exhaustive_global_minimum(self):
         from combat.catalog import default_plan
+        from combat.components import NormalTears
         from tests.combat_fixtures import context
+        original_route = NormalTears.firing_route
+        def obstruction_required(weapon, geometry, start, target, build, excluded=(), terrain=False):
+            # Isolate the obstacle-selection branch. A protruding enemy volume
+            # can now have a valid direct lane in these captured fields.
+            return original_route(weapon,geometry,start,target,build,excluded,True) if terrain else []
         for s in self.captured_fields():
             g=GeometryService(s,allowed_portals=()); build=BuildResolver().update(s); all_routes=[]
             for index,c in s.layout['grid'].items():
@@ -62,7 +68,9 @@ class TestExactLatencyPaths(unittest.TestCase):
                     target=Vec(x=c['x'],y=c['y']); route=exhaustive_route(g,s.player.pos,target,build.effective_range,True)
                     if route: all_routes.append((len(route)*40+target.distance(s.player.pos),index,route))
             expected=min(all_routes,key=lambda x:x[:2])
-            solver=JointActionSolver(); action=solver.solve(s,default_plan(context(s)),build)
+            solver=JointActionSolver()
+            with patch.object(NormalTears,'firing_route',obstruction_required):
+                action=solver.solve(s,default_plan(context(s)),build)
             self.assertEqual(action.diagnostics['movement_target'],'terrain:'+expected[1])
             self.assertEqual(action.diagnostics['route_goal'],[round(expected[2][-1].x),round(expected[2][-1].y)])
             self.assertFalse(action.diagnostics['budget_exhausted'])

@@ -280,7 +280,7 @@ class GeometryService:
                     safe.discard(i); break
         return safe
 
-    def firing_stances(self, target, effective_range, terrain):
+    def firing_stances(self, target, effective_range, terrain, target_radius=0.):
         """Geometry-only candidates; origin/recovery exclusions stay dynamic.
 
         Many ordinary-poop targets share one unchanged room geometry. Compute
@@ -288,7 +288,7 @@ class GeometryService:
         every rejected projection on every frame. The bounded LRU keeps static
         targets hot while moving enemies cannot grow the cache indefinitely.
         """
-        key = (target.x, target.y, effective_range, terrain)
+        key = (target.x, target.y, effective_range, terrain,target_radius)
         if key in self.firing_stance_cache:
             self.firing_stance_cache.move_to_end(key)
             return self.firing_stance_cache[key]
@@ -302,16 +302,17 @@ class GeometryService:
                 distance = math.hypot(dx, dy)
                 if not (25 if terrain else 60) <= distance <= effective_range*.85: continue
                 candidate = Vec(x=x, y=y)
-                end = Vec(x=target.x-dx/distance*22, y=target.y-dy/distance*22) if terrain else target
+                stop = 22 if terrain else min(distance,target_radius)
+                end = Vec(x=target.x-dx/distance*stop,y=target.y-dy/distance*stop)
                 if self.clear(candidate) and self.line_clear(p, candidate) and self.line_clear(candidate, end, shot=True):
                     stances.setdefault(i, []).append((candidate, offset, abs(distance-effective_range*.55)*.15))
         if len(self.firing_stance_cache) >= 64: self.firing_stance_cache.popitem(last=False)
         self.firing_stance_cache[key] = stances
         return stances
 
-    def firing_route(self, start, target, effective_range, terrain=False, excluded=(), *, stance_filter=None, allowed_cells=None):
+    def firing_route(self, start, target, effective_range, terrain=False, excluded=(), *, stance_filter=None, allowed_cells=None, target_radius=0.):
         """Reach a cardinal firing lane, including around obstructing rocks."""
-        stances = self.firing_stances(target, effective_range, terrain)
+        stances = self.firing_stances(target, effective_range, terrain,target_radius)
         if not stances: return []
         origin = self.nearest(start)
         queue, parents, depth = deque([origin]), {}, {origin: 0}
