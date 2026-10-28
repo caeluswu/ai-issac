@@ -2,6 +2,13 @@
 
 当前：M1、M2-A 首层、M2-B 蓄力程序、M2-C 有限道具扩展及 M3-A 连续两层均有工程可行性证据。M2-C 的归因审核与菜刀组件见[归因审核](evidence/phase-2c-attribution-review.zh-CN.md)和[道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md)；M3-A 同局结果见[连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md)。M3-B 至第四层与 M3-C 至 Mom 仍待实证。本文件维护里程碑与跨阶段取舍。
 
+### 当前推进状态
+
+- J835 的 Boss 奖励池 59/59 个唯一 ID、宝箱房池 137/407 个唯一 ID 已进入拾取准入表；准入不等于逐件实战验证。[范围与首层证据](evidence/j835-passive-item-support.zh-CN.md)。
+- Little Horn 的移动陷阱 `291/2` 曾在 Boss 死亡附近与玩家重叠，旧运行失去 1 个半心。现有危险场已读取该实体的位置、速度和碰撞半径，清房边界也保留近身威胁。修复后的正常首层运行最小边缘间距约 15.7 像素、零失血、正常离层；该问题已有针对性修复和证据，不再作为当前阻塞。[旧反例与修复证据](evidence/j835-passive-item-support.zh-CN.md)。
+- 最近一次同局四层实机尝试依次完成前三层，于第四层普通房 `room_idx=109` 以 `STALL_UNRECOVERED` 结束；总损失 9 个半心，未调用 DeepSeek。[运行报告](../artifacts/runs/m3b-treasure-pitfall-gurgle-retest/run-report.json)。该房剩余 3 个关闭的 Host `27/0`，当前目标选择仅接受 `vulnerable` 敌人，因此没有交战目标和移动路线，连续输出零移动、零射击。下一项工作是为关闭的 Host 提供可替换的接近/等待开口策略，并用该快照回归；随后重跑 M3-B。现有监督器正确将长时间无进展判为失败，不应延长超时来掩盖问题。
+- M3-C 的 Mom 终点判定仍处于开发状态，尚无从第一层到 Mom 的连续成功证据。不要把前三层完成、一次 Boss 击杀或开发场景初始化等同于 M3-B/M3-C 验收。
+
 ## 1. 里程碑与独立成功证据
 
 | 阶段 | 目标与新增能力 | 完成证明 |
