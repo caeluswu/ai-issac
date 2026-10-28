@@ -1,5 +1,4 @@
 """Observed incoming-velocity permissions and separate flanking geometry."""
-from collections import deque
 import math
 
 SAMPLES = tuple((x,y,f'{x},{y}',math.hypot(x,y))
@@ -22,28 +21,10 @@ class DirectionalArmor:
         flags = enemy.damage_directions
         if build.family == 'knife' or not flags or not any(v is False for v in flags.values()):
             return None
-        stances = geometry.firing_stances(enemy.pos,build.effective_range,False)
         allowed = geometry.future_safe_cells(snapshot.hostiles,6)
-        start = geometry.nearest(snapshot.player.pos)
-        queue, parents, depths, best = deque([start]), {}, {start:0}, None
-        while queue:
-            index = queue.popleft()
-            for point,offset,range_cost in stances.get(index,()):
-                if (round(point.x),round(point.y)) in excluded: continue
-                if damage_from_velocity(enemy,enemy.pos-point) is not True: continue
-                cost = depths[index]*40+offset+range_cost
-                if best is None or cost < best[0]: best = cost,index,point
-            for neighbor in geometry.neighbors.get(index,()):
-                if neighbor in allowed and neighbor not in depths:
-                    depths[neighbor] = depths[index]+1
-                    parents[neighbor] = index
-                    queue.append(neighbor)
-        if best is None:
+        path = geometry.firing_route(snapshot.player.pos,enemy.pos,build.effective_range,
+            excluded=excluded,allowed_cells=allowed,
+            stance_filter=lambda p:damage_from_velocity(enemy,enemy.pos-p) is True)
+        if not path:
             return self.route(geometry,snapshot,enemy,build,position,weapon,()) if excluded else None
-        _, index, point = best
-        path = [point]
-        while True:
-            path.append(geometry.positions[index])
-            if index not in parents: break
-            index = parents[index]
-        return EngagementRoute(enemy,tuple(reversed(path)),'directional_armor_flank')
+        return EngagementRoute(enemy,tuple(path),'directional_armor_flank')

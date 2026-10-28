@@ -309,7 +309,7 @@ class GeometryService:
         self.firing_stance_cache[key] = stances
         return stances
 
-    def firing_route(self, start, target, effective_range, terrain=False, excluded=()):
+    def firing_route(self, start, target, effective_range, terrain=False, excluded=(), *, stance_filter=None, allowed_cells=None):
         """Reach a cardinal firing lane, including around obstructing rocks."""
         stances = self.firing_stances(target, effective_range, terrain)
         if not stances: return []
@@ -324,10 +324,11 @@ class GeometryService:
             if best is not None and depth[i]*40 > best[0]: break
             for candidate, offset, bias in stances.get(i, ()):
                 if (round(candidate.x), round(candidate.y)) in excluded: continue
+                if stance_filter is not None and not stance_filter(candidate): continue
                 score = depth[i]*40+offset+bias
                 if best is None or score < best[0]: best = (score, i, candidate)
             for j in self.neighbors.get(i, []):
-                if j not in depth:
+                if j not in depth and (allowed_cells is None or j in allowed_cells):
                     depth[j], parents[j] = depth[i]+1, i; queue.append(j)
         if best is None: return []
         path, i = [best[2]], best[1]

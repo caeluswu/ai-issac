@@ -1,0 +1,3542 @@
+{
+  "effects": {
+    "status": "known",
+    "unknowns": [],
+    "items": []
+  },
+  "floor": {
+    "instance_id": "3347517318:186984822:floor:4",
+    "unknowns": [],
+    "generation": 4,
+    "dimension": 0,
+    "stage_type": 2,
+    "room_list_index": 0,
+    "stage": 4
+  },
+  "player": {
+    "move_dir": -1,
+    "dead": false,
+    "head_dir": 3,
+    "collision_radius": 8.5329084396362,
+    "fire_dir": -1,
+    "pos": {
+      "y": 243.76895141602,
+      "x": 159.01565551758
+    },
+    "vel": {
+      "y": -5.2282231042661e-26,
+      "x": 4.8741305032281e-28
+    },
+    "aim_dir": {
+      "y": 0.0,
+      "x": 0.0
+    }
+  },
+  "exit_observations": [],
+  "room_visit_id": "3347517318:186984822:53",
+  "enemies": [
+    {
+      "friendly": false,
+      "dead": false,
+      "v2": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "variant": 0,
+      "is_champion": false,
+      "max_hp": 100.0,
+      "projectile_delay": -1,
+      "state_frame": 1,
+      "is_boss": true,
+      "collision_radius": 13.0,
+      "can_shut_doors": true,
+      "collision_class": 0,
+      "subtype": 0,
+      "type": 62,
+      "vulnerable": false,
+      "v1": {
+        "y": 107.80370330811,
+        "x": 0.0
+      },
+      "pos": {
+        "y": 193.00015258789,
+        "x": 113.022315979
+      },
+      "vel": {
+        "y": 0.12947107851505,
+        "x": 0.016045929864049
+      },
+      "target_pos": {
+        "y": 243.76895141602,
+        "x": 159.01565551758
+      },
+      "id": 2,
+      "instance_id": "3475198062:2",
+      "distance": 68.504440307617,
+      "state": 4,
+      "champion_color": -1,
+      "projectile_cooldown": 0,
+      "contact_damage": 1.0,
+      "hp": 72.1630859375
+    },
+    {
+      "friendly": false,
+      "dead": false,
+      "v2": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "variant": 0,
+      "is_champion": false,
+      "max_hp": 100.0,
+      "projectile_delay": -1,
+      "state_frame": 0,
+      "is_boss": true,
+      "collision_radius": 13.0,
+      "can_shut_doors": true,
+      "collision_class": 0,
+      "subtype": 0,
+      "type": 62,
+      "vulnerable": false,
+      "v1": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "pos": {
+        "y": 193.01513671875,
+        "x": 113.00030517578
+      },
+      "vel": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "target_pos": {
+        "y": 243.76895141602,
+        "x": 159.01565551758
+      },
+      "id": 4,
+      "instance_id": "3912259033:4",
+      "distance": 68.508117675781,
+      "state": 3,
+      "champion_color": -1,
+      "projectile_cooldown": 0,
+      "contact_damage": 1.0,
+      "hp": 72.1630859375
+    },
+    {
+      "friendly": false,
+      "dead": false,
+      "v2": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "variant": 0,
+      "is_champion": false,
+      "max_hp": 100.0,
+      "projectile_delay": -1,
+      "state_frame": 0,
+      "is_boss": true,
+      "collision_radius": 13.0,
+      "can_shut_doors": true,
+      "collision_class": 0,
+      "subtype": 0,
+      "type": 62,
+      "vulnerable": false,
+      "v1": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "pos": {
+        "y": 193.0150604248,
+        "x": 113.00002288818
+      },
+      "vel": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "target_pos": {
+        "y": 243.76895141602,
+        "x": 159.01565551758
+      },
+      "id": 5,
+      "instance_id": "2775567607:5",
+      "distance": 68.508361816406,
+      "state": 3,
+      "champion_color": -1,
+      "projectile_cooldown": 0,
+      "contact_damage": 1.0,
+      "hp": 72.1630859375
+    },
+    {
+      "friendly": false,
+      "dead": false,
+      "v2": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "variant": 0,
+      "is_champion": false,
+      "max_hp": 100.0,
+      "projectile_delay": -1,
+      "state_frame": 0,
+      "is_boss": true,
+      "collision_radius": 13.0,
+      "can_shut_doors": true,
+      "collision_class": 0,
+      "subtype": 0,
+      "type": 62,
+      "vulnerable": false,
+      "v1": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "pos": {
+        "y": 193.01547241211,
+        "x": 113.00022888184
+      },
+      "vel": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "target_pos": {
+        "y": 243.76895141602,
+        "x": 159.01565551758
+      },
+      "id": 6,
+      "instance_id": "1474211005:6",
+      "distance": 68.507919311523,
+      "state": 3,
+      "champion_color": -1,
+      "projectile_cooldown": 0,
+      "contact_damage": 1.0,
+      "hp": 72.1630859375
+    },
+    {
+      "friendly": false,
+      "dead": false,
+      "v2": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "variant": 0,
+      "is_champion": false,
+      "max_hp": 100.0,
+      "projectile_delay": -1,
+      "state_frame": 0,
+      "is_boss": true,
+      "collision_radius": 13.0,
+      "can_shut_doors": true,
+      "collision_class": 0,
+      "subtype": 0,
+      "type": 62,
+      "vulnerable": false,
+      "v1": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "pos": {
+        "y": 193.01539611816,
+        "x": 113.00044250488
+      },
+      "vel": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "target_pos": {
+        "y": 243.76895141602,
+        "x": 159.01565551758
+      },
+      "id": 7,
+      "instance_id": "1709925871:7",
+      "distance": 68.507835388184,
+      "state": 3,
+      "champion_color": -1,
+      "projectile_cooldown": 0,
+      "contact_damage": 1.0,
+      "hp": 72.1630859375
+    },
+    {
+      "friendly": false,
+      "dead": false,
+      "v2": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "variant": 0,
+      "is_champion": false,
+      "max_hp": 100.0,
+      "projectile_delay": -1,
+      "state_frame": 0,
+      "is_boss": true,
+      "collision_radius": 13.0,
+      "can_shut_doors": true,
+      "collision_class": 0,
+      "subtype": 0,
+      "type": 62,
+      "vulnerable": false,
+      "v1": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "pos": {
+        "y": 193.01531982422,
+        "x": 113.00016784668
+      },
+      "vel": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "target_pos": {
+        "y": 243.76895141602,
+        "x": 159.01565551758
+      },
+      "id": 8,
+      "instance_id": "2053359319:8",
+      "distance": 68.508079528809,
+      "state": 3,
+      "champion_color": -1,
+      "projectile_cooldown": 0,
+      "contact_damage": 1.0,
+      "hp": 72.1630859375
+    },
+    {
+      "friendly": false,
+      "dead": false,
+      "v2": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "variant": 0,
+      "is_champion": false,
+      "max_hp": 100.0,
+      "projectile_delay": -1,
+      "state_frame": 253,
+      "is_boss": true,
+      "collision_radius": 13.0,
+      "can_shut_doors": true,
+      "collision_class": 0,
+      "subtype": 0,
+      "type": 62,
+      "vulnerable": false,
+      "v1": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "pos": {
+        "y": 194.12705993652,
+        "x": 141.11614990234
+      },
+      "vel": {
+        "y": 0.0,
+        "x": 0.0
+      },
+      "target_pos": {
+        "y": 243.76895141602,
+        "x": 159.01565551758
+      },
+      "id": 9,
+      "instance_id": "76437196:9",
+      "distance": 52.770347595215,
+      "state": 3,
+      "champion_color": -1,
+      "projectile_cooldown": 0,
+      "contact_damage": 1.0,
+      "hp": 72.1630859375
+    }
+  ],
+  "stats": {
+    "damage": 4.9184575080872,
+    "max_fire_delay": 7.5322647094727,
+    "tears": 7.5322647094727,
+    "weapons": {
+      "status": "known",
+      "types": [
+        1
+      ],
+      "unknowns": []
+    },
+    "speed": 1.2098907232285,
+    "luck": 0.0,
+    "tear_range": 316.67047119141,
+    "tear_height": -23.75,
+    "size": 8.5329084396362,
+    "can_fly": false,
+    "tear_falling_speed": 0.41113039851189,
+    "sprite_scale": 0.79996013641357,
+    "range": 316.67047119141,
+    "player_type": 0,
+    "weapon_type": 1,
+    "shot_speed": 1.0
+  },
+  "bombs": [],
+  "weapon_feedback": {
+    "schema_version": 1,
+    "history": [
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14340,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15425
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14341,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15426
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14342,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15427
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14343,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15428
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14344,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15429
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14345,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15430
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14346,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15431
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14347,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15432
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14348,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15433
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14349,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15434
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14350,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15435
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14351,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15436
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14352,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15437
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14353,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15438
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14354,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15439
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14355,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15440
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14356,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15441
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14357,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15442
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14358,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15443
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14359,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15444
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14360,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15445
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14361,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15446
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14362,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15447
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14363,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15448
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14364,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15449
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14365,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15450
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14366,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15451
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14367,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15452
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14368,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15453
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14369,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15454
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14370,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15455
+      },
+      {
+        "queried": {
+          "down": true,
+          "up": true,
+          "right": true,
+          "left": true
+        },
+        "action_id": 14371,
+        "consistent": true,
+        "values": {
+          "down": false,
+          "up": false,
+          "right": false,
+          "left": false
+        },
+        "room_visit_id": "3347517318:186984822:53",
+        "frame": 15456
+      }
+    ],
+    "provenance": "engine_input_callback",
+    "fire_direction": -1,
+    "fire_delay": -1.0111064910889
+  },
+  "applied_frame": 15456,
+  "floor_progress": {
+    "curses": 0,
+    "capability_version": 1,
+    "can_pick_red": false,
+    "can_pick_soul": true,
+    "controls_enabled": true,
+    "extra_animation_finished": true
+  },
+  "health_observation": {
+    "bone_hearts": 0,
+    "dead": false,
+    "rotten_hearts": 0,
+    "soul_hearts": 2,
+    "black_hearts": 0,
+    "golden_hearts": 0,
+    "eternal_hearts": 0,
+    "red_hearts": 6,
+    "broken_hearts": 0,
+    "max_hearts": 6,
+    "extra_lives": 0
+  },
+  "movement_inheritance": {
+    "-1.0,0.0": {
+      "y": -7.1266359779055e-26,
+      "x": 0.0
+    },
+    "0.0,1.0": {
+      "y": 0.0,
+      "x": 6.6439686404476e-28
+    },
+    "0.0,-1.0": {
+      "y": -7.1266359779055e-26,
+      "x": 6.6439686404476e-28
+    },
+    "1.0,0.0": {
+      "y": -7.1266359779055e-26,
+      "x": 6.6439686404476e-28
+    }
+  },
+  "recent_deaths": [],
+  "hazards": [],
+  "layout": {
+    "grid": {
+      "16": {
+        "grid_index": 16,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 20,
+        "y": 160.0,
+        "type": 7
+      },
+      "26": {
+        "grid_index": 26,
+        "x": 480.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 160.0,
+        "type": 7
+      },
+      "62": {
+        "grid_index": 62,
+        "x": 120.0,
+        "collision": 0,
+        "state": 0,
+        "variant": 0,
+        "y": 280.0,
+        "type": 1
+      },
+      "46": {
+        "grid_index": 46,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 2,
+        "y": 240.0,
+        "type": 7
+      },
+      "99": {
+        "grid_index": 99,
+        "x": 400.0,
+        "collision": 0,
+        "state": 0,
+        "variant": 0,
+        "y": 360.0,
+        "type": 1
+      },
+      "66": {
+        "grid_index": 66,
+        "x": 280.0,
+        "collision": 0,
+        "state": 0,
+        "variant": 0,
+        "y": 280.0,
+        "type": 1
+      },
+      "76": {
+        "grid_index": 76,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 8,
+        "y": 320.0,
+        "type": 7
+      },
+      "59": {
+        "grid_index": 59,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 240.0,
+        "type": 15
+      },
+      "89": {
+        "grid_index": 89,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 320.0,
+        "type": 15
+      },
+      "29": {
+        "grid_index": 29,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 160.0,
+        "type": 15
+      },
+      "19": {
+        "grid_index": 19,
+        "x": 200.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 160.0,
+        "type": 7
+      },
+      "105": {
+        "grid_index": 105,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 400.0,
+        "type": 15
+      },
+      "237": {
+        "grid_index": 237,
+        "x": 520.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "113": {
+        "grid_index": 113,
+        "x": 360.0,
+        "collision": 0,
+        "state": 0,
+        "variant": 0,
+        "y": 400.0,
+        "type": 1
+      },
+      "136": {
+        "grid_index": 136,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 480.0,
+        "type": 7
+      },
+      "180": {
+        "grid_index": 180,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 600.0,
+        "type": 15
+      },
+      "208": {
+        "grid_index": 208,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 640.0,
+        "type": 7
+      },
+      "9": {
+        "grid_index": 9,
+        "x": 400.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "148": {
+        "grid_index": 148,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 480.0,
+        "type": 7
+      },
+      "15": {
+        "grid_index": 15,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 160.0,
+        "type": 15
+      },
+      "31": {
+        "grid_index": 31,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 200.0,
+        "type": 7
+      },
+      "25": {
+        "grid_index": 25,
+        "x": 440.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 160.0,
+        "type": 7
+      },
+      "45": {
+        "grid_index": 45,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 240.0,
+        "type": 15
+      },
+      "21": {
+        "grid_index": 21,
+        "x": 280.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 1,
+        "y": 160.0,
+        "type": 7
+      },
+      "11": {
+        "grid_index": 11,
+        "x": 480.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "195": {
+        "grid_index": 195,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 640.0,
+        "type": 15
+      },
+      "81": {
+        "grid_index": 81,
+        "x": 280.0,
+        "collision": 0,
+        "state": 0,
+        "variant": 0,
+        "y": 320.0,
+        "type": 1
+      },
+      "239": {
+        "grid_index": 239,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "91": {
+        "grid_index": 91,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 360.0,
+        "type": 7
+      },
+      "120": {
+        "grid_index": 120,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 440.0,
+        "type": 15
+      },
+      "236": {
+        "grid_index": 236,
+        "x": 480.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "235": {
+        "grid_index": 235,
+        "x": 440.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "17": {
+        "grid_index": 17,
+        "x": 120.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 160.0,
+        "type": 7
+      },
+      "223": {
+        "grid_index": 223,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 17,
+        "y": 680.0,
+        "type": 7
+      },
+      "149": {
+        "grid_index": 149,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 480.0,
+        "type": 15
+      },
+      "106": {
+        "grid_index": 106,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 400.0,
+        "type": 7
+      },
+      "232": {
+        "grid_index": 232,
+        "x": 320.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "231": {
+        "grid_index": 231,
+        "x": 280.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "230": {
+        "grid_index": 230,
+        "x": 240.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "218": {
+        "grid_index": 218,
+        "x": 360.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 4,
+        "y": 680.0,
+        "type": 7
+      },
+      "229": {
+        "grid_index": 229,
+        "x": 200.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "214": {
+        "grid_index": 214,
+        "x": 200.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 680.0,
+        "type": 7
+      },
+      "211": {
+        "grid_index": 211,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 18,
+        "y": 680.0,
+        "type": 7
+      },
+      "163": {
+        "grid_index": 163,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 2,
+        "y": 520.0,
+        "type": 7
+      },
+      "18": {
+        "grid_index": 18,
+        "x": 160.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 160.0,
+        "type": 7
+      },
+      "28": {
+        "grid_index": 28,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 19,
+        "y": 160.0,
+        "type": 7
+      },
+      "90": {
+        "grid_index": 90,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 360.0,
+        "type": 15
+      },
+      "60": {
+        "grid_index": 60,
+        "x": 40.0,
+        "collision": 4,
+        "state": 1,
+        "variant": 8,
+        "y": 280.0,
+        "type": 16
+      },
+      "44": {
+        "grid_index": 44,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 200.0,
+        "type": 15
+      },
+      "14": {
+        "grid_index": 14,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "118": {
+        "grid_index": 118,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 400.0,
+        "type": 7
+      },
+      "165": {
+        "grid_index": 165,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 560.0,
+        "type": 15
+      },
+      "58": {
+        "grid_index": 58,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 2,
+        "y": 240.0,
+        "type": 7
+      },
+      "216": {
+        "grid_index": 216,
+        "x": 280.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 1,
+        "y": 680.0,
+        "type": 7
+      },
+      "10": {
+        "grid_index": 10,
+        "x": 440.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "88": {
+        "grid_index": 88,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 8,
+        "y": 320.0,
+        "type": 7
+      },
+      "164": {
+        "grid_index": 164,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 520.0,
+        "type": 15
+      },
+      "109": {
+        "grid_index": 109,
+        "x": 200.0,
+        "collision": 0,
+        "state": 0,
+        "variant": 0,
+        "y": 400.0,
+        "type": 1
+      },
+      "110": {
+        "grid_index": 110,
+        "x": 240.0,
+        "collision": 0,
+        "state": 0,
+        "variant": 0,
+        "y": 400.0,
+        "type": 1
+      },
+      "74": {
+        "grid_index": 74,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 280.0,
+        "type": 15
+      },
+      "30": {
+        "grid_index": 30,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 200.0,
+        "type": 15
+      },
+      "225": {
+        "grid_index": 225,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "224": {
+        "grid_index": 224,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 680.0,
+        "type": 15
+      },
+      "233": {
+        "grid_index": 233,
+        "x": 360.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "221": {
+        "grid_index": 221,
+        "x": 480.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 680.0,
+        "type": 7
+      },
+      "181": {
+        "grid_index": 181,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 8,
+        "y": 600.0,
+        "type": 7
+      },
+      "219": {
+        "grid_index": 219,
+        "x": 400.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 680.0,
+        "type": 7
+      },
+      "215": {
+        "grid_index": 215,
+        "x": 240.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 680.0,
+        "type": 7
+      },
+      "213": {
+        "grid_index": 213,
+        "x": 160.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 680.0,
+        "type": 7
+      },
+      "212": {
+        "grid_index": 212,
+        "x": 120.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 680.0,
+        "type": 7
+      },
+      "228": {
+        "grid_index": 228,
+        "x": 160.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "210": {
+        "grid_index": 210,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 680.0,
+        "type": 15
+      },
+      "209": {
+        "grid_index": 209,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 640.0,
+        "type": 15
+      },
+      "196": {
+        "grid_index": 196,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 640.0,
+        "type": 7
+      },
+      "133": {
+        "grid_index": 133,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 440.0,
+        "type": 7
+      },
+      "194": {
+        "grid_index": 194,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 600.0,
+        "type": 15
+      },
+      "75": {
+        "grid_index": 75,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 320.0,
+        "type": 15
+      },
+      "7": {
+        "grid_index": 7,
+        "x": 320.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "27": {
+        "grid_index": 27,
+        "x": 520.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 160.0,
+        "type": 7
+      },
+      "43": {
+        "grid_index": 43,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 200.0,
+        "type": 7
+      },
+      "6": {
+        "grid_index": 6,
+        "x": 280.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "23": {
+        "grid_index": 23,
+        "x": 360.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 4,
+        "y": 160.0,
+        "type": 7
+      },
+      "13": {
+        "grid_index": 13,
+        "x": 560.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "1": {
+        "grid_index": 1,
+        "x": 80.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "2": {
+        "grid_index": 2,
+        "x": 120.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "220": {
+        "grid_index": 220,
+        "x": 440.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 680.0,
+        "type": 7
+      },
+      "0": {
+        "grid_index": 0,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "179": {
+        "grid_index": 179,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 560.0,
+        "type": 15
+      },
+      "226": {
+        "grid_index": 226,
+        "x": 80.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "135": {
+        "grid_index": 135,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 480.0,
+        "type": 15
+      },
+      "151": {
+        "grid_index": 151,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 2,
+        "y": 520.0,
+        "type": 7
+      },
+      "150": {
+        "grid_index": 150,
+        "x": 40.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 520.0,
+        "type": 15
+      },
+      "222": {
+        "grid_index": 222,
+        "x": 520.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 680.0,
+        "type": 7
+      },
+      "227": {
+        "grid_index": 227,
+        "x": 120.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "24": {
+        "grid_index": 24,
+        "x": 400.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 160.0,
+        "type": 7
+      },
+      "12": {
+        "grid_index": 12,
+        "x": 520.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "119": {
+        "grid_index": 119,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 400.0,
+        "type": 15
+      },
+      "20": {
+        "grid_index": 20,
+        "x": 240.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 5,
+        "y": 160.0,
+        "type": 7
+      },
+      "134": {
+        "grid_index": 134,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 440.0,
+        "type": 15
+      },
+      "121": {
+        "grid_index": 121,
+        "x": 80.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 440.0,
+        "type": 7
+      },
+      "103": {
+        "grid_index": 103,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 10,
+        "y": 360.0,
+        "type": 7
+      },
+      "238": {
+        "grid_index": 238,
+        "x": 560.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "104": {
+        "grid_index": 104,
+        "x": 600.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 360.0,
+        "type": 15
+      },
+      "8": {
+        "grid_index": 8,
+        "x": 360.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "234": {
+        "grid_index": 234,
+        "x": 400.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 720.0,
+        "type": 15
+      },
+      "3": {
+        "grid_index": 3,
+        "x": 160.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "4": {
+        "grid_index": 4,
+        "x": 200.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      },
+      "193": {
+        "grid_index": 193,
+        "x": 560.0,
+        "collision": 1,
+        "state": 0,
+        "variant": 8,
+        "y": 600.0,
+        "type": 7
+      },
+      "5": {
+        "grid_index": 5,
+        "x": 240.0,
+        "collision": 4,
+        "state": 0,
+        "variant": 0,
+        "y": 120.0,
+        "type": 15
+      }
+    },
+    "grid_size": 240,
+    "width": 15,
+    "cells": {
+      "32": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "42": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "52": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "62": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "99": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "12": {
+        "collision": 4,
+        "x": 520.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "22": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "69": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "59": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 240.0,
+        "inside": false
+      },
+      "89": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 320.0,
+        "inside": false
+      },
+      "79": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "72": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "82": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "92": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "105": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 400.0,
+        "inside": false
+      },
+      "237": {
+        "collision": 4,
+        "x": 520.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "188": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "113": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "136": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "180": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 600.0,
+        "inside": false
+      },
+      "208": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "183": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "104": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 360.0,
+        "inside": false
+      },
+      "204": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "41": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "31": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "61": {
+        "collision": 0,
+        "x": 80.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "51": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "108": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "21": {
+        "collision": 1,
+        "x": 280.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "11": {
+        "collision": 4,
+        "x": 480.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "195": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 640.0,
+        "inside": false
+      },
+      "206": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "100": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "71": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "115": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "91": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "207": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "223": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "123": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "106": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "170": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "197": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "239": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "173": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "107": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "238": {
+        "collision": 4,
+        "x": 560.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "236": {
+        "collision": 4,
+        "x": 480.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "28": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "38": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "60": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 280.0,
+        "inside": false
+      },
+      "70": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "68": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "78": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "48": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "58": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "216": {
+        "collision": 1,
+        "x": 280.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "10": {
+        "collision": 4,
+        "x": 440.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "88": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "98": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "40": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "50": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "20": {
+        "collision": 1,
+        "x": 240.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "30": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 200.0,
+        "inside": false
+      },
+      "235": {
+        "collision": 4,
+        "x": 440.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "234": {
+        "collision": 4,
+        "x": 400.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "233": {
+        "collision": 4,
+        "x": 360.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "232": {
+        "collision": 4,
+        "x": 320.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "152": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "231": {
+        "collision": 4,
+        "x": 280.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "230": {
+        "collision": 4,
+        "x": 240.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "116": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "160": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "229": {
+        "collision": 4,
+        "x": 200.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "19": {
+        "collision": 1,
+        "x": 200.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "219": {
+        "collision": 1,
+        "x": 400.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "77": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "133": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "225": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "124": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "7": {
+        "collision": 4,
+        "x": 320.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "27": {
+        "collision": 1,
+        "x": 520.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "17": {
+        "collision": 1,
+        "x": 120.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "6": {
+        "collision": 4,
+        "x": 280.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "3": {
+        "collision": 4,
+        "x": 160.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "4": {
+        "collision": 4,
+        "x": 200.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "1": {
+        "collision": 4,
+        "x": 80.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "2": {
+        "collision": 4,
+        "x": 120.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "222": {
+        "collision": 1,
+        "x": 520.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "0": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "97": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "87": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "135": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 480.0,
+        "inside": false
+      },
+      "221": {
+        "collision": 1,
+        "x": 480.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "119": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 400.0,
+        "inside": false
+      },
+      "166": {
+        "collision": 0,
+        "x": 80.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "227": {
+        "collision": 4,
+        "x": 120.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "218": {
+        "collision": 1,
+        "x": 360.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "137": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "215": {
+        "collision": 1,
+        "x": 240.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "214": {
+        "collision": 1,
+        "x": 200.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "162": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "213": {
+        "collision": 1,
+        "x": 160.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "212": {
+        "collision": 1,
+        "x": 120.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "211": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "210": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 680.0,
+        "inside": false
+      },
+      "209": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 640.0,
+        "inside": false
+      },
+      "205": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "143": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "102": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "202": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "127": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "201": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "16": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "26": {
+        "collision": 1,
+        "x": 480.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "36": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "46": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "56": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "66": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "76": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "86": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "96": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "200": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "101": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "109": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "196": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "176": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "194": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 600.0,
+        "inside": false
+      },
+      "8": {
+        "collision": 4,
+        "x": 360.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "192": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "114": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "18": {
+        "collision": 1,
+        "x": 160.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "189": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "177": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "132": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "39": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "186": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "185": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "184": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "182": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "181": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "179": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 560.0,
+        "inside": false
+      },
+      "9": {
+        "collision": 4,
+        "x": 400.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "148": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "15": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 160.0,
+        "inside": false
+      },
+      "178": {
+        "collision": 0,
+        "x": 560.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "35": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "25": {
+        "collision": 1,
+        "x": 440.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "55": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "45": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 240.0,
+        "inside": false
+      },
+      "75": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 320.0,
+        "inside": false
+      },
+      "65": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "95": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "85": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "121": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "140": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "174": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "146": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "172": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "131": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "171": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "169": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "168": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "167": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "153": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "164": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 520.0,
+        "inside": false
+      },
+      "147": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "142": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "163": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "161": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "159": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "155": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "157": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "156": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "158": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "154": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "54": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "64": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "34": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "44": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 200.0,
+        "inside": false
+      },
+      "14": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "24": {
+        "collision": 1,
+        "x": 400.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "165": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 560.0,
+        "inside": false
+      },
+      "151": {
+        "collision": 1,
+        "x": 80.0,
+        "y": 520.0,
+        "inside": true
+      },
+      "150": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 520.0,
+        "inside": false
+      },
+      "149": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 480.0,
+        "inside": false
+      },
+      "145": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "144": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "94": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "110": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "74": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 280.0,
+        "inside": false
+      },
+      "84": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "141": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "139": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "138": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 480.0,
+        "inside": true
+      },
+      "217": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "134": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 440.0,
+        "inside": false
+      },
+      "130": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "129": {
+        "collision": 0,
+        "x": 400.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "122": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "29": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 160.0,
+        "inside": false
+      },
+      "228": {
+        "collision": 4,
+        "x": 160.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "49": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "187": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "117": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "224": {
+        "collision": 4,
+        "x": 600.0,
+        "y": 680.0,
+        "inside": false
+      },
+      "57": {
+        "collision": 0,
+        "x": 520.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "125": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "63": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "53": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "43": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "33": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "23": {
+        "collision": 1,
+        "x": 360.0,
+        "y": 160.0,
+        "inside": true
+      },
+      "13": {
+        "collision": 4,
+        "x": 560.0,
+        "y": 120.0,
+        "inside": false
+      },
+      "128": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "175": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 560.0,
+        "inside": true
+      },
+      "220": {
+        "collision": 1,
+        "x": 440.0,
+        "y": 680.0,
+        "inside": true
+      },
+      "120": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 440.0,
+        "inside": false
+      },
+      "118": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "226": {
+        "collision": 4,
+        "x": 80.0,
+        "y": 720.0,
+        "inside": false
+      },
+      "191": {
+        "collision": 0,
+        "x": 480.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "93": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "83": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "73": {
+        "collision": 0,
+        "x": 560.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "112": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "111": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 400.0,
+        "inside": true
+      },
+      "81": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "198": {
+        "collision": 0,
+        "x": 160.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "126": {
+        "collision": 0,
+        "x": 280.0,
+        "y": 440.0,
+        "inside": true
+      },
+      "47": {
+        "collision": 0,
+        "x": 120.0,
+        "y": 240.0,
+        "inside": true
+      },
+      "203": {
+        "collision": 0,
+        "x": 360.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "103": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 360.0,
+        "inside": true
+      },
+      "199": {
+        "collision": 0,
+        "x": 200.0,
+        "y": 640.0,
+        "inside": true
+      },
+      "90": {
+        "collision": 4,
+        "x": 40.0,
+        "y": 360.0,
+        "inside": false
+      },
+      "80": {
+        "collision": 0,
+        "x": 240.0,
+        "y": 320.0,
+        "inside": true
+      },
+      "190": {
+        "collision": 0,
+        "x": 440.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "67": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 280.0,
+        "inside": true
+      },
+      "37": {
+        "collision": 0,
+        "x": 320.0,
+        "y": 200.0,
+        "inside": true
+      },
+      "193": {
+        "collision": 1,
+        "x": 560.0,
+        "y": 600.0,
+        "inside": true
+      },
+      "5": {
+        "collision": 4,
+        "x": 240.0,
+        "y": 120.0,
+        "inside": false
+      }
+    },
+    "height": 16,
+    "doors": {
+      "0": {
+        "is_open": false,
+        "x": 40.0,
+        "target_room_type": 1,
+        "target_list_index": 17,
+        "target_room": 136,
+        "y": 280.0,
+        "is_locked": false
+      }
+    }
+  },
+  "projectiles": {
+    "player_tears": [],
+    "player_knives": [],
+    "enemy_projectiles": [],
+    "friendly_tears": [],
+    "lasers": []
+  },
+  "weapons": {
+    "status": "known",
+    "types": [
+      1
+    ],
+    "unknowns": []
+  },
+  "room": {
+    "room_variant": 3702,
+    "enemy_count": 7,
+    "is_first_visit": true,
+    "top_left": {
+      "y": 140.0,
+      "x": 60.0
+    },
+    "is_clear": false,
+    "is_starting_room": false,
+    "bottom_right": {
+      "y": 700.0,
+      "x": 580.0
+    },
+    "stage": 4,
+    "grid_width": 15,
+    "room_type": 5,
+    "room_shape": 4,
+    "difficulty": 0,
+    "grid_height": 16,
+    "stage_type": 2,
+    "has_boss": true,
+    "room_idx": 137
+  },
+  "paused": false,
+  "applied_action_id": 14371,
+  "inventory_coverage": {
+    "catalog_max_id": 732,
+    "static_status": "known",
+    "observed_dynamic_ids": [],
+    "dynamic_status": "unknown",
+    "unknowns": [
+      "dynamic_inventory_not_enumerable_in_original_api"
+    ]
+  },
+  "mode": "MANUAL",
+  "schema_version": 2,
+  "pickups": [],
+  "health": {
+    "bone_hearts": 0,
+    "extra_lives": 0,
+    "rotten_hearts": 0,
+    "soul_hearts": 2,
+    "black_hearts": 0,
+    "eternal_hearts": 0,
+    "red_hearts": 6,
+    "broken_hearts": 0,
+    "max_hearts": 6,
+    "golden_hearts": 0
+  },
+  "run_id": "3347517318:186984822",
+  "seed": "3BYH A82R",
+  "inventory": {
+    "queued_collectible_id": 0,
+    "keys": 9,
+    "active_items": {
+      "0": {
+        "item": 105,
+        "battery_charge": 0,
+        "max_charge": 6,
+        "charge": 6
+      }
+    },
+    "coins": 8,
+    "inventory_coverage": {
+      "catalog_max_id": 732,
+      "static_status": "known",
+      "observed_dynamic_ids": [],
+      "dynamic_status": "unknown",
+      "unknowns": [
+        "dynamic_inventory_not_enumerable_in_original_api"
+      ]
+    },
+    "bombs": 11,
+    "trinket_1": 0,
+    "collectibles": {
+      "254": 1,
+      "438": 1,
+      "167": 1,
+      "304": 1,
+      "14": 1,
+      "105": 1
+    },
+    "pill_0": 0,
+    "collectible_count": 6,
+    "card_0": 0,
+    "trinket_0": 0
+  },
+  "frame": 15459
+}
