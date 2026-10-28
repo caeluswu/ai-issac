@@ -148,8 +148,8 @@ class GameLauncher:
     async def confirm_save_slot(self, previous_loads):
         """Require a new slot load, never startup's preload of all three slots.
 
-        On slot one, Enter can safely advance either title or save selection;
-        retry a missed transition before any measured run starts. Other slots
+        The J835 save-slot screen displays "Select! Space". Enter only advances
+        the title screen and leaves the slot selector unchanged. Other slots
         cannot replay arrows without knowing the current menu, so fail closed.
         """
         def loads(): return re.findall(r"Loading GameState (\d) from", self.read_game_log())
@@ -163,7 +163,7 @@ class GameLauncher:
         for attempt in range(1, attempts+1):
             if confirmed(): return attempt-1
             self.record("save_slot_confirm_attempt", slot=self.slot, attempt=attempt)
-            await self.pause.key(0x0D)
+            await self.pause.key(0x20)  # Space selects the highlighted save slot.
             try:
                 await self.wait_for(confirmed, "SAVE_SLOT_CONFIRM_WAIT", timeout=2)
                 return attempt

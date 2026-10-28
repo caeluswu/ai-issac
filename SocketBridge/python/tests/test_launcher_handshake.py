@@ -31,6 +31,7 @@ class TestMenuHandshake(unittest.IsolatedAsyncioTestCase):
             clock.monotonic.side_effect = itertools.count(0, .5)
             self.assertEqual(await launcher.confirm_save_slot(3), 2)
         self.assertEqual(launcher.pause.key.await_count, 2)
+        self.assertEqual([call.args[0] for call in launcher.pause.key.await_args_list], [0x20, 0x20])
 
     async def test_old_preload_does_not_confirm_and_retries_are_bounded(self):
         launcher = self.launcher(); launcher.text = 'Loading GameState 1 from local folder!\n'
@@ -70,6 +71,7 @@ class TestMenuHandshake(unittest.IsolatedAsyncioTestCase):
         with patch('combat.launcher.asyncio.sleep', new=AsyncMock()):
             await launcher.boot_menus(session)
         self.assertEqual(launcher.pause.key.await_count, 3)
+        self.assertEqual([call.args[0] for call in launcher.pause.key.await_args_list], [0x0D, 0x20, 0x0D])
 
     async def test_lost_intro_key_retries_until_menu_ack(self):
         launcher = self.launcher(); launcher.text = 'playing cutscene 1 (Intro).\n'
