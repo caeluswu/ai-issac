@@ -48,7 +48,11 @@ class EconomyRoutePolicy(TreasureFirstRoutePolicy):
                 and keys >= (1 if self.treasure_resolved else 2))
 
     def rank(self, door, snapshot, depth):
-        if door.target_room_type != 2: return super().rank(door,snapshot,depth)
+        if door.target_room_type != 2:
+            rank = super().rank(door,snapshot,depth)
+            if rank is not None and door.target_room_type == 5 and self.treasure_resolved:
+                return .5,depth
+            return rank
         if (snapshot.inventory.get("coins") or 0) < 15: return None
         if door.is_locked and not self.can_unlock(door,snapshot): return None
         if not door.is_locked and not door.is_open: return None

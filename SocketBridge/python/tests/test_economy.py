@@ -22,6 +22,16 @@ from tests.combat_fixtures import context
 
 
 class TestEconomy(unittest.TestCase):
+    def test_known_boss_beats_optional_rooms_after_treasure_but_not_before(self):
+        s=floor_snapshot();s.layout['doors']={'0':door(85),'2':door(86,kind=5)}
+        graph=FloorGraph()
+        self.assertEqual(graph.choose(s)[1].target_room_type,1)
+        treasure=floor_snapshot(87);treasure.room['room_type']=4
+        graph.observe(treasure)
+        self.assertEqual(graph.choose(s)[1].target_room_type,5)
+        s.inventory['coins']=15;s.layout['doors']['1']=door(88,kind=2)
+        self.assertEqual(graph.choose(s)[1].target_room_type,2)
+
     def test_shop_threshold_includes_exactly_fifteen_and_reserves_key(self):
         s=floor_snapshot();s.layout['doors']={'0':door(85,kind=4),'2':door(86,kind=2)}
         for coins,expected in ((14,4),(15,2),(16,2)):
