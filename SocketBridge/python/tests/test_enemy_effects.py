@@ -69,12 +69,25 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         self.assertEqual(action.diagnostics["engagement_reason"], "closed_host_firing_stance")
         self.assertIsNotNone(action.diagnostics["route_goal"])
         old_goal = action.diagnostics["route_goal"]
+        engaged = next(enemy for enemy in s.hostiles if enemy.instance_id == action.diagnostics["movement_target"])
+        stances = solver.geometry.firing_stances(engaged.pos, build.effective_range, False)
+        excluded = [(round(point.x), round(point.y)) for options in stances.values()
+                    for point, _, _ in options]
+        retry = ClosedHost().route(solver.geometry, s, engaged, build,
+                                   solver.modules["position"], solver.modules["fire"], excluded)
+        self.assertEqual(retry.reason, "closed_host_retry_firing_stance")
 
         s.frame += 15
         solver.recovery_level = 1
         action = solver.solve(s, plan, build)
         self.assertNotEqual(action.diagnostics["route_goal"], old_goal)
         self.assertEqual(action.shoot, (0, 0))
+
+        solver.failed_goals.append(tuple(action.diagnostics["route_goal"]))
+        engaged.hp -= 1
+        s.frame += 1
+        solver.solve(s, plan, build)
+        self.assertFalse(solver.failed_goals)
 
         opened_id = action.diagnostics["movement_target"]
         next(enemy for enemy in s.enemies if enemy.instance_id == opened_id).vulnerable = True

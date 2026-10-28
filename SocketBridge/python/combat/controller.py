@@ -75,6 +75,8 @@ class JointActionSolver:
         self.emergency_until = -1
         self.emergency_profile = None
         self.emergency_key = None
+        self.progress_room = None
+        self.enemy_health = {}
 
     def select_profile(self, s, plan, build):
         if s.frame < self.emergency_until or s.hp <= 2:
@@ -147,6 +149,21 @@ class JointActionSolver:
         if (ref.run_id, ref.room_visit_id, ref.build_revision, ref.floor_instance_id) != (s.run_id, s.room_visit_id, build.revision, floor_id):
             raise ValueError("STALE_PLAN_CONTEXT")
         if ref.experience_revision != build.experience_revision: raise ValueError("STALE_EXPERIENCE_CONTEXT")
+        room = (s.run_id, s.room_visit_id)
+        health = {enemy.instance_id: enemy.hp for enemy in s.hostiles}
+        confirmed_deaths = {death["instance_id"] for death in getattr(s, "recent_deaths", [])}
+        progress = (any(health[enemy_id] < old_hp for enemy_id, old_hp in self.enemy_health.items()
+                        if enemy_id in health)
+                    or any(enemy_id in confirmed_deaths for enemy_id in self.enemy_health))
+        if room != self.progress_room or progress:
+            self.failed_goals.clear()
+            self.last_route_goal = None
+            if room != self.progress_room:
+                self.last_recovery_route = -1000
+                self.engagement.preferred_id = None
+            else:
+                self.last_recovery_route = s.frame
+        self.progress_room, self.enemy_health = room, health
         name, profile = self.select_profile(s, plan, build)
         key = (s.run_id, floor_id, s.room_visit_id, build.family, build.revision, ref.catalog_revision, ref.experience_revision, profile.model_dump_json())
         if key != self.module_key:

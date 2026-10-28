@@ -19,6 +19,13 @@ class ClosedHost:
         proposal = position.route(geometry, snapshot, enemy.pos, build, weapon, excluded)
         if proposal.waypoints:
             return EngagementRoute(enemy, tuple(proposal.waypoints), "closed_host_firing_stance")
+        # Exclusions are recovery hints, not a permanent ban. Once every
+        # useful stance has been tried, revisit a real firing lane instead of
+        # wandering around the room center while the Host stays closed.
+        if excluded:
+            proposal = position.route(geometry, snapshot, enemy.pos, build, weapon)
+            if proposal.waypoints:
+                return EngagementRoute(enemy, tuple(proposal.waypoints), "closed_host_retry_firing_stance")
         reposition = getattr(position, "reposition", None)
         if reposition is None:
             return None
