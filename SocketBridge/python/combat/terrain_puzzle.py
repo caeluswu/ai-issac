@@ -107,6 +107,7 @@ class TimedTerrainPuzzle:
         self.schedule_key = None
         self.learning_started = None
         self.learning_goal = None
+        self.entry_started = None
 
     def step(self, snapshot, build, goal, plate_index, plan, allowed_portals=()):
         started = time.perf_counter()
@@ -137,6 +138,23 @@ class TimedTerrainPuzzle:
             self.schedule = []; self.schedule_key = schedule_key
         route = geometry.path(snapshot.player.pos,goal)
         if not route: raise RuntimeError("PUZZLE_NO_STATIC_TOPOLOGY")
+        start_cell = geometry.cell(snapshot.player.pos)
+        if start_cell not in geometry.walkable:
+            # The native entry pose is inside an unauthorized door guard.
+            # First withdraw onto legal ground, without granting that door
+            # permission or crossing unobserved spikes to reach a cell center.
+            guarded_center = (start_cell in geometry.motion_cells and
+                not geometry.portal_path_clear(geometry.positions[start_cell],geometry.positions[start_cell]))
+            if geometry.portal_path_clear(snapshot.player.pos,snapshot.player.pos) and not guarded_center:
+                raise RuntimeError("PUZZLE_START_NOT_WALKABLE")
+            if self.entry_started is None: self.entry_started = snapshot.frame
+            if snapshot.frame-self.entry_started >= 90:
+                raise TimeoutError("PUZZLE_ENTRY_RECOVERY_TIMEOUT")
+            move = self._steer(geometry,snapshot,build,timed,route[0],emergency=False)
+            return self._action(snapshot,move,"PUZZLE_ENTRY",started,{
+                "puzzle_phase":"entry_retreat","route_goal":[goal.x,goal.y],
+                "target":[route[0].x,route[0].y],"route_remaining":snapshot.player.pos.distance(goal)})
+        self.entry_started = None
         dynamic_route = [geometry.cell(point) for point in route if geometry.cell(point) in timed and not geometry.fly]
         if any(self.phase.phase(index) is None and not self.phase.steady(index) for index in dynamic_route):
             if snapshot.frame-self.learning_started >= 600:
@@ -248,7 +266,7 @@ class TimedTerrainPuzzle:
     def _safe(self, index, frame):
         return self.phase.safe(index, frame)
 
-    def _steer(self, geometry, snapshot, build, timed, target):
+    def _steer(self, geometry, snapshot, build, timed, target, emergency=True):
         # Predict braking as well as the next input, so a cell center does not
         # induce a left/right oscillation at the boundary of a safe window.
         best = None
@@ -264,6 +282,7 @@ class TimedTerrainPuzzle:
             score = position.distance(target) + (0.1 if move != (0,0) else 0)
             if best is None or score < best[0]:best=(score,move)
         if best:return best[1]
+        if not emergency:return (0,0)
         return self._escape(geometry,snapshot,build,timed,[target])
 
     def _timed_safe(self, geometry, point, frame, timed):

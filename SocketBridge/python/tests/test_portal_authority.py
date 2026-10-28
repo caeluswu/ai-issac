@@ -9,6 +9,7 @@ from combat.geometry import GeometryService
 from combat.models import Vec, WorldSnapshot
 from combat.motion import PlayerMotion
 from combat.navigation import DoorNavigator
+from combat.terrain_puzzle import TimedTerrainPuzzle
 from tests.combat_fixtures import snapshot, context
 
 
@@ -62,6 +63,42 @@ class TestPortalAuthority(unittest.TestCase):
         chosen = next(c for c in solver.last_candidates if c['move'] == a.move and c['shoot'] == a.shoot)
         self.assertFalse(chosen['wall'])
         self.assertLess(chosen['predicted_next_position'][1], s.player.pos.y)
+
+    def puzzle_entry(self):
+        return WorldSnapshot.model_validate(json.loads((Path(__file__).parent/'fixtures/puzzle_portal_start.json').read_text(encoding='utf8')))
+
+    def test_timed_room_native_entry_retreats_before_temporal_search(self):
+        s = self.puzzle_entry(); build = BuildResolver().update(s)
+        nav = DoorNavigator(2, s.layout['doors']['2'])
+        first = nav.step(s, default_plan(context(s)), build)
+        self.assertEqual(first.diagnostics['puzzle_phase'], 'entry_retreat')
+        self.assertGreater(first.move[1], 0)
+        timed = tuple(int(i) for i,c in s.layout['grid'].items() if c['type'] == 9)
+        g = GeometryService(s, timed_spikes=timed, allowed_portals=(2,))
+        for _ in range(30):
+            a = nav.step(s, default_plan(context(s)), build)
+            if a.diagnostics['puzzle_phase'] != 'entry_retreat': break
+            point, velocity, _, unsafe = PlayerMotion.step(s.player.pos, s.player.vel,
+                PlayerMotion.desired(a.move,build), g, build)
+            self.assertFalse(unsafe)
+            s.player.pos, s.player.vel = point, velocity
+            s.frame += 1
+        self.assertIn(g.cell(s.player.pos), g.walkable)
+        self.assertEqual(a.diagnostics['puzzle_phase'], 'cross')
+
+    def test_entry_cannot_cross_an_unobserved_spike_and_has_deadline(self):
+        s = self.puzzle_entry(); build = BuildResolver().update(s)
+        cell = s.layout['cells']['37']
+        s.layout['grid']['37'] = dict(type=9,variant=0,state=0,collision=0,x=cell['x'],y=cell['y'])
+        puzzle = TimedTerrainPuzzle(s.room_visit_id)
+        # Walls on both sides leave only the unknown spike on the inward path.
+        for index in ('21','23'):
+            s.layout['cells'][index]['collision'] = 4
+        a = puzzle.step(s,build,Vec(x=560,y=280),None,None,allowed_portals=(2,))
+        self.assertEqual(a.move,(0,0))
+        s.frame += 90
+        with self.assertRaisesRegex(TimeoutError,'PUZZLE_ENTRY_RECOVERY_TIMEOUT'):
+            puzzle.step(s,build,Vec(x=560,y=280),None,None,allowed_portals=(2,))
 
 
 if __name__ == '__main__':
