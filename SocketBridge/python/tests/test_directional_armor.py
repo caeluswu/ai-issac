@@ -42,3 +42,15 @@ class TestDirectionalArmor(unittest.TestCase):
         e.damage_directions = {key:(x == -1) for x,y,key,_ in SAMPLES}
         self.assertIsNone(DirectionalArmor().route(GeometryService(s),s,e,
             build.model_copy(update={'family':'knife'}),None,None,()))
+
+    def test_unadapted_loose_head_does_not_disable_knight_flanking(self):
+        from combat.engagement import EngagementPlanner
+        s = self.state();head = s.enemies[0].model_copy(deep=True)
+        head.instance_id = 'loose-head';head.type = 840
+        head.pos = Vec(x=120,y=80);head.damage_directions = None
+        s.enemies.append(head)
+        solver = JointActionSolver();build = BuildResolver().update(s)
+        action = solver.solve(s,default_plan(context(s)),build)
+        self.assertEqual(action.diagnostics['engagement_reason'],'directional_armor_flank')
+        s.enemies = [head]
+        self.assertIsNone(EngagementPlanner().choose(GeometryService(s),s,build,None,None))

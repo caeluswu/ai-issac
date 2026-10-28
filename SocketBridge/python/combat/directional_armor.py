@@ -16,6 +16,7 @@ def damage_from_velocity(enemy, velocity):
 
 class DirectionalArmor:
     """Find a permitted firing stance without routing through the target."""
+    defer_to_unadapted = False
     def route(self, geometry, snapshot, enemy, build, position, weapon, excluded):
         from .engagement import EngagementRoute
         flags = enemy.damage_directions

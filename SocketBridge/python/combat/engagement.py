@@ -61,13 +61,14 @@ class EngagementPlanner:
             self.scope, self.memory, self.preferred_id = scope, {}, None
         # Other enemy families retain their own targeting policy. A Host opening
         # must not discard its route and restore generic kite scoring.
-        if any(enemy.vulnerable and (enemy.type, enemy.variant) not in self.adapters
-               for enemy in snapshot.hostiles):
-            return None
+        other_attackable = any(enemy.vulnerable and (enemy.type, enemy.variant) not in self.adapters
+                               for enemy in snapshot.hostiles)
         options = []
         for enemy in snapshot.hostiles:
             adapter = self.adapters.get((enemy.type, enemy.variant))
             if adapter is None:
+                continue
+            if other_attackable and getattr(adapter,'defer_to_unadapted',True):
                 continue
             memory = self.memory.get(enemy.instance_id)
             if memory is None or memory["origin"].distance(enemy.pos) >= 16:
