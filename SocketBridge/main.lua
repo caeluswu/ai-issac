@@ -1680,6 +1680,41 @@ CommandHandler.register("FORMAT_SEEDS", function(params)
     return {success=true, seeds=seeds}
 end)
 
+-- Explicit runner-only fixture. Never offered as a policy/planner action.
+CommandHandler.register("PREPARE_TERRAIN_PROBE", function(params)
+    local room = Game():GetRoom()
+    if params.confirm ~= "diagnostic_initialization" or not room:IsClear() or
+       type(params.x) ~= "number" or type(params.y) ~= "number" then
+        return {success=false, error="Terrain fixture requires an empty clear room"}
+    end
+    local point = Vector(params.x,params.y)
+    if not room:IsPositionInRoom(point,20) or room:GetGridCollisionAtPos(point) ~= 0 then
+        return {success=false,error="Invalid terrain fixture position"}
+    end
+    local player = Isaac.GetPlayer(0)
+    player.Position, player.Velocity = point, Vector(0,0)
+    return {success=true,source_mode="diagnostic_initialization",x=params.x,y=params.y}
+end)
+
+CommandHandler.register("PREPARE_HOST_PROBE", function(params)
+    local room = Game():GetRoom()
+    local descriptor = Game():GetLevel():GetCurrentRoomDesc()
+    if params.confirm ~= "diagnostic_initialization" or not descriptor.Data or descriptor.Data.Variant ~= 114 then
+        return {success=false, error="Host fixture requires diagnostic room 114"}
+    end
+    for _, entity in ipairs(Isaac.GetRoomEntities()) do
+        if entity:ToNPC() or entity.Type == EntityType.ENTITY_PROJECTILE then entity:Remove() end
+    end
+    for _, point in ipairs({{120,160},{516,156},{120,400}}) do
+        Isaac.Spawn(27,0,0,Vector(point[1],point[2]),Vector(0,0),nil)
+    end
+    local player = Isaac.GetPlayer(0)
+    player.Position = Vector(467,209)
+    player.Velocity = Vector(0,0)
+    room:SetClear(false)
+    return {success=true, source_mode="diagnostic_initialization", hosts=3}
+end)
+
 CommandHandler.register("EXEC_CONSOLE", function(params)
     if params.command then
         local success, result = pcall(function() return Isaac.ExecuteCommand(params.command) end)

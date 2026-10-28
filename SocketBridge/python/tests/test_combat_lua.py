@@ -56,6 +56,18 @@ class TestLuaInput(unittest.TestCase):
             self.assertLessEqual(self.lua.globals().calls, 3)
             if mode == 'closed': self.assertEqual(self.lua.globals().calls, 1)
 
+    def test_diagnostic_fixture_requires_explicit_confirmation_and_room(self):
+        self.lua.execute("""
+            function Game() return {
+                GetRoom=function() return {IsClear=function() return false end} end,
+                GetLevel=function() return {GetCurrentRoomDesc=function() return {Data={Variant=1}} end} end
+            } end
+            hostRejected=api.Commands.handlers.PREPARE_HOST_PROBE({confirm='diagnostic_initialization'})
+            terrainRejected=api.Commands.handlers.PREPARE_TERRAIN_PROBE({})
+        """)
+        self.assertFalse(self.lua.globals().hostRejected.success)
+        self.assertFalse(self.lua.globals().terrainRejected.success)
+
     def test_watchdog_releases_after_three_updates(self):
         self.lua.execute("api.Input.applyCommand({move={x=1,y=0},shoot={x=0,y=-1}})")
         for _ in range(3): self.lua.execute("callbacks[ModCallbacks.MC_POST_UPDATE]()")

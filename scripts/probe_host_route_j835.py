@@ -1,5 +1,6 @@
 """Diagnostic J835 Host room control probe; not M3 completion evidence."""
 import asyncio
+import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -13,7 +14,7 @@ from combat.launcher import GameLauncher
 from combat.runtime import CombatSession, NativePause, RunLog
 
 
-async def main():
+async def main(stage="4", room=114, exact_fixture=False):
     directory = ROOT / "artifacts/runs" / datetime.now(timezone.utc).strftime("host114-%Y%m%dT%H%M%S%fZ")
     log = RunLog(directory)
     log.manifest(ROOT, None)
@@ -27,8 +28,8 @@ async def main():
     try:
         snapshot = await session.open(bootstrap=launcher)
         for command, predicate in (
-            ("stage 4", lambda s: s.floor and s.floor.stage == 4 and s.room.get("is_starting_room")),
-            ("goto d.114", lambda s: s.room.get("room_variant") == 114),
+            ("stage "+stage, lambda s: s.floor and s.floor.stage == 4 and s.room.get("is_starting_room")),
+            ("goto d."+str(room), lambda s: s.room.get("room_variant") == room),
         ):
             await session.rpc("EXEC_CONSOLE", {"command":command})
             report["commands"].append(command)
@@ -36,6 +37,11 @@ async def main():
             while not predicate(snapshot):
                 if time.monotonic() > deadline: raise TimeoutError("TRANSITION_TIMEOUT: " + command)
                 snapshot = await session.next_snapshot(after=snapshot.snapshot_id, timeout=10)
+        if exact_fixture:
+            initialized = await session.rpc("PREPARE_HOST_PROBE", {"confirm":"diagnostic_initialization"})
+            if not initialized.get("success"): raise RuntimeError(str(initialized))
+            report["fixture"] = initialized
+            for _ in range(3): snapshot = await session.next_snapshot(after=snapshot.snapshot_id)
         report["initial"] = {"frame":snapshot.frame,"hp":snapshot.hp,
                              "room_variant":snapshot.room["room_variant"],
                              "enemies":[{"type":e.type,"variant":e.variant,"state":e.state,
@@ -61,4 +67,9 @@ async def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(asyncio.run(main()))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--stage",choices=("4","4a"),default="4")
+    parser.add_argument("--room",type=int,default=114)
+    parser.add_argument("--exact-fixture",action="store_true")
+    args = parser.parse_args()
+    raise SystemExit(asyncio.run(main(args.stage,args.room,args.exact_fixture)))
