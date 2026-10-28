@@ -108,7 +108,7 @@ class TimedTerrainPuzzle:
         self.learning_started = None
         self.learning_goal = None
 
-    def step(self, snapshot, build, goal, plate_index, plan):
+    def step(self, snapshot, build, goal, plate_index, plan, allowed_portals=()):
         started = time.perf_counter()
         if snapshot.room_visit_id != self.room_visit_id:
             raise ValueError("PUZZLE_ROOM_CHANGED")
@@ -129,7 +129,7 @@ class TimedTerrainPuzzle:
             self.solved = solved
             self.learning_started = snapshot.frame
         allowed = (plate_index,) if plate_index is not None else ()
-        geometry = GeometryService(snapshot,allowed,(),timed)
+        geometry = GeometryService(snapshot,allowed,(),timed,allowed_portals=allowed_portals)
         schedule_key = (build.move_speed, build.player_displacement_scale, geometry.physical_radius,
                         self.phase.revision, tuple(sorted(geometry.walkable)),
                         tuple((i, self.phase.cycle(i), self.phase.steady(i)) for i in timed))
@@ -147,7 +147,7 @@ class TimedTerrainPuzzle:
                 if self.staging_solver is None:
                     from .controller import JointActionSolver
                     self.staging_solver = JointActionSolver()
-                action = self.staging_solver.solve(snapshot,plan,build,True,staging,allowed)
+                action = self.staging_solver.solve(snapshot,plan,build,True,staging,allowed,allowed_portals=allowed_portals)
                 action.state = "PUZZLE_STAGE"
                 action.diagnostics["puzzle_phase"] = "learning"
                 return action

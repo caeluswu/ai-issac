@@ -56,7 +56,7 @@ class TestExactLatencyPaths(unittest.TestCase):
         from combat.catalog import default_plan
         from tests.combat_fixtures import context
         for s in self.captured_fields():
-            g=GeometryService(s); build=BuildResolver().update(s); all_routes=[]
+            g=GeometryService(s,allowed_portals=()); build=BuildResolver().update(s); all_routes=[]
             for index,c in s.layout['grid'].items():
                 if c['type']==14 and c['variant']==0 and c['collision']!=0:
                     target=Vec(x=c['x'],y=c['y']); route=exhaustive_route(g,s.player.pos,target,build.effective_range,True)

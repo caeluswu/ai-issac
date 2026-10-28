@@ -90,14 +90,14 @@ class DoorNavigator:
             controller, plate_index = self.puzzle
             inward = ((1, 0), (0, 1), (-1, 0), (0, -1))[self.slot % 4]
             interior = self.goal + Vec(x=inward[0]*40, y=inward[1]*40)
-            action = controller.step(s, build, interior, plate_index, plan)
+            action = controller.step(s, build, interior, plate_index, plan, allowed_portals=(self.slot,))
             from .terrain_puzzle import terrain_identity
             if controller.phase.periods:
                 self.terrain_knowledge[terrain_identity(s)] = dict(controller.phase.periods)
                 if len(self.terrain_knowledge) > 128:
                     self.terrain_knowledge.pop(next(iter(self.terrain_knowledge)))
         else:
-            action = self.solver.solve(s, plan, build, True, self.goal, self.allowed_devices)
+            action = self.solver.solve(s, plan, build, True, self.goal, self.allowed_devices, allowed_portals=(self.slot,))
         action.state = "NAVIGATE"
         action.diagnostics["movement_target"] = "door:"+str(self.slot)
         return action

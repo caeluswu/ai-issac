@@ -17,7 +17,7 @@ def pickup_approach_allowed(snapshot, pickup):
                                         "pickup_exclusions": []})
     if boundary_danger(probe):
         return False
-    geometry = GeometryService(probe)
+    geometry = GeometryService(probe,allowed_portals=())
     return bool(geometry.walkable and geometry.clear(pickup.pos)
                 and geometry.path(snapshot.player.pos, pickup.pos))
 

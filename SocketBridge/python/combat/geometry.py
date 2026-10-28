@@ -12,7 +12,7 @@ def segment_distance(point: Vec, start: Vec, end: Vec) -> float:
 
 
 class GeometryService:
-    def __init__(self, snapshot: WorldSnapshot, allowed_devices=(), allowed_exits=(), timed_spikes=()):
+    def __init__(self, snapshot: WorldSnapshot, allowed_devices=(), allowed_exits=(), timed_spikes=(), allowed_portals=None):
         self.cells = snapshot.layout["cells"]
         self.width = int(snapshot.layout["width"])
         self.fly = snapshot.stats["can_fly"]
@@ -44,9 +44,14 @@ class GeometryService:
         if snapshot.inventory.get("collectibles",{}).get("185",0) and snapshot.stats.get("weapon_type") == 1:
             self.shootable.update(int(i) for i,c in grid.items()
                 if c["type"] in (2,3,4,5,6,14) and self.cells.get(str(i),{}).get("inside"))
+        self.portals = tuple((int(slot), Vec(x=d['x'], y=d['y'])) for slot, d in (snapshot.layout['doors'] or {}).items()
+                             if d['is_open'] and not d['is_locked'])
+        self.allowed_portals = None if allowed_portals is None else frozenset(allowed_portals)
+        self.portal_guard_radius = 48+self.physical_radius
         self.walkable -= self.dangerous
         self.motion_cells = set(self.walkable)
-        self.walkable = {i for i in self.walkable if all(self.positions[i].distance(p)>r+self.radius for p,r in self.pickup_obstacles)}
+        self.walkable = {i for i in self.walkable if self.portal_path_clear(self.positions[i],self.positions[i])
+                         and all(self.positions[i].distance(p)>r+self.radius for p,r in self.pickup_obstacles)}
         self.neighbors = {i: [j for j in (i-1, i+1, i-self.width, i+self.width)
                               if j in self.walkable and self.positions[i].distance(self.positions[j]) <= 41]
                           for i in self.walkable}
@@ -55,8 +60,25 @@ class GeometryService:
         # change. Cache exact queries only, with bounded per-room memory.
         self.line_cache = {}
         self.firing_stance_cache = OrderedDict()
-        self.portals = tuple((int(slot), Vec(x=d['x'], y=d['y'])) for slot, d in (snapshot.layout['doors'] or {}).items()
-                             if d['is_open'] and not d['is_locked'])
+
+
+    def portal_path_clear(self, start, end):
+        if self.allowed_portals is None: return True
+        for slot,point in self.portals:
+            if slot in self.allowed_portals: continue
+            distance = start.distance(point)
+            closest = segment_distance(point,start,end)
+            if closest >= self.portal_guard_radius: continue
+            ix,iy = ((1,0),(0,1),(-1,0),(0,-1))[slot%4]
+            delta=end-start
+            # Entry/knockback may already be inside the guard. A retreat must
+            # move inward and increase radial separation; tolerate at most
+            # half a pixel of curvature from the observed lateral inertia.
+            if (distance < self.portal_guard_radius and delta.x*ix+delta.y*iy > 0
+                    and end.distance(point) > distance and closest >= distance-.5):
+                continue
+            return False
+        return True
 
     def cell(self, p):
         return self.cell_xy(p.x, p.y)
@@ -65,6 +87,7 @@ class GeometryService:
         return round((y-self.origin.y)/40)*self.width + round((x-self.origin.x)/40)
 
     def clear(self, p: Vec, *, shot=False, radius=None):
+        if not shot and not self.portal_path_clear(p,p): return False
         allowed = self.shootable if shot else self.motion_cells
         r = (0 if shot else self.radius) if radius is None else radius
         if not shot and any(p.distance(center)<=r+size for center,size in self.pickup_obstacles): return False
@@ -73,6 +96,7 @@ class GeometryService:
                                   (r*.707, r*.707), (-r*.707, r*.707), (r*.707, -r*.707), (-r*.707, -r*.707)))
 
     def line_clear(self, a, b, *, shot=False, radius=None):
+        if not shot and not self.portal_path_clear(a,b): return False
         r = 0 if shot else self.radius if radius is None else radius
         key = (a.x, a.y, b.x, b.y, shot, r)
         cached = self.line_cache.get(key)
@@ -109,6 +133,10 @@ class GeometryService:
 
     def sweep(self, position, velocity):
         proposed = position+velocity
+        # This is a policy boundary, not a solid game wall. Clipping here
+        # would predict a stop which the real door cannot enforce.
+        if not self.portal_path_clear(position, proposed):
+            return position, velocity, True, True
         if self.motion_clear(position, proposed): return proposed, velocity, False, False
         if self.touches_danger(proposed): return position, velocity, True, True
         # Solid terrain blocks movement; it does not inflict collision damage.
@@ -123,7 +151,7 @@ class GeometryService:
         return y, adjusted, True, False
 
     def motion_clear(self, start, end):
-        if not self.pickup_path_clear(start,end): return False
+        if not self.portal_path_clear(start,end) or not self.pickup_path_clear(start,end): return False
         if self.line_clear(start, end, radius=self.physical_radius): return True
         if self.retreat_from_danger(start, end): return True
         if self.retreat_from_portal(start, end): return True

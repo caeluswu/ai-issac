@@ -48,7 +48,7 @@ class ItemLearning:
             if group:
                 groups.setdefault(group,[]).append((pickup,self.decisions[(pickup.instance_id,pickup.sub_type,pickup.price)]))
         for group,pairs in groups.items():
-            winner = self.choice_policy.choose(s,[pair for pair in pairs if pair[1].decision == "take"])
+            winner = self.choice_policy.choose(s,[pair for pair in pairs if pair[1].decision == "take" and pickup_approach_allowed(s,pair[0])])
             for pickup,decision in pairs:
                 if decision.decision != "take": continue
                 if winner is None or pickup.instance_id != winner[0].instance_id or (group == "angel" and angel_key in self.angel_claimed):
