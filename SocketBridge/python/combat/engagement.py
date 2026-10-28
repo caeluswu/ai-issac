@@ -48,7 +48,7 @@ class EngagementPlanner:
         if adapters is None:
             from .directional_armor import DirectionalArmor
             self.adapters = {(27,0):ClosedHost(),(27,1):ClosedHost(),
-                             **{(41,v):DirectionalArmor() for v in range(5)}}
+                             **{(41,v):DirectionalArmor() for v in (0,2,4)}}
         else:
             self.adapters = dict(adapters)
         self.preferred_id = None

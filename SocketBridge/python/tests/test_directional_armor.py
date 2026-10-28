@@ -54,3 +54,12 @@ class TestDirectionalArmor(unittest.TestCase):
         self.assertEqual(action.diagnostics['engagement_reason'],'directional_armor_flank')
         s.enemies = [head]
         self.assertIsNone(EngagementPlanner().choose(GeometryService(s),s,build,None,None))
+
+    def test_closed_host_still_defers_to_an_unarmored_knight(self):
+        from combat.engagement import EngagementPlanner
+        s=self.state();s.enemies[0].type=27;s.enemies[0].vulnerable=False
+        other=s.enemies[0].model_copy(deep=True)
+        other.instance_id='unarmored';other.type=41;other.variant=1;other.vulnerable=True
+        other.damage_directions=None;other.pos=Vec(x=120,y=80)
+        s.enemies.append(other)
+        self.assertIsNone(EngagementPlanner().choose(GeometryService(s),s,BuildResolver().update(s),None,None))
