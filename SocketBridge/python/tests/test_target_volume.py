@@ -34,5 +34,27 @@ class TestTargetVolume(unittest.TestCase):
         s,e,b,solver,p,shot=self.setup_case();e.collision_radius=1
         self.assertEqual(solver.hit_score(s,b,p,e,shot,Vec(x=0,y=0),GeometryService(s)),0)
 
+    def test_range_ends_at_the_first_contact_not_the_hidden_center(self):
+        s,e,b,solver,p,shot=self.setup_case();distance=e.pos.distance(s.player.pos)
+        reachable=b.model_copy(update={'effective_range':distance-30})
+        self.assertGreater(solver.hit_score(s,reachable,p,e,shot,Vec(x=0,y=0),GeometryService(s)),0)
+        unreachable=b.model_copy(update={'effective_range':distance-70})
+        self.assertEqual(solver.hit_score(s,unreachable,p,e,shot,Vec(x=0,y=0),GeometryService(s)),0)
+
+    def test_mom_closed_wall_prepares_a_lane_without_entering_hand_range(self):
+        s,_,b,solver,_,_=self.setup_case()
+        s.player.pos=Vec(x=240,y=240);s.player.vel=Vec(x=0,y=0)
+        self.assertTrue(GeometryService(s).clear(s.player.pos))
+        s.enemies=[e for e in s.enemies if e.type==45]
+        s.projectiles['enemy_projectiles']=[]
+        for e in s.enemies:
+            e.vulnerable=False;e.state=3;e.collision_class=0;e.vel=Vec(x=0,y=0)
+        a=solver.solve(s,default_plan(context(s)),b)
+        self.assertEqual(a.diagnostics['engagement_reason'],'mom_wall_firing_stance')
+        self.assertNotEqual(a.move,(0,0))
+        self.assertEqual(a.shoot,(0,0))
+        route=solver.engagement.choose(solver.geometry,s,b,solver.modules['position'],solver.modules['fire'])
+        self.assertGreaterEqual(route.waypoints[-1].distance(route.enemy.pos),140)
+
 
 if __name__ == '__main__':unittest.main()

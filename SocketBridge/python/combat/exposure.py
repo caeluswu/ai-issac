@@ -1,6 +1,22 @@
 """Bounded repositioning to elicit an observable attackable phase."""
 
 
+class MomWallStance:
+    """Prepare a firing lane before a wall part opens; preserve hand clearance."""
+    def route(self, geometry, snapshot, enemy, build, position, weapon, excluded):
+        from .engagement import EngagementRoute
+        if enemy.state not in (3,8,9,10): return None
+        minimum = min(140,build.effective_range*.7)
+        def lane(hints):
+            return geometry.firing_route(snapshot.player.pos,enemy.pos,build.effective_range,
+                excluded=hints,target_radius=enemy.collision_radius+5,
+                stance_filter=lambda p:p.distance(enemy.pos)>=minimum)
+        route = lane(excluded) or (lane(()) if excluded else [])
+        if route:
+            return EngagementRoute(enemy,tuple(route),'mom_wall_firing_stance')
+        return None
+
+
 class BuriedPin:
     def route(self, geometry, snapshot, enemy, build, position, weapon, excluded):
         from .engagement import EngagementRoute

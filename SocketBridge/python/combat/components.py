@@ -188,7 +188,7 @@ class NormalTears:
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
     def __init__(self, params): self.params = params
     def begin_frame(self, snapshot, build):
-        self.target_radii = {(e.pos.x,e.pos.y):e.collision_radius+5 for e in snapshot.hostiles if e.vulnerable}
+        self.target_radii = {(e.pos.x,e.pos.y):e.collision_radius+5 for e in snapshot.hostiles}
     def firing_route(self, geometry, start, target, build, excluded=(), terrain=False):
         radius = getattr(self,'target_radii',{}).get((target.x,target.y),0.) if not terrain else 0.
         return geometry.firing_route(start, target, build.effective_range, terrain=terrain, excluded=excluded,target_radius=radius)
@@ -222,7 +222,7 @@ class NormalTears:
             delta = target.pos+enemy_velocity*forecast_ticks-s.player.pos
             ticks = delta.dot(launch)/max(1e-9, launch.dot(launch))
         launch_length = launch.length()
-        if ticks < 0 or ticks*launch_length > build.effective_range: return 0.
+        if ticks < 0: return 0.
         hit = s.player.pos+launch*ticks
         miss = hit.distance(target.pos+enemy_velocity*min(ticks, aim.params["max_lead_ticks"]))
         contact_back = math.sqrt(max(0,(target.collision_radius+5)**2-miss**2))
@@ -231,6 +231,7 @@ class NormalTears:
         # Stop at first projected contact, not at a center embedded in a wall.
         # Intervening solid terrain still blocks the entire incoming segment.
         back = min(22 if target.instance_id.startswith("terrain:") else contact_back,ticks*launch_length)
+        if ticks*launch_length-back > build.effective_range: return 0.
         scale = back/max(1e-9,launch_length)
         end = Vec(x=hit.x-launch.x*scale,y=hit.y-launch.y*scale)
         if not geometry.line_clear(s.player.pos, end, shot=True): return 0.
@@ -243,7 +244,7 @@ class NormalTears:
         # Bound opportunity search, not threat perception. Every dangerous entity
         # remains in the safety field; firing still has at most four proposals.
         secondary = [e for e in s.hostiles if e.vulnerable and (target is None or e.instance_id != target.instance_id)
-                     and e.pos.distance(s.player.pos) <= build.effective_range+40]
+                     and e.pos.distance(s.player.pos) <= build.effective_range+e.collision_radius+5]
         pool += sorted(secondary, key=lambda e: (e.pos.distance(s.player.pos), e.instance_id))[:7]
         for direction in self.directions:
             choices = []
