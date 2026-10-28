@@ -47,6 +47,9 @@ for _items,_class in ((ATTACK_ATTRIBUTES,"attributes"),
                       (HEALTH_AND_UTILITY,"health_utility"),
                       (SUPPLEMENTAL_PASSIVES,"supplemental_passive")):
     ITEM_SUPPORT.update({item:_class for item in _items})
+# Observed one-shot room damage does not change movement/weapon input. This
+# does not authorize picking up or activating the corresponding active item.
+INSTANT_ROOM_DAMAGE_EFFECTS=frozenset({35})
 MECHANISMS={69:"charge",114:"knife"}
 PASSIVE_MODIFIERS={154:"left_eye_damage",169:"overkill_pierce",
                    213:"tear_projectile_interception",240:"random_stat_tradeoff",
@@ -74,7 +77,7 @@ def resolve_items(s,*,charge=False,knife=False,preview=False):
     if any(v.get("item") not in ITEM_SUPPORT for v in (s.inventory.get("active_items") or {}).values()):
         raise ValueError("UNSUPPORTED_BUILD: active inventory capability unknown")
     if s.inventory_coverage and s.inventory_coverage.static_status!="known":raise ValueError("UNSUPPORTED_BUILD: incomplete inventory observation")
-    if s.effects and (s.effects.status!="known" or any(e.count and (e.kind!="collectible" or e.item_id not in ITEM_SUPPORT) for e in s.effects.items)):
+    if s.effects and (s.effects.status!="known" or any(e.count and (e.kind!="collectible" or e.item_id not in (set(ITEM_SUPPORT)|INSTANT_ROOM_DAMAGE_EFFECTS)) for e in s.effects.items)):
         raise ValueError("UNSUPPORTED_BUILD: temporary effects unknown")
     return ItemCapabilities("knife" if is_knife else "charged_tears" if 69 in items else "normal_tears",
                             tuple((MECHANISMS.get(i) or PASSIVE_MODIFIERS[i]) for i in sorted(items)
