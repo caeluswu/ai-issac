@@ -1,10 +1,10 @@
 # Isaac 分层控制项目
 
-面向《以撒的结合：忏悔》原版 `1.7.9b.J835`，使用 SocketBridge 读取结构化状态，由可替换的底层控制组件执行移动与射击。DeepSeek 负责选择组件、填写参数和必要的异常诊断，也可通过独立开发流程编写有界机制程序。
+面向《以撒的结合：忏悔》原版 `1.7.9b.J835`，使用 SocketBridge 读取结构化状态，由可替换的底层控制组件执行移动与射击。启用模型规划时，DeepSeek 负责选择组件、填写参数和必要的异常诊断，也可通过独立开发流程编写有界机制程序。
 
-当前运行入口包括单房控制 `run_first_room.py`、首层控制 `run_floor.py` 和同局两层控制 `run_two_floors.py`。跨层流程复用同一连接、构筑及健康账本，每层重建已观察地图，正常击败 Boss 并通过出口；M3-A 实机已连续完成前两层并确认第三层可行动。原生入房暂停与战中异步诊断均有预算。
+当前入口包括单房 `run_first_room.py`、首层 `run_floor.py`、连续两层 `run_two_floors.py` 和目标层 2–6 的主线 `run_mainline.py`。固定种子已有同局四层成功证据；最近长途在第五层中止，随机探索则在首层死亡，第一层至 Mom 和随机稳定通关均未验收。Host 连续交战与三种无怪地形通路已有实机证据。阶段状态、阻塞和下一步统一见 [当前进度](docs/progress.zh-CN.md)。原生入房暂停与战中异步诊断均受预算约束。
 
-P0–P6 的四项审查缺陷已修复并加入回归。道具采用固定 EID 说明与有样本身份的本地经验，支持范围仍有限；主动实验关闭。M2-B 已完成巧克力牛奶的模型时序程序、实机清房和另一个进程复用，采用显式语法恢复，范围与全部失败见 [M2-B 验收](docs/evidence/phase-2b-validation.zh-CN.md)。首层覆盖见 [M2-A 证据](docs/evidence/phase-2a-validation.zh-CN.md)，操作见 [首层运行手册](docs/phase-2a-runbook.zh-CN.md)。
+P0–P6 的四项审查缺陷已修复并加入回归。道具采用固定 EID 说明与有样本身份的本地经验，支持范围仍有限；通用自主实验 P7 关闭，69/114 的必要局内短测另有受限流程。M2-B 已完成巧克力牛奶的模型时序程序、实机清房和另一个进程复用，采用显式语法恢复，范围与全部失败见 [M2-B 验收](docs/evidence/phase-2b-validation.zh-CN.md)。首层覆盖见 [M2-A 证据](docs/evidence/phase-2a-validation.zh-CN.md)，操作见 [首层运行手册](docs/phase-2a-runbook.zh-CN.md)。
 
 ## 验证与付费 API 原则
 
@@ -16,7 +16,7 @@ P0–P6 的四项审查缺陷已修复并加入回归。道具采用固定 EID �
 - 不默认执行大样本 LLM 回归、LLM/规则配对实验或消融。此类实验先记录，后续单独确定研究问题、样本量和 API 调用预算再开展。
 - 可行性通过不等于稳定胜率、LLM 优于规则、竞速水平或 SOTA 已获证明。失败、失血、超时、降级与未完成批次均保留，不能只展示成功案例。
 - 需要停止批次时，使用 `--stop-file`，在当前单场收尾并保存报告后停止后续样本。
-- DeepSeek 客户端默认显式关闭思考，避免继承供应商默认设置后只消耗输出额度而没有最终 JSON。机制开发按任务持久记账，默认最多 3 次实际请求；原语不足、空最终内容或认证错误先停止，不盲目修复。新增额度需要明确授权，不能靠重启或创建重复任务重置。
+- DeepSeek 客户端默认显式关闭思考，避免继承供应商默认设置后只消耗输出额度而没有最终 JSON。机制开发按任务持久记账，默认最多 3 次实际请求；原语不足、空最终内容或认证错误先停止，不盲目修复。必要追加已获项目方授权由开发 Agent 判断，但仍需在执行前满足持久预算和阶段总限额，不能靠重启或创建重复任务重置；默认工具限制不等于每次都需重新询问授权。
 
 ## 后续实验清单（暂缓执行）
 
@@ -127,7 +127,24 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 实机拾取、构筑变化与未验证边界见 [被动道具支持证据](docs/evidence/j835-passive-item-support.zh-CN.md)。
 
-## 连续两层运行（M3-A）
+## 连续多层运行（M3）
+
+```powershell
+# 正常随机主线；目标为第六层 Mom，默认不请求 DeepSeek
+.\.venv\Scripts\python.exe run_mainline.py --target-stage 6 --llm-requests 0
+
+# 固定种子开发复现；输出目录须不存在
+.\.venv\Scripts\python.exe run_mainline.py --target-stage 6 --seed "3BYH A82R" --llm-requests 0 --wall-limit 3600 --output-dir artifacts/runs/my-mainline-debug
+
+# 目标层可选 2–6；2–5 需正常离层，6 需击败 Mom
+.\.venv\Scripts\python.exe run_mainline.py --target-stage 4 --llm-requests 0
+```
+
+报告保存在 `artifacts/runs/<run>/run-report.json`，包含各层结果、损失、资源和请求账本。自动启动会恢复槽 1 基线并替换当前对局，初始化备份另存。主线默认加载已有技能，`allow_generate=False`，不会因遇到新道具自行付费生成代码。固定种子标为 `debug_replay`，省略种子标为 `normal_random`；后者不是封存随机样本的正式评测。
+
+最近固定种子正常完成四层，Host 房 114 用时 440 更新、损失半颗心；第五层因效果 35 检查中止，兼容修复只完成失败消息回放，尚无整局成功。随机种子 `LCC1 99WP` 在首层 Roundy 房死亡。地形 955、959、961 的零损出门属于诊断场景，不能替代正常地图重入或 Mom 通关。详见 [当前进度](docs/progress.zh-CN.md)与[最新证据](docs/evidence/phase-3c-host-terrain-generalization.zh-CN.md)。
+
+两层兼容入口：
 
 ```powershell
 # 固定种子用于开发复现；不调用 DeepSeek
@@ -161,12 +178,13 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 ## 文档导航
 
-完整目录及文档职责见 [docs 文档索引](docs/README.md)。M2-A 首层、M2-B 蓄力程序、M2-C 有限道具适配均有各自的实机范围；M3 连续多层仍需独立验收。历史验收只证明对应版本及场景，不覆盖新发现的缺陷。
+当前状态与执行队列见 [当前进度](docs/progress.zh-CN.md)，完整目录及职责见 [文档索引](docs/README.md)。M2 各阶段和 M3-A/B 有各自范围内的可行性证据，M3-C 至 Mom 尚未完成；历史成功不覆盖后续失败。
 
 | 入口 | 解决的问题 |
 |---|---|
+| [当前进度](docs/progress.zh-CN.md) | 阶段完成状态、最近失败、已验证范围和执行优先级 |
 | [任务契约](docs/task-contract.zh-CN.md) / [总体架构](docs/architecture-plan.zh-CN.md) | 做什么，哪些辅助允许，模块如何分工 |
-| [P0–P6 实现审查](docs/phase-2a-preparation.zh-CN.md) | 当前能做什么，四个已复现问题及准入状态 |
+| [P0–P6 实现审查](docs/phase-2a-preparation.zh-CN.md) | M2-A 准备基线、四项已修复问题及当时准入状态 |
 | [M2-A 详细实施计划](docs/phase-2a-plan.zh-CN.md) | A0–A7 的模块、预算与验收合同 |
 | [M2-B 详细计划](docs/phase-2b-plan.zh-CN.md) / [验收证据](docs/evidence/phase-2b-validation.zh-CN.md) | 蓄力时序程序的合同、发布复用、全部失败、语法恢复和 API 总账 |
 | [M2-C实施计划](docs/phase-2c-plan.zh-CN.md) / [归因审核](docs/evidence/phase-2c-attribution-review.zh-CN.md) | 受伤事实、API诊断、独立审核与后续局内能力扩展 |

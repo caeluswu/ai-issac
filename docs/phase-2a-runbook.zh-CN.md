@@ -33,6 +33,22 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 不提供计时中的控制台或改血/改伤害选项。药丸、卡牌、炸弹使用、主动道具、未知收藏品/饰品与复杂武器不自动启用；商店消费预算为 0。普通资源及有限红/魂心须满足子型、容量、代价和消费后证明，拾取不可达可以跳过。P7 主动实验关闭。
 
+## 连续多层入口
+
+`run_mainline.py` 复用同一 run、连接、构筑和健康资源账本；目标层 2–5 需正常离层，6 需击败 Mom。原有 `run_two_floors.py` 为两层兼容入口。
+
+```powershell
+# 默认规则控制、正常随机种子，不调用 DeepSeek
+.\.venv\Scripts\python.exe run_mainline.py --target-stage 6 --llm-requests 0
+
+# 固定种子仅用于开发复现；目录必须不存在
+.\.venv\Scripts\python.exe run_mainline.py --target-stage 4 --seed "3BYH A82R" --llm-requests 0 --output-dir artifacts/runs/my-four-floor-debug
+```
+
+多层总墙钟默认 3600 秒，可用 `--wall-limit` 修改；达到期限就是失败。主线不会自动付费生成新道具代码，使用现有支持表和已发布技能。`run-report.json` 包含各层结果，`trace.jsonl` 保留动作/观测；固定种子为 `debug_replay`，正常随机为 `normal_random`，均不冒充封存正式评测。支持配置到第六层不等于已通过 Mom；当前结果与阻塞见[进度](progress.zh-CN.md)。
+
+Host 等待开盖与周期地形等待都有证据和截止帧。无怪环境单阶段最多 600 更新，总环境/时序出门最多 1800 更新；普通门导航仍为 750 更新。只有实际进展可刷新相应监督依据，机关自身伸缩不计任务进展。不要靠增加总超时掩盖振荡。
+
 ## 成功与失败
 
 `FLOOR_COMPLETED` 必须有同一局的 Boss 战、Boss 完成、正常出口、实际下一层和下一层受控移动证据，并成功释放输入/恢复 MANUAL。击败 Boss 后卡在出口、死亡、断线或清理失败均不成功。

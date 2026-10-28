@@ -1,5 +1,7 @@
 # M3-C：无怪定时地形房的解谜控制
 
+本文保存房间 961 专项版本的证据与当时实现。当前独立周期、分阶段踏板和扩大场景后的结果见[Host 与地形泛化](phase-3c-host-terrain-generalization.zh-CN.md)，项目状态见[当前进度](../progress.zh-CN.md)。
+
 ## 范围与分工
 
 无怪房间不调用战斗攻击策略。`EnvironmentController` 从全房网格识别普通踏板、永久尖刺和周期尖刺；直接安全路径不存在、但经周期尖刺存在拓扑路径时，交给 `TimedTerrainPuzzle`。战斗求解器仍负责普通房间。当前实机覆盖忏悔原版 J835 的 Necropolis 房间类型 1、变体 961；未证明其他机关房通用。

@@ -1,6 +1,6 @@
 # SocketBridge 源码导读与接入说明
 
-> 历史阶段资料；当前执行状态与已知缺陷以 [P0–P6 审查](../phase-2a-preparation.zh-CN.md) 和 [M2-A 计划](../phase-2a-plan.zh-CN.md) 为准。本文保留对应版本的设计或证据，不作为当前完成清单。
+> 历史阶段资料；当前执行状态与已知缺陷见[当前进度](../progress.zh-CN.md)，现行接口见[组件合同](../component-contract.zh-CN.md)。本文保留对应版本的设计或证据，不作为当前完成清单。
 
 核查日期：2026-10-24。对象：`EmptyEmeraldTablet/SocketBridge` 的 `refactor/v2` 分支，提交 `89dab7852c987a4ef4f62f168c309fe27a91a598`。本文件依据本地源码和已运行的 Python 单元测试编写。**尚未在《以撒的结合：忏悔》游戏进程中验证。**
 

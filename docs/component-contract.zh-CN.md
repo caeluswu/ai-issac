@@ -1,8 +1,8 @@
 # 战斗组件合同 v1
 
-当前 M2-C 首轮仅增加受伤采集、归因和独立审核，不改变组件执行权限或现有69支持范围。常驻JS批处理、局内加载与更宽的能力组合属于 [后续设计](item-knowledge-and-skill-evolution.zh-CN.md)，尚未接入本合同的实时执行路径。
+当前接缝包括可信 Python 组件、M2-B 有界 AST 时序和 M2-C 常驻 QuickJS AttackModel。受伤采集及审核独立于动作执行；菜刀 114 的短测、边界加载与复用已有证据，模型修订后的局内优化仍未验收。当前完成状态见[进度](progress.zh-CN.md)，长期扩展见[能力设计](item-knowledge-and-skill-evolution.zh-CN.md)。
 
-适用：M2-A 的可信本地组件与 M2-B 的受限时序接缝。代码定义位于 `SocketBridge/python/combat/component_contracts.py`；七槽位与参数仍由 catalog 管理。普通可信组件不提供任意代码隔离，模型程序只能通过下述有界解释器运行。
+适用：M2-A 的可信本地组件与 M2-B 的受限时序接缝。代码定义位于 `SocketBridge/python/combat/component_contracts.py`；七槽位与参数仍由 catalog 管理。普通可信组件不提供任意代码隔离；模型程序通过下述 AST 或 QuickJS 接缝运行，均无真实输入或系统 IO 权限。
 
 ## 能力与输入
 
@@ -44,6 +44,21 @@ GeometryService/JointActionSolver 的 allowed_exits 是宿主专用参数，只�
 
 `ProgramWeapon` 将时序结果转为已有 `AttackProposal`。DTO 新增 `withdrawal_shoot`，默认 `(0,0)`；蓄力释放被否决时可返回上一次实际保持方向。idle 在已经蓄力时同样按物理释放处理，必须提供实际攻击方向的 footprint；命中估计为零也不能跳过该 footprint 内的死亡后果检查。相同程序与参数、同房间/构筑/目录身份下，`room_and_build` 组件可跨战术 profile 保留状态。
 
-原版字段与观测限度见 [武器观测合同](observation-v2.zh-CN.md)。技能开发在独立进程入口进行；持久化预算、原始模型响应哈希、独立语义检查和实机试用共同约束发布。当前只在会话启动加载受支持包，发布不热替换运行中的战斗。首例及阶段完成标准见 [M2-B 计划](phase-2b-plan.zh-CN.md)；这些接口本身不证明模型战斗验收通过。
+原版字段与观测限度见 [武器观测合同](observation-v2.zh-CN.md)。技能开发在独立进程入口进行；持久化预算、原始模型响应哈希、独立语义检查和实机试用共同约束发布。M2-B AST 在会话启动加载受支持包；M2-C JS 另支持无威胁短测后的暂停边界加载，不能在逐帧候选计算中原地覆盖程序。首例及阶段完成标准见 [M2-B 计划](phase-2b-plan.zh-CN.md)；这些接口本身不证明模型战斗验收通过。
 
 原始模型内容先经过严格解析；语法恢复只在离线开发入口尝试一个多余闭符，必须只有一种可类型化程序，不更改任何值、分支或状态逻辑。记录变换和原始错误，装载时复验；严格 Program 解析器和独立行为检查保持不变。控制进程的技能库路径通过 `CombatSession(skill_store=...)` 显式注入；产品入口传入项目 skills，单元测试和通用会话默认不读取外部库。
+
+
+## M2-C JavaScript AttackModel
+
+`mechanisms/javascript.py` 与 `js_worker.py` 提供常驻 QuickJS worker。接口为 `init(context) → state`、`observe(context, feedback, state) → state`、`proposeBatch(context, candidates, state) → proposals`；Python 统一准备移动候选和公共数据，每个快照至多一次批量求值，多次查询复用结果。上下文持续存在，显式状态按 run/visit/build 签名重置，攻击方案仍经宿主验证和统一危险检查。
+
+源码最多 64 KiB、JS 内存 32 MiB、栈 512 KiB、单次 JS 时间限额 10 ms；初始化宿主等待最多 5 秒，运行批量等待最多 20 ms。显式状态最多 16 KiB，输入消息最多 256 KiB、输出消息最多 64 KiB。超时或非法结果记录故障并关闭 worker，不能视为完成攻击。当前实机算法是菜刀 114，不能由接缝存在推导所有武器均已适配。
+
+## 持续交战与环境意图
+
+`EngagementRoute` 输出敌人、路点、原因、优先级及可选 `phase/deadline`。Host 的 approach/wait_open/attack 连续管理移动目标，武器组件决定实际保持与释放；敌人开盖不重置交战路线。普通障碍破坏仍经原有武器/几何流程，不能用无效重定位掩盖缺少射击通道。
+
+无怪踏板目标由 `EnvironmentController` 选择，周期尖刺交 `TimedTerrainPuzzle` 做全房时序搜索；解谜输出正常 `ActionFrame`，不增加输入写入者。房间清理不自动使动态地形安全，缓存周期不等于复用旧相位。
+
+攻击提案的 90 更新等待上限保持不变。宿主监督器另接纳带证据及绝对截止帧的 `known_invulnerability`（最多 120 更新）、`terrain_observation/terrain_phase`（最多 600 更新）；它们不由模型自由扩大。没有实际进展时等待额度不能重领，且不能取消阶段/房间总期限。范围与实机边界见[Host/地形证据](evidence/phase-3c-host-terrain-generalization.zh-CN.md)。

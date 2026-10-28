@@ -1,6 +1,6 @@
 # EID 与本地经验：运行机制及主动实验边界
 
-状态：P5/P6 最小链路已实现，当前缺陷与准入以 [准备审查](phase-2a-preparation.zh-CN.md) 为准。M2-A 使用有稳定样本身份的被动记录；P7 主动实验关闭。本文维护学习机制，来源字段由 [知识库接口](knowledge-project-interface-plan.zh-CN.md) 定义，模型编程由 [M2-B 设计](item-knowledge-and-skill-evolution.zh-CN.md) 定义。
+状态：P5/P6 最小链路已实现，阶段能力及阻塞见[当前进度](progress.zh-CN.md)，准备审查仅描述历史基线。M2-A 使用有稳定样本身份的被动记录；通用自主实验 P7 关闭，M2-B/M2-C 的 69/114 必要局内短测已单独接入。本文维护学习机制，来源字段由 [知识库接口](knowledge-project-interface-plan.zh-CN.md) 定义，模型编程由 [M2-B 设计](item-knowledge-and-skill-evolution.zh-CN.md) 定义。
 
 ## 1. 四类成果与可信度
 
@@ -61,6 +61,6 @@ ExperimentPlan 至少绑定 context_ref、hypothesis_id、允许原语、测量�
 
 ## 6. 后续推进顺序
 
-先修复现有被动链路并完成 M2-A；自然积累足量样本时补实机跨局复用证据。明确依赖局内主动探针时再实现 P7 的低风险完整闭环和突发危险中止。遇到真正算法缺口时进入 M2-B，以可复用机制为单位开发，不按每个道具 ID 复制状态机。
+M2-A 和有限机制编程已有各自证据，当前优先项由[进度](progress.zh-CN.md)维护。被动经验继续按稳定样本身份积累；自然获得足量样本后补实机跨局复用。69/114 的专用短测不等于通用 P7 已交付；只有真实依赖时扩展主动探针及危险中止，以能力缺口为单位开发，避免逐道具复制状态机。
 
 所有付费、消融及统计原则统一见 [README](../README.md)。本文不另设一套 API 预算，也不自动触发实验。

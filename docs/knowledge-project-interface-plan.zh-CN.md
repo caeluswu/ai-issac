@@ -1,6 +1,6 @@
 # 独立知识库接口与本项目 Gateway
 
-协议：Isaac Knowledge Contract 1.0 的本地最小子集。代码：[knowledge_project](../knowledge_project/README.md)。本文维护数据所有权、实际查询格式与扩展边界；学习算法见 [EID 学习机制](eid-local-learning-plan.zh-CN.md)，运行状态见 [准备审查](phase-2a-preparation.zh-CN.md)。
+协议：Isaac Knowledge Contract 1.0 的本地最小子集。代码：[knowledge_project](../knowledge_project/README.md)。本文维护数据所有权、实际查询格式与扩展边界；学习算法见 [EID 学习机制](eid-local-learning-plan.zh-CN.md)，运行状态见[当前进度](progress.zh-CN.md)。
 
 ## 1. 项目层级与依赖
 

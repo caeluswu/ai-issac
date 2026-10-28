@@ -1,6 +1,6 @@
 # 总体架构：分层时序控制与可验证扩展
 
-本文维护长期职责与依赖方向，不充当当前功能清单。当前状态见 [准备审查](phase-2a-preparation.zh-CN.md)，实施见 [M2-A 计划](phase-2a-plan.zh-CN.md)，环境/辅助边界见 [任务契约](task-contract.zh-CN.md)。
+本文维护长期职责与依赖方向，不充当当前功能清单。当前状态见 [进度与执行队列](progress.zh-CN.md)，阶段实施见 [路线图](phase-2-3-roadmap.zh-CN.md)，环境/辅助边界见 [任务契约](task-contract.zh-CN.md)。
 
 ## 1. 核心选择
 
@@ -16,7 +16,7 @@
 | 观测与身份 | WorldSnapshot、run/floor/visit/实体身份、未知字段与新鲜度 | 缺失不当作零，临时无敌不当作死亡 |
 | 构筑与账本 | BuildResolver、健康/资源状态、机制签名、校准与修订 | 实际面板优先；描述不重复加成；未知机制不伪装普通泪弹 |
 | 实时控制 | geometry/motion/threats、七策略槽、联合动作求解、进展监督 | 纯计算与有限状态；不联网、不写知识库、不直接发键 |
-| 执行与任务 | CombatSession 唯一发送者，RoomExecutor、FloorDirector；M3 增 RunDirector | 房间结束不结束连接；目标与动作分别管理 |
+| 执行与任务 | CombatSession 唯一发送者，RoomExecutor、FloorDirector、已接入的 RunDirector | 房间结束不结束连接；目标与动作分别管理 |
 | 知识与规划 | 独立 EID SDK、智能体经验、DeepSeek 评估与 BattlePlan | 来源是数据，输出经宿主验证；知识缺失不阻塞逐帧控制 |
 | 验证与演进 | 独立 Judge/记录、后续模型候选验证和发布 | 模型不修改成功标准、资源权限或安全内核 |
 
@@ -39,7 +39,7 @@ flowchart LR
 
 ## 3. 战斗组件与机制替换
 
-现有七槽位是 target、position、aim、fire、evade、escape、recovery，适合表达房间战术。道具映射到能力变化，敌人映射到行为与危险模型，不按“一道具一整套控制器”扩展。
+现有七槽位是 target、position、aim、fire、evade、escape、recovery，适合表达房间战术。敌人交战意图通过 EngagementPlanner 保持跨开闭盖的连续路线，武器保留攻击时序所有权；无怪机关通过 EnvironmentController/TimedTerrainPuzzle 分阶段规划，并与战斗共享运动、身份及有界监督。Host 和地形的当前实机范围见[专项证据](evidence/phase-3c-host-terrain-generalization.zh-CN.md)。道具映射到能力变化，敌人映射到行为与危险模型，不按“一道具一整套控制器”扩展。
 
 下层职责逐步稳定为：Movement/Collision、攻击来源、WeaponTiming、Trajectory、HitEffect、AttackConsequence；不要求立即为每项建立框架或文件。当前普通泪弹最小实现不等于完整能力依赖图。新增武器应替换对应时序/弹道/后果，保留目标、躲避、任务与独立判定的通用部分。
 
@@ -61,7 +61,7 @@ ContextRef 绑定 run/floor/visit/build/catalog/experience。计划模板可以�
 
 运行时规划：读取当前状态、可用组件、局部知识与反馈，输出评估与有界 BattlePlan；宿主检查参数、能力、上下文和预算。入房可暂停，战中请求不阻塞实时控制；本地紧急避险不等待模型。API 修复/工具轮次都计入请求预算。
 
-机制开发：M2-B 中，模型根据能力缺口输出真正的新程序，由独立宿主验证、限权运行、试用和发布。它与选择已有组件属于不同能力，作者证据分别记录；当前没有模型自动编程运行器。具体过程只在 [组件演进设计](item-knowledge-and-skill-evolution.zh-CN.md) 维护。
+机制开发：M2-B 中，模型根据能力缺口输出真正的新程序，由独立宿主验证、限权运行、试用和发布。它与选择已有组件属于不同能力，作者证据分别记录。当前已有 M2-B AST 与 M2-C QuickJS 受限运行器，以及已发布程序的实机采用和复用；主线默认不自动发起新代码生成，模型修订后的完整局内优化闭环仍待验收。具体过程只在 [组件演进设计](item-knowledge-and-skill-evolution.zh-CN.md) 维护。
 
 知识查询与学习也分工：独立项目拥有固定说明与来源，智能体拥有遭遇/测量/反例/技能。模型知识是待验证先验，被动测量优先，主动实验仅在依赖时启用。见 [知识接口](knowledge-project-interface-plan.zh-CN.md) 与 [学习机制](eid-local-learning-plan.zh-CN.md)。
 

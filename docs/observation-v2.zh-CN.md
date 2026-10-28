@@ -21,7 +21,7 @@ V2 保留 V1 的 room、layout、player、stats、health、inventory、敌人及
 
 ## 可见性
 
-普通物理掉落物保留变体；药丸仅保留外观颜色，不由此揭示实际效果。收藏品身份默认未知，仅对 Isaac、stage 1、stage_type 0–2、无盲目诅咒且正 ID 的当前普通底座按明确范围开放；盲目诅咒为 hidden，其他未验证情形为 unknown，两者均不导出 subtype。旧 PICKUPS 通道复用同一过滤器。
+普通物理掉落物保留变体；药丸仅保留外观颜色，不由此揭示实际效果。收藏品身份默认未知，仅对 Isaac、stage 1–6、stage_type 0–2、普通维度 0、无盲目诅咒且正 ID 的当前普通底座按明确范围开放；盲目诅咒为 hidden，其他未验证情形为 unknown，两者均不导出 subtype。旧 PICKUPS 通道复用同一过滤器。
 
 这不是任意角色、替代路线或视觉机制的完整身份识别器。遇到额外遮蔽机制应收紧范围或新增经验证的适配器，不能由“读到了底层 ID”推断允许使用。当前合同不启用隐藏身份辅助开关。
 
@@ -62,8 +62,15 @@ Boss 入场或下楼可能只收到 paused 心跳。它们只有在门口/已授
 
 ## M2-B 可选武器反馈
 
-M2-C 增加可选的伤害来源事件字段和弹体/激光/炸弹实体身份，不提高 COMBAT_FRAME 的必填版本。PLAYER_DAMAGE_ATTEMPT 的 schema_version=2 保存 event_id、callback_frame、run/room 和可空 source_entity，来源实体不可读时明确为 unavailable。外层 frame 保留回调/入队帧，timestamp 仍是发送时刻。伤害尝试不代表实际扣血；归因使用健康账本。新字段经过 Lua 桩测试，本轮未增加引擎实机核验，接口与缺口见 [M2-C计划](phase-2c-plan.zh-CN.md)。
+M2-C 增加可选的伤害来源事件字段和弹体/激光/炸弹实体身份，不提高 COMBAT_FRAME 的必填版本。PLAYER_DAMAGE_ATTEMPT 的 schema_version=2 保存 event_id、callback_frame、run/room 和可空 source_entity，来源实体不可读时明确为 unavailable。外层 frame 保留回调/入队帧，timestamp 仍是发送时刻。伤害尝试不代表实际扣血；归因使用健康账本。新字段有 Lua 桩测试及后续实机轨迹证据；Host 与随机 Roundy 房的实际来源记录见[当前证据](evidence/phase-3c-host-terrain-generalization.zh-CN.md)。记录到来源不等于已确定决策原因；接口与缺口见 [M2-C 计划](phase-2c-plan.zh-CN.md)。
 
 V2 增加可选 `weapon_feedback`，其内部 `schema_version=1`、`provenance=engine_input_callback`。`history` 最多保存 32 个有射击输入查询的更新帧；每条包含 frame、room_visit_id、可空 action_id、queried 与 values 的 left/right/up/down 布尔值，以及 consistent。同帧动作身份或方向值变化时 consistent=false。只有四向查询齐全、值一致、房间身份匹配且帧早于当前快照的条目，才可用于已应用输入反馈；没有查询不能补成零输入。重置保留历史，消费端按房间和帧去重。
 
 反馈证明输入回调提供的值，不能直接证明内部蓄力进度。可选 fire_delay 为原版玩家 FireDelay 数值，fire_direction 为可读时的方向；均不能替代已校准的时序。己方泪弹额外导出 collision_damage 与 entity_frame_count；出生归属仍需实例、owner 与轨迹交叉核对，不直接把实体年龄当成与桥接计数完全等价的时间轴。真实可读性和暂停释放后果见 [机制探针](evidence/phase-2b-mechanism-probe.zh-CN.md)。缺少反馈的旧轨迹仍可读取，但不能用于声称蓄力已确认。
+
+
+## M2-C 刀实体与地形观测
+
+`projectiles.player_knives` 保存刀实例身份、owner_type、位置/速度、半径、可空 collision_damage/charge、entity_frame_count、is_flying、distance/distance_change，以及可读时的 knife_velocity/max_distance/rotation。`phase` 为 held/outbound/returning/turning/unknown：除 held 外依据实际飞行标记及跨帧距离变化推断，不是引擎内部阶段证明。原版 charge 字段不能单独证明充能进度，运行器可用已确认输入历史和校准估计，保留来源。
+
+周期尖刺直接读取网格 type/variant/state/collision 和游戏更新帧；单帧收回状态、room.is_clear 或踏板触发都不证明未来安全。当前规划器逐实体学习周期，离房后不保留旧相位；未知机制和观测空档按证据不足处理。字段消费及范围见[Host/地形证据](evidence/phase-3c-host-terrain-generalization.zh-CN.md)。

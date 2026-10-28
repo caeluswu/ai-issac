@@ -1,10 +1,10 @@
 # M2-A 准备状态与 P0–P6 实现审查
 
-审查基线：`a7cd1a3`；审查日期：2026-10-27。A0 修复提交：`2dd71a7`、`174d40f`。目标环境与辅助边界以 [任务契约](task-contract.zh-CN.md) 为准。本文是当前准备状态的唯一维护入口；首层实施步骤见 [M2-A 详细计划](phase-2a-plan.zh-CN.md)，历史测试与实机成绩见 [P0–P2 证据](evidence/phase-2a-p0-p2-validation.zh-CN.md) 和 [P3–P6 证据](evidence/phase-2a-preparation-validation.zh-CN.md)。
+审查基线：`a7cd1a3`；审查日期：2026-10-27。A0 修复提交：`2dd71a7`、`174d40f`。目标环境与辅助边界以 [任务契约](task-contract.zh-CN.md) 为准。本文维护 M2-A 准备审查基线，当前项目能力与执行队列见[当前进度](progress.zh-CN.md)；首层实施步骤见 [M2-A 详细计划](phase-2a-plan.zh-CN.md)，历史测试与实机成绩见 [P0–P2 证据](evidence/phase-2a-p0-p2-validation.zh-CN.md) 和 [P3–P6 证据](evidence/phase-2a-preparation-validation.zh-CN.md)。
 
 ## 1. 结论
 
-**P0–P6 的架构可复用，四个已复现边界已由 A0 修复并加入回归。** 支持范围仍是普通泪弹、少量属性/飞行道具、规则拾取与被动标定；完整能力图和模型程序运行器不是已有能力。M2-A 楼层模块基于该基础实现，最新实机结论见 [首层验收](evidence/phase-2a-validation.zh-CN.md)。
+**P0–P6 的架构可复用，四个已复现边界已由 A0 修复并加入回归。** 该审查基线范围为普通泪弹、少量属性/飞行道具、规则拾取与被动标定；模型程序运行器在该基线尚未交付。后续 M2-B AST、M2-C JS 和更宽被动准入已接入，不能用本表否定当前实现；完整通用能力图仍未交付。M2-A 楼层模块基于该基础实现，最新实机结论见 [首层验收](evidence/phase-2a-validation.zh-CN.md)。
 
 历史 252 项测试和一次零失血实机清房说明已测试路径可行，不能覆盖所有组合边界。本次针对性运行 64 项现有测试通过，同时独立审查探针复现四个问题：测试通过与接口仍有缺陷可以同时成立。该审查证据没有启动游戏或请求 DeepSeek；A0 后的回归已验证四项复现场景均不再触发。历史诊断 JSON 保留原始结果，新代码执行同一诊断会返回 issue_present=false。
 
@@ -61,6 +61,6 @@ R1 的子型语义可查 [BombSubType API](https://wofsauge.github.io/IsaacDocs/
 | 首层专用观测、地图、Boss、出口和独立判定 | A1–A6 已实现；本地 TCP 闭环与负例已验证 |
 | 一次真实正常首层 + 必要 DeepSeek 接入证据 | 以 [M2-A 验收](evidence/phase-2a-validation.zh-CN.md) 为准 |
 | P7 主动实验 | 关闭；仅实际依赖时另行实现验收 |
-| P8 完整模型编程运行器 | M2-B，首层不依赖 |
+| P8 模型程序运行器 | 首层不依赖；后续 M2-B AST 和 M2-C JS 已有证据，完整自主优化仍未交付 |
 
-历史单房成功与首层成功分别保留证据。M2-B 的模型编程和 P7 主动实验仍有独立准入条件，不因楼层模块实现而视为完成。
+历史单房成功与首层成功分别保留证据。M2-B/M2-C 的模型程序结果查各阶段验收；P7 主动实验仍关闭，不因楼层模块实现而视为完成。

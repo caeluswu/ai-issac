@@ -1,6 +1,6 @@
 # 第一阶段战斗控制实现参考
 
-适用代码基线：`a7cd1a3`。本文保存现有求解、预测、监督和替换机制的具体实现细节；长期分工见 [总体架构](../architecture-plan.zh-CN.md)，DTO 见 [组件合同](../component-contract.zh-CN.md)。当前交互与学习缺陷见 [准备审查](../phase-2a-preparation.zh-CN.md)；此处的逐房规划次数不是 M2-A 待实现的实际 HTTP 请求总预算。
+适用代码基线：`a7cd1a3`。本文保存现有求解、预测、监督和替换机制的具体实现细节；长期分工见 [总体架构](../architecture-plan.zh-CN.md)，DTO 见 [组件合同](../component-contract.zh-CN.md)。该基线的交互与学习审查见 [准备审查](../phase-2a-preparation.zh-CN.md)，当前能力见[进度](../progress.zh-CN.md)与[组件合同](../component-contract.zh-CN.md)；此处的逐房规划次数不是 M2-A 待实现的实际 HTTP 请求总预算。
 
 ## 求解、替换与安全监督
 
