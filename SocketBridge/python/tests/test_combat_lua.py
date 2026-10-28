@@ -132,10 +132,10 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(self.api.State.controlMode, "MANUAL")
         self.assertEqual(self.api.Input.moveDirection.x, 0)
 
-    def test_new_room_callback_releases_even_if_room_indices_are_reused(self):
+    def test_new_room_callback_releases_without_invalidating_intro_lease(self):
         self.lua.execute("api.Input.applyCommand({move={x=1,y=0}}); callbacks[ModCallbacks.MC_POST_NEW_ROOM]()")
         self.assertEqual(self.api.State.roomEntryGeneration,1)
-        self.assertEqual(self.api.State.controlMode,'MANUAL')
+        self.assertEqual(self.api.State.controlMode,'FORCE_AI')
         self.assertEqual(self.api.Input.moveDirection.x,0)
 
     def test_shoot_feedback_requires_engine_queries_and_survives_release(self):

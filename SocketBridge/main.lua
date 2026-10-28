@@ -2223,7 +2223,8 @@ end
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function()
     State.roomEntryGeneration = State.roomEntryGeneration+1
     InputExecutor.reset()
-    State.controlMode = "MANUAL"
+    -- Preserve the source mode during native boss/floor intro pauses. The
+    -- first successful destination layout commits MANUAL with its new visit.
 end)
 
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, function()
