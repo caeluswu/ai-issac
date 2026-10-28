@@ -116,9 +116,9 @@ class TestAdaptiveCharge(unittest.TestCase):
         self.assertEqual(canonical(a.program.document),before)
 
     def test_known_room_damage_effect_does_not_authorize_active_pickup(self):
-        from combat.models import EffectObservation
+        from combat.models import TemporaryEffectsObservation
         s=snapshot()
-        s.effects=EffectObservation.model_validate({"status":"known","unknowns":[],
+        s.effects=TemporaryEffectsObservation.model_validate({"status":"known","unknowns":[],
             "items":[{"kind":"collectible","item_id":35,"count":1,"cooldown":0}]})
         self.assertEqual(resolve_items(s).family,"normal_tears")
         self.assertFalse(BuildResolver().supports_pickup(s,pickup(35)))
