@@ -56,6 +56,14 @@ class DoorNavigator:
 
     def step(self, s, plan, build):
         began = time.perf_counter()
+        if self.puzzle is None and s.room["is_clear"]:
+            grid = s.layout["grid"] or {}
+            timed = [cell for cell in grid.values() if cell["type"] == 9]
+            plates = [int(index) for index,cell in grid.items()
+                      if cell["type"] == 20 and cell["state"] == 3]
+            if timed and plates and all(cell["state"] == 1 for cell in timed):
+                from .terrain_puzzle import TimedTerrainPuzzle
+                self.puzzle = (TimedTerrainPuzzle(s.room_visit_id), min(plates))
         delta = self.goal-s.player.pos
         cross = abs(delta.y) if self.slot % 2 == 0 else abs(delta.x)
         door = (s.layout["doors"] or {}).get(str(self.slot), {})

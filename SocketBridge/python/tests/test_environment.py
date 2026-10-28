@@ -4,6 +4,7 @@ import unittest
 from combat.models import WorldSnapshot, Vec, BuildProfile
 from combat.environment import EnvironmentController
 from combat.terrain_puzzle import SpikePhaseModel, TimedTerrainPuzzle
+from combat.navigation import DoorNavigator
 from combat.geometry import GeometryService
 from combat.observation import SnapshotAssembler
 from combat.threats import ThreatField
@@ -135,3 +136,16 @@ class TestTimedTerrainPuzzle(unittest.TestCase):
         schedule = puzzle._plan(geometry,self.s,self.build,timed,67)
         self.assertEqual([cell for cell,_,_ in schedule],[98,83,68,67])
         self.assertGreaterEqual(schedule[0][1],self.s.frame)
+
+    def test_revisited_solved_room_rebuilds_navigation_puzzle(self):
+        self.s.room["is_clear"] = True
+        self.s.layout["grid"]["67"]["state"] = 3
+        for cell in self.s.layout["grid"].values():
+            if cell["type"] == 9:cell["state"] = 1
+        door = {"x":320,"y":120,"is_open":True,"is_locked":False}
+        self.s.layout["doors"]["1"] = door
+        navigator = DoorNavigator(1,door)
+        action = navigator.step(self.s,default_plan(context(self.s)),self.build)
+        self.assertIsNotNone(navigator.puzzle)
+        self.assertEqual(action.diagnostics["puzzle_phase"],"cross")
+        self.assertEqual(action.shoot,(0,0))
