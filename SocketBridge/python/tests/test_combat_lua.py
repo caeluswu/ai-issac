@@ -91,6 +91,19 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(self.api.Input.moveDirection.x, 0)
         self.assertEqual(self.api.Input.shootDirection.y, 0)
 
+    def test_hostile_shockwave_exports_movement_and_owner(self):
+        self.lua.execute('''
+            wave={Type=EntityType.ENTITY_EFFECT,Variant=61,SpawnerType=276,Size=0,
+                Index=20,InitSeed=31,FrameCount=5,Position={X=200,Y=220},Velocity={X=3,Y=0},
+                ToEffect=function() return {Timeout=20,MaxRadius=120,MinRadius=10} end}
+            hazard=api.Sensors.sensors.FIRE_HAZARDS.extract(wave,nil)
+        ''')
+        hazard=self.lua.globals().hazard
+        self.assertEqual(hazard.mechanism,'shockwave')
+        self.assertEqual(hazard.owner_type,276)
+        self.assertEqual(hazard.vel.x,3)
+        self.assertEqual(hazard.max_radius,120)
+
     def test_stale_room_action_rejected(self):
         self.lua.execute("api.Input.applyCommand({action_id=1,room_visit_id='wrong',observed_frame=0,move={x=1,y=0}})")
         self.assertFalse(self.lua.globals().lastSent.accepted)
@@ -118,6 +131,12 @@ class TestLuaInput(unittest.TestCase):
         self.lua.execute("api.Input.applyCommand({move={x=1,y=0}}); api.Network.disconnect()")
         self.assertEqual(self.api.State.controlMode, "MANUAL")
         self.assertEqual(self.api.Input.moveDirection.x, 0)
+
+    def test_new_room_callback_releases_even_if_room_indices_are_reused(self):
+        self.lua.execute("api.Input.applyCommand({move={x=1,y=0}}); callbacks[ModCallbacks.MC_POST_NEW_ROOM]()")
+        self.assertEqual(self.api.State.roomEntryGeneration,1)
+        self.assertEqual(self.api.State.controlMode,'MANUAL')
+        self.assertEqual(self.api.Input.moveDirection.x,0)
 
     def test_shoot_feedback_requires_engine_queries_and_survives_release(self):
         self.lua.execute('''

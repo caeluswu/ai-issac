@@ -49,6 +49,7 @@ local State = {
     -- Room tracking
     currentRoom = -1,
     currentRoomIdentity = nil,
+    roomEntryGeneration = 0,
     roomEntered = false,
     roomVisit = 0,
     runId = "boot",
@@ -866,6 +867,19 @@ SensorRegistry:register("FIRE_HAZARDS", {
             [10]="MOVABLE",[11]="COAL",[12]="MOVABLE_BLUE",[13]="MOVABLE_PURPLE",
         }
         if entity.Type == EntityType.ENTITY_EFFECT then
+            local WAVES = {[61]=true,[67]=true,[72]=true,[73]=true,[150]=true,[151]=true,[187]=true}
+            if WAVES[entity.Variant] and entity.SpawnerType ~= EntityType.ENTITY_PLAYER
+                and entity.SpawnerType ~= EntityType.ENTITY_FAMILIAR then
+                local effect = entity:ToEffect()
+                return {id=entity.Index,instance_id=tostring(entity.InitSeed)..":"..tostring(entity.Index),
+                    type="EFFECT",variant=entity.Variant,owner_type=entity.SpawnerType,
+                    pos=Helpers.vectorToTable(entity.Position),vel=Helpers.vectorToTable(entity.Velocity),
+                    collision_radius=math.max(16,entity.Size),mechanism="shockwave",
+                    entity_frame_count=entity.FrameCount,
+                    max_radius=Helpers.optional(function() return effect.MaxRadius end),
+                    min_radius=Helpers.optional(function() return effect.MinRadius end),
+                    remaining_ticks=effect and effect.Timeout > 0 and effect.Timeout or 30}
+            end
             local CREEP = {[22]=true,[23]=true,[24]=true,[25]=true,[26]=true,[56]=true}
             local hostileCreep = CREEP[entity.Variant] and entity.SpawnerType ~= EntityType.ENTITY_PLAYER
                 and entity.SpawnerType ~= EntityType.ENTITY_FAMILIAR
@@ -1681,6 +1695,72 @@ CommandHandler.register("FORMAT_SEEDS", function(params)
 end)
 
 -- Explicit runner-only fixture. Never offered as a policy/planner action.
+CommandHandler.register("PREPARE_ANGEL_TRIP_PROBE", function(params)
+    if params.confirm ~= "diagnostic_initialization" then return {success=false,error="Diagnostic confirmation required"} end
+    local game, player = Game(), Isaac.GetPlayer(0)
+    local room, level = game:GetRoom(), game:GetLevel()
+    if params.action == "enter_boss" then
+        if not room:IsClear() or level:GetCurrentRoomIndex() ~= level:GetStartingRoomIndex() then
+            return {success=false,error="Boss fixture requires clear floor start"}
+        end
+        local rooms = level:GetRooms()
+        for i=0,rooms.Size-1 do
+            local descriptor = rooms:Get(i)
+            if descriptor.Data and descriptor.Data.Type == 5 then
+                local index = descriptor.SafeGridIndex
+                game:StartRoomTransition(index,Direction.NO_DIRECTION,RoomTransitionAnim.TELEPORT,player)
+                return {success=true,source_mode="diagnostic_initialization",target_room=index}
+            end
+        end
+        return {success=false,error="No normal-map boss room"}
+    elseif params.action == "spawn_angel_door" then
+        if not room:IsClear() or room:GetType() ~= 5 then return {success=false,error="Clear boss required"} end
+        for slot=0,7 do
+            local door=room:GetDoor(slot)
+            if door and door.TargetRoomType == 15 then return {success=true,existing=true} end
+            if door and door.TargetRoomType == 14 then room:RemoveDoor(slot) end
+        end
+        -- Grant only during initialization of the door; no unsupported item
+        -- remains in the measured inventory or combat controller.
+        player:AddCollectible(499,0,false)
+        local spawned=room:TrySpawnDevilRoomDoor(true,true)
+        player:RemoveCollectible(499)
+        return {success=true,source_mode="diagnostic_initialization",spawned=spawned}
+    end
+    return {success=false,error="Unknown angel trip fixture"}
+end)
+
+CommandHandler.register("PREPARE_ECONOMY_PROBE", function(params)
+    local room = Game():GetRoom()
+    if params.confirm ~= "diagnostic_initialization" or not room:IsClear() or
+       (room:GetType() ~= 2 and room:GetType() ~= 15) then
+        return {success=false,error="Economy fixture requires clear shop/angel room"}
+    end
+    local mode = params.mode
+    if mode ~= "shop_purchase" and mode ~= "shop_health" and mode ~= "angel_choice" then
+        return {success=false,error="Unknown economy fixture"}
+    end
+    if (mode == "angel_choice") ~= (room:GetType() == 15) then
+        return {success=false,error="Economy fixture room mismatch"}
+    end
+    for _, entity in ipairs(Isaac.GetRoomEntities()) do
+        if entity.Type == EntityType.ENTITY_PICKUP then entity:Remove() end
+    end
+    local player = Isaac.GetPlayer(0)
+    player:AddCoins(15-player:GetNumCoins())
+    if mode == "shop_health" then player:AddHearts(2-player:GetHearts()) end
+    local stock = mode == "shop_purchase" and {{100,227,15,0}} or
+        mode == "shop_health" and {{10,3,5,0},{100,260,7,0}} or
+        {{100,182,0,77},{100,185,0,77},{100,407,0,77}}
+    for i, row in ipairs(stock) do
+        local pickup = Isaac.Spawn(5,row[1],row[2],Vector(200+i*80,280),Vector(0,0),nil):ToPickup()
+        pickup.Price=row[3]; pickup.AutoUpdatePrice=false; pickup.ShopItemId=i
+        pickup.OptionsPickupIndex=row[4]
+    end
+    player.Position=Vector(320,360); player.Velocity=Vector(0,0)
+    return {success=true,source_mode="diagnostic_initialization",mode=mode,count=#stock}
+end)
+
 CommandHandler.register("PREPARE_TERRAIN_PROBE", function(params)
     local room = Game():GetRoom()
     if params.confirm ~= "diagnostic_initialization" or not room:IsClear() or
@@ -1892,7 +1972,7 @@ mod:AddCallback(ModCallbacks.MC_POST_UPDATE, function()
     -- Room change detection
     local currentRoom = Game():GetLevel():GetCurrentRoomIndex()
     local listIndex = Helpers.optional(function() return Game():GetLevel():GetCurrentRoomDesc().ListIndex end)
-    local roomIdentity = State.floorGeneration..":"..tostring(listIndex)..":"..currentRoom
+    local roomIdentity = State.floorGeneration..":"..State.roomEntryGeneration..":"..tostring(listIndex)..":"..currentRoom
     if currentRoom ~= State.currentRoom or roomIdentity ~= State.currentRoomIdentity then
         local prevRoom = State.currentRoom
 
@@ -2138,6 +2218,14 @@ if ModCallbacks.MC_POST_PLAYER_DEATH then
 end
 
 -- Generation identity must change even when the room index is reused.
+-- Special/debug rooms can reuse both room index and pooled descriptor.
+-- The engine callback is the authoritative visit boundary, not the index.
+mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, function()
+    State.roomEntryGeneration = State.roomEntryGeneration+1
+    InputExecutor.reset()
+    State.controlMode = "MANUAL"
+end)
+
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, function()
     State.floorGeneration = State.floorGeneration+1
     State.currentRoom = -1

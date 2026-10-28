@@ -195,3 +195,14 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         action = JointActionSolver().solve(s,default_plan(context(s)),BuildResolver().update(s))
         self.assertEqual(action.diagnostics["engagement_phase"],"attack")
         self.assertIsNotNone(action.diagnostics["route_goal"])
+
+    def test_roundy_disappearance_does_not_treat_remote_wave_damage_as_contact(self):
+        s=self.load("roundy_wave_frame572.json")
+        field=ThreatField(s)
+        reserves=[t for t in field.threats if t.source=="roundy_disappearance_wave_hypothesis"]
+        self.assertTrue(reserves)
+        point=(s.player.pos.x,s.player.pos.y)
+        self.assertLess(min(t.gap(point,point,1,s.player.collision_radius) for t in reserves),0)
+        for e in s.enemies:
+            if e.type==276:e.state=8
+        self.assertFalse(any(t.source=="roundy_disappearance_wave_hypothesis" for t in ThreatField(s).threats))

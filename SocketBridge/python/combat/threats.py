@@ -125,6 +125,20 @@ class LandingMover(BurstMover):
         return predictions
 
 
+class Roundy(GenericEnemy):
+    """Observed disappearance state produces remote blast/wave damage.
+
+    The 220px reserve bounds four captured source-to-player distances (up to
+    196.5px). It is an engineering hypothesis, not an exact engine hit shape.
+    """
+    def forecast(self, enemy, snapshot):
+        result = super().forecast(enemy,snapshot)
+        if enemy.state == 6:
+            result.append(ThreatForecast(enemy.instance_id+":wave_reserve",enemy.pos.x,enemy.pos.y,
+                0,0,220,end=30,uncertainty=8,source="roundy_disappearance_wave_hypothesis"))
+        return result
+
+
 class ExplosiveBurst(LandingMover):
     # Ticking Spider: observed airborne class zero must retain landing threats.
     # Unhurt line-of-sight death at ~72px, hurt at ~54-60px, ordinary variant.
@@ -170,7 +184,7 @@ class EnemyAdapters:
         # Use the conservative 100px envelope until its radius is calibrated.
         self.adapters = {(25, 0): ExplosiveDeath(), (16, 2): ContactExplosive(), (10, 0): Pursuer(), (18, 0): Pursuer(),
                          (85, 0): BurstMover(), (94, 0): BurstMover(), (250, 0): ExplosiveBurst(),
-                         (305, 0): BurstMover(), (29, 0): LandingMover(),
+                         (305, 0): BurstMover(), (29, 0): LandingMover(), (276, 0): Roundy(),
                          (45, 0): MomBody(), (45, 10): MomFoot()}
     def resolve(self, enemy): return self.adapters.get((enemy.type, enemy.variant), self.default)
     def register(self, kind, variant, adapter): self.adapters[kind, variant] = adapter
@@ -234,8 +248,9 @@ class ThreatField:
                 0, 0, laser.get("collision_radius", 10), segment_end=end, uncertainty=4))
         for i, hazard in enumerate(s.hazards):
             if hazard.get("is_extinguished", False): continue
-            self.threats.append(ThreatForecast("hazard:"+str(i), hazard["pos"]["x"], hazard["pos"]["y"], 0, 0,
-                hazard["collision_radius"], end=min(45, max(1, hazard.get("remaining_ticks", 45))), uncertainty=2,
+            self.threats.append(ThreatForecast("hazard:"+str(hazard.get("instance_id",i)), hazard["pos"]["x"], hazard["pos"]["y"],
+                hazard.get("vel",{}).get("x",0),hazard.get("vel",{}).get("y",0),
+                max(hazard["collision_radius"],min(220,hazard.get("max_radius") or 0)) if hazard.get("mechanism") == "shockwave" else hazard["collision_radius"], end=min(45, max(1, hazard.get("remaining_ticks", 45))), uncertainty=2,
                 source=hazard.get("mechanism", "observed_hazard")))
         # Retained bridge death events survive partition removal. Conditional
         # prediction becomes a bounded residual field; disappearing alone does not.
