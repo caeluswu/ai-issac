@@ -2,6 +2,8 @@
 
 当前：M1、M2-A 首层、M2-B 蓄力程序、M2-C 有限道具扩展、M3-A 连续两层及 M3-B 连续四层均有工程可行性证据。M2-C 见[归因审核](evidence/phase-2c-attribution-review.zh-CN.md)和[道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md)；M3-A 见[连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md)，M3-B 见[连续四层验证](evidence/phase-3b-four-floor-validation.zh-CN.md)。M3-C 至 Mom 仍待实证。本文件维护里程碑与跨阶段取舍。
 
+当前执行方案见[M3-C 完整流程计划](phase-3c-completion-plan.zh-CN.md)：先做商店与天使房有限运营，再定位战斗阻塞并验证同局至 Mom。该计划尚未执行，不扩大既有支持声明。
+
 ### 当前推进状态
 
 当前能力、最近运行、失败和执行优先级统一见[当前进度](progress.zh-CN.md)。最新固定种子已正常完成前四层，Host 房 114 用时 440 更新、损失半颗心；整局在第五层因临时效果检查中止，该检查已做兼容修复和失败消息回放。随机种子首层 Roundy 房死亡，尚无从第一层到 Mom 的成功证据，也未证明随机稳定性。

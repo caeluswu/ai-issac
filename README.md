@@ -189,6 +189,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 | [M2-B 详细计划](docs/phase-2b-plan.zh-CN.md) / [验收证据](docs/evidence/phase-2b-validation.zh-CN.md) | 蓄力时序程序的合同、发布复用、全部失败、语法恢复和 API 总账 |
 | [M2-C实施计划](docs/phase-2c-plan.zh-CN.md) / [归因审核](docs/evidence/phase-2c-attribution-review.zh-CN.md) | 受伤事实、API诊断、独立审核与后续局内能力扩展 |
 | [首层运行手册](docs/phase-2a-runbook.zh-CN.md) / [验收证据](docs/evidence/phase-2a-validation.zh-CN.md) | 实际入口、完整首层证明及覆盖限制 |
+| [M3-C 完整流程计划](docs/phase-3c-completion-plan.zh-CN.md) | 商店/天使房适配、钱大于 15 时的商店优先及至 Mom 的验收 |
 | [第二、三阶段路线](docs/phase-2-3-roadmap.zh-CN.md) | M2-B 模型开发组件与 M3 连续推进至 Mom 的边界 |
 | [运行手册](docs/phase-1-runbook.zh-CN.md) | 已实现入口的配置、启动和排错 |
 | [EID 与本地经验](docs/eid-local-learning-plan.zh-CN.md) / [知识 SDK](knowledge_project/README.md) | 说明、观测和学习证据如何分开，当前接口如何使用 |

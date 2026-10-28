@@ -15,6 +15,7 @@
 | [M2-A 详细计划](phase-2a-plan.zh-CN.md) | 首层范围、状态机、模块接口、预算、A0–A7 提交与验收 |
 | [M2-B 详细计划](phase-2b-plan.zh-CN.md) | 首例蓄力组件、B0–B6 合同、开发预算及范围；结果由对应验收维护 |
 | [M2-C 实施计划](phase-2c-plan.zh-CN.md) | 受伤归因、有限道具适配、模型组件合同与后续反馈边界 |
+| [M3-C 完整流程计划](phase-3c-completion-plan.zh-CN.md) | 商店/天使房首批适配、条件运营、Roundy 阻塞与同局至 Mom 的实施和验收 |
 | [第二、三阶段路线](phase-2-3-roadmap.zh-CN.md) | M2-A、M2-B、M3 的里程碑和阶段衔接，不复制当前工作队列 |
 | [组件合同](component-contract.zh-CN.md) | 组件 DTO、能力、生命周期、宿主校验与限额 |
 | [V2 观测合同](observation-v2.zh-CN.md) | Lua/Python 结构化状态、字段语义、覆盖与兼容性 |
