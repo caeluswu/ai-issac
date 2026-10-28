@@ -9,6 +9,7 @@ from .components import EXECUTABLES, resilient_component, AttackProposal
 from .threats import ThreatField, EnemyAdapters, SafetyAssessment
 from .motion import PlayerMotion
 from .builds import BuildResolver, NormalTearsBuild
+from .engagement import EngagementPlanner
 
 MOVES = tuple((x, y) for y in (-1, 0, 1) for x in (-1, 0, 1))
 SHOTS = ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))
@@ -45,10 +46,11 @@ class MotionPredictor:
 
 
 class JointActionSolver:
-    def __init__(self, registry=None, enemy_adapters=None):
+    def __init__(self, registry=None, enemy_adapters=None, engagement_adapters=None):
         self.attack_model=None
         self.registry = registry or EXECUTABLES
         self.enemy_adapters = enemy_adapters or EnemyAdapters()
+        self.engagement = EngagementPlanner(engagement_adapters)
         self.modules = {}
         self.module_key = None
         self.recovery_level = 0
@@ -178,7 +180,11 @@ class JointActionSolver:
             if self.last_route_goal: self.failed_goals.append(self.last_route_goal)
             self.last_recovery_route = s.frame
             self.route_failures += 1
-        route = list(modules["position"].route(g, s, target.pos, build, modules["fire"], self.failed_goals).waypoints) if target else []
+        engagement = (self.engagement.choose(g, s, build, modules["position"], modules["fire"], self.failed_goals)
+                      if target is None and not movement_only and navigation_goal is None else None)
+        movement_focus = target or (engagement.enemy if engagement else None)
+        route = (list(modules["position"].route(g, s, target.pos, build, modules["fire"], self.failed_goals).waypoints)
+                 if target else list(engagement.waypoints) if engagement else [])
         if navigation_goal is not None:
             route = g.path(s.player.pos, navigation_goal)+[navigation_goal]
             # The start grid center is an A* bookkeeping node. Requiring a
@@ -288,8 +294,8 @@ class JointActionSolver:
             if endpoint not in routes: routes[endpoint] = threats.escape(g, position, build.move_speed, s.player.collision_radius+extra)
             escape, slack, exit_directions = routes[endpoint]
             stance = 0.
-            if target:
-                delta = target.pos-position
+            if movement_focus:
+                delta = movement_focus.pos-position
                 distance = delta.length()
                 stance = modules["position"].score(delta, desired*build.player_displacement_scale, s, build)
                 if waypoint:
@@ -354,7 +360,8 @@ class JointActionSolver:
                            state="ENTRY_GUARD" if movement_only else "RECOVER" if recovering else "EVADE" if best["clearance"] < 20 else "ENGAGE",
                            score={k: best[k] for k in ("clearance", "hit", "escape", "utility", "risk", "escape_slack", "early_risk", "first_contact")},
                            diagnostics={"route_goal": [round(route_goal.x), round(route_goal.y)] if route_goal else None,
-                               "movement_target": target.instance_id if target else None,
+                               "movement_target": movement_focus.instance_id if movement_focus else None,
+                               "engagement_reason": engagement.reason if engagement else None,
                                "route_remaining": sum(a.distance(b) for a, b in zip([s.player.pos]+route, route)),
                                "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"],
                                "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),

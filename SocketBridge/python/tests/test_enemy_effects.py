@@ -5,6 +5,7 @@ from combat.models import WorldSnapshot, Enemy, Vec
 from combat.threats import ThreatField, EnemyAdapters
 from combat.boundary_safety import boundary_danger
 from combat.controller import JointActionSolver, BuildResolver
+from combat.engagement import ClosedHost
 from combat.catalog import default_plan
 from tests.combat_fixtures import context, snapshot
 
@@ -53,3 +54,40 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         self.assertLess(field.gap((401,319),(401,319),15,10),0)
         pit.collision_class=3;pit.pos=Vec(x=407,y=319)
         self.assertTrue(boundary_danger(s))
+
+    def test_closed_hosts_reposition_without_firing_then_yield_to_open_target(self):
+        # Frame 17400 from the fourth-floor room that previously stalled.
+        s = self.load("closed_hosts_room109.json")
+        self.assertEqual(len(s.hostiles), 3)
+        self.assertFalse(any(enemy.vulnerable for enemy in s.hostiles))
+        solver = JointActionSolver()
+        build, plan = BuildResolver().update(s), default_plan(context(s))
+        action = solver.solve(s, plan, build)
+        self.assertNotEqual(action.move, (0, 0))
+        self.assertEqual(action.shoot, (0, 0))
+        self.assertIsNone(action.target)
+        self.assertEqual(action.diagnostics["engagement_reason"], "closed_host_firing_stance")
+        self.assertIsNotNone(action.diagnostics["route_goal"])
+        old_goal = action.diagnostics["route_goal"]
+
+        s.frame += 15
+        solver.recovery_level = 1
+        action = solver.solve(s, plan, build)
+        self.assertNotEqual(action.diagnostics["route_goal"], old_goal)
+        self.assertEqual(action.shoot, (0, 0))
+
+        opened_id = action.diagnostics["movement_target"]
+        next(enemy for enemy in s.enemies if enemy.instance_id == opened_id).vulnerable = True
+        s.frame += 1
+        action = solver.solve(s, plan, build)
+        self.assertEqual(action.diagnostics["movement_target"], opened_id)
+        self.assertIsNone(action.diagnostics["engagement_reason"])
+
+    def test_closed_host_engagement_adapter_can_be_replaced(self):
+        class NoEngagement(ClosedHost):
+            def route(self, *args): return None
+        s = self.load("closed_hosts_room109.json")
+        action = JointActionSolver(engagement_adapters={(27, 0): NoEngagement()}).solve(
+            s, default_plan(context(s)), BuildResolver().update(s))
+        self.assertIsNone(action.diagnostics["engagement_reason"])
+        self.assertIsNone(action.diagnostics["movement_target"])
