@@ -12,7 +12,7 @@ def clear_of_threats(s):
 
 class FloorJudge:
     def __init__(self, expected_stage=1):
-        if type(expected_stage) is not int or not 1 <= expected_stage <= 5:
+        if type(expected_stage) is not int or not 1 <= expected_stage <= 6:
             raise ValueError("INVALID_EXPECTED_STAGE")
         self.expected_stage = expected_stage
         self.observation = SnapshotAssembler()
@@ -69,20 +69,22 @@ class FloorJudge:
         if s.floor.instance_id == self.start.floor.instance_id:
             if self.departure: self.failure = "UNEXPECTED_RETURN_TO_SOURCE_FLOOR"
             if s.room.get("room_type") == 5:
-                bosses = [e for e in s.hostiles if e.is_boss is True]
+                bosses = [e for e in s.hostiles if e.type == 45] if self.expected_stage == 6 else [e for e in s.hostiles if e.is_boss is True]
                 if s.blocking_combat or not s.room["is_clear"]: self.completed_boss = None
                 if bosses:
                     row = self.bosses.setdefault(key.text(),{"visit":s.room_visit_id,"first_frame":s.frame,
-                        "identities":[],"engaged":False,"hp":{}})
+                        "identities":[],"engaged":False,"observed_damage":False,"hp":{}})
                     for enemy in bosses:
                         if [enemy.type,enemy.variant] not in row["identities"]: row["identities"].append([enemy.type,enemy.variant])
-                        if enemy.instance_id in row["hp"] and enemy.hp < row["hp"][enemy.instance_id]: row["engaged"] = True
+                        if enemy.instance_id in row["hp"] and enemy.hp < row["hp"][enemy.instance_id]:
+                            row["engaged"] = True
+                            row["observed_damage"] = True
                         row["hp"][enemy.instance_id] = enemy.hp
                     if action and action["visit"] == s.room_visit_id and action["shoot"] != (0,0): row["engaged"] = True
                     self.clear_since = None
                 if key.text() in self.bosses and self.bosses[key.text()]["engaged"] and clear_of_threats(s):
                     if self.clear_since is None: self.clear_since = s.frame
-                    if s.frame-self.clear_since >= 45:
+                    if s.frame-self.clear_since >= 45 and (self.expected_stage != 6 or self.bosses[key.text()]["observed_damage"]):
                         self.completed_boss = {"room_key":key.text(),"visit":s.room_visit_id,
                             "clear_frame":s.frame,**self.bosses[key.text()]}
                 else: self.clear_since = None
@@ -121,7 +123,12 @@ class FloorJudge:
         return found
 
     @property
-    def success(self): return bool(self.completed_boss and self.departure and self.actionable and not self.failure)
+    def success(self):
+        if self.expected_stage == 6:
+            return bool(self.completed_boss and self.completed_boss["observed_damage"] and not self.failure
+                        and self.previous and self.previous.alive
+                        and self.previous.floor.instance_id == self.start.floor.instance_id)
+        return bool(self.completed_boss and self.departure and self.actionable and not self.failure)
 
     def evidence(self):
         armed = {k:v for k,v in (self.armed or {}).items() if k != "pos"}

@@ -281,6 +281,10 @@ class FloorDirector:
                 self.session.log("empty_room_finished",**row)
             self.enter_state("SELECT_OBJECTIVE",s)
             if self.judge.completed_boss and self.judge.completed_boss["room_key"] == RoomKey.from_snapshot(s).text():
+                if self.context.stage == 6:
+                    if not self.judge.success: raise RuntimeError("MOM_TERMINAL_NOT_PROVEN")
+                    self.enter_state("COMPLETE",s)
+                    return
                 self.enter_state("EXECUTE_EXIT",s)
                 s = await self.exit(s)
                 self.enter_state("COMPLETE",s)

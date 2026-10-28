@@ -41,7 +41,7 @@ async def main(args):
     director = RunDirector(session,budget,target_stage=args.target_stage,wall_limit=args.wall_limit)
     manifest_path = log.directory / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest.update(task="M3-A" if args.target_stage==2 else "M3-B",source_mode="normal_play",
+    manifest.update(task="M3-A" if args.target_stage==2 else "M3-C" if args.target_stage==6 else "M3-B",source_mode="normal_play",
                     evaluation_mode="debug_replay" if args.seed else "normal_random",
                     seed_requested=args.seed,target_stage=args.target_stage,request_budget=budget.report(),
                     save_baseline="configs/task/save-baseline.slot-1.json")
@@ -64,8 +64,8 @@ async def main(args):
 def cli():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--slot",type=int,choices=(1,2,3),default=1)
-    parser.add_argument("--target-stage",type=int,choices=(2,3,4),default=2,
-                        help="normal exit after this stage; default two floors")
+    parser.add_argument("--target-stage",type=int,choices=(2,3,4,5,6),default=2,
+                        help="normal exit after stages 2-5, or defeat Mom on stage 6")
     parser.add_argument("--llm-requests",type=int,choices=range(0,7),default=0)
     parser.add_argument("--seed",help="debug replay only; omitted means a normal random run")
     parser.add_argument("--ready-timeout",type=float,default=75)

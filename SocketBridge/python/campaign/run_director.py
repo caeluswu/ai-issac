@@ -7,7 +7,7 @@ from .models import RunReport
 
 class RunDirector:
     def __init__(self, session, budget=None, *, target_stage=2, wall_limit=3600):
-        if type(target_stage) is not int or not 2 <= target_stage <= 5:
+        if type(target_stage) is not int or not 2 <= target_stage <= 6:
             raise ValueError("UNSUPPORTED_RUN_TARGET_STAGE")
         self.session = session
         self.budget = budget
@@ -45,11 +45,20 @@ class RunDirector:
                 if not report.success:
                     raise RuntimeError("RUN_FLOOR_FAILED: "+(report.error or report.result))
                 current = self.session.observation.latest
+                if stage == 6:
+                    boss=report.evidence.get("boss") or {}
+                    if (current is None or current.run_id != run_id or current.seed != seed
+                            or current.floor is None or current.floor.instance_id != identities[-1]
+                            or not current.alive or not boss.get("observed_damage")
+                            or not any(identity[0] == 45 for identity in boss.get("identities",[]))):
+                        raise RuntimeError("MOM_TERMINAL_CONTINUITY_FAILED")
+                    result = "MOM_DEFEATED"
+                    break
                 if (current is None or current.run_id != run_id or current.seed != seed
                         or current.floor is None or current.floor.stage != stage+1
                         or current.floor.instance_id in identities or not current.alive):
                     raise RuntimeError("RUN_EXIT_CONTINUITY_FAILED")
-            result = "TARGET_FLOORS_COMPLETED"
+            if result != "MOM_DEFEATED": result = "TARGET_FLOORS_COMPLETED"
         except (Exception, asyncio.CancelledError) as exc:
             error = type(exc).__name__+": "+str(exc)
             result = "CANCELLED" if isinstance(exc, asyncio.CancelledError) else "FAILED"
@@ -62,7 +71,7 @@ class RunDirector:
                 cleanup.append(type(exc).__name__+": "+str(exc))
         if cleanup:
             result = "CLEANUP_FAILED"
-        return RunReport(result=result,success=result=="TARGET_FLOORS_COMPLETED",run_id=run_id,seed=seed,
+        return RunReport(result=result,success=result in ("TARGET_FLOORS_COMPLETED","MOM_DEFEATED"),run_id=run_id,seed=seed,
                          error=error,floors=floors,floor_instance_ids=identities,
                          damage_half_hearts=self.session.task_judge.health.damage,
                          bones_lost=self.session.task_judge.health.bones_lost,

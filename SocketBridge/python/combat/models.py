@@ -52,6 +52,12 @@ class Enemy(Observed):
     collision_class: int
     is_boss: bool | None = None
     can_shut_doors: bool = True  # Missing legacy evidence remains blocking.
+    subtype: int | None = None
+    state: int | None = None
+    state_frame: int | None = None
+    contact_damage: float | None = None
+    v1: Vec | None = None
+    v2: Vec | None = None
 
 
 class WeaponObservation(Strict):

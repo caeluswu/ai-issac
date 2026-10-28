@@ -18,6 +18,32 @@ class TestMultiFloorJudge(unittest.TestCase):
         judge.observe(floor_snapshot(stage=4,frame=20))
         self.assertEqual(judge.failure,"UNAUTHORIZED_FLOOR_CHANGE")
 
+    def test_mom_requires_entity_45_observed_damage_and_stable_clear(self):
+        judge=FloorJudge(expected_stage=6)
+        judge.begin(floor_snapshot(stage=6))
+        other=floor_snapshot(86,20,boss=True,clear=False,stage=6)
+        judge.observe(other)
+        other_clear=floor_snapshot(86,80,boss=True,stage=6)
+        judge.observe(other_clear)
+        self.assertFalse(judge.success)
+
+        judge=FloorJudge(expected_stage=6)
+        judge.begin(floor_snapshot(stage=6))
+        fight=floor_snapshot(86,20,boss=True,clear=False,stage=6)
+        fight.enemies[0].type=45
+        judge.observe(fight)
+        hit=fight.model_copy(deep=True);hit.frame=21;hit.enemies[0].hp-=3.5
+        judge.observe(hit)
+        clear=floor_snapshot(86,22,boss=True,stage=6)
+        judge.observe(clear)
+        clear=clear.model_copy(deep=True);clear.frame=67
+        judge.observe(clear)
+        self.assertTrue(judge.success,judge.evidence())
+        self.assertIsNone(judge.departure)
+        dead=clear.model_copy(deep=True);dead.frame=68;dead.player.dead=True
+        judge.observe(dead)
+        self.assertFalse(judge.success)
+
 
 class TestTwoFloorTCP(unittest.IsolatedAsyncioTestCase):
     async def test_same_connection_and_run_clear_two_floors(self):
