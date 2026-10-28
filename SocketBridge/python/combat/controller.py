@@ -202,6 +202,11 @@ class JointActionSolver:
         movement_focus = target or (engagement.enemy if engagement else None)
         route = (list(modules["position"].route(g, s, target.pos, build, modules["fire"], self.failed_goals).waypoints)
                  if target else list(engagement.waypoints) if engagement else [])
+        if target and not route and self.failed_goals:
+            # Failed stances guide local recovery; they are not permanent
+            # exclusions. If every genuine firing lane was tried, revisit one
+            # instead of wandering among unrelated reposition goals forever.
+            route = list(modules["position"].route(g, s, target.pos, build, modules["fire"], ()).waypoints)
         if navigation_goal is not None:
             route = g.path(s.player.pos, navigation_goal)+[navigation_goal]
             # The start grid center is an A* bookkeeping node. Requiring a
@@ -242,6 +247,7 @@ class JointActionSolver:
         self.last_route_goal = (round(route_goal.x), round(route_goal.y)) if route_goal else None
         while route and route[0].distance(s.player.pos) < (18 if len(route) > 1 else 5): route.pop(0)
         waypoint = route[0] if route else None
+        route_control = bool(route and ((movement_only and navigation_goal is not None) or engagement is not None))
         suffix = [0.]*len(route)
         for i in range(len(route)-2, -1, -1): suffix[i] = suffix[i+1]+route[i].distance(route[i+1])
         initial_route_cost = s.player.pos.distance(route[0])+suffix[0] if route else 0.
@@ -276,7 +282,7 @@ class JointActionSolver:
             early_clearance, first_contact, blocked_steps = 1000., 13, 0
             for tick in range(1, 13):
                 rollout_desired = desired
-                if movement_only and navigation_goal is not None and tick > 1:
+                if route_control and tick > 1:
                     if future_index < len(route):
                         offset = route[future_index]-position
                         direction = (0 if abs(offset.x) < 7 else (1 if offset.x > 0 else -1),
@@ -291,7 +297,7 @@ class JointActionSolver:
                 if tick == 1: firing_velocity = velocity
                 position = new_position
                 trajectory.append(position)
-                if movement_only and navigation_goal is not None and route:
+                if route_control:
                     while future_index < len(route) and position.distance(route[future_index]) < (18 if future_index < len(route)-1 else 5): future_index += 1
                     remaining = position.distance(route[future_index])+suffix[future_index] if future_index < len(route) else 0.
                     discounted_progress += (initial_route_cost-remaining)*(.85**(tick-1))
@@ -311,7 +317,7 @@ class JointActionSolver:
             if endpoint not in routes: routes[endpoint] = threats.escape(g, position, build.move_speed, s.player.collision_radius+extra)
             escape, slack, exit_directions = routes[endpoint]
             stance = 0.
-            if movement_focus:
+            if movement_focus and engagement is None:
                 delta = movement_focus.pos-position
                 distance = delta.length()
                 stance = modules["position"].score(delta, desired*build.player_displacement_scale, s, build)
@@ -338,6 +344,11 @@ class JointActionSolver:
                     # Score the complete path, with earlier progress worth more.
                     # A lucky near-pass of one waypoint must not make waiting
                     # preferable to a physically feasible first action.
+                    utility += discounted_progress*.15
+                if engagement is not None and waypoint:
+                    # Enemy-specific engagement adapters own the route while
+                    # the enemy is invulnerable. Generic keep-range/kite
+                    # preferences must not pull against that route.
                     utility += discounted_progress*.15
                 if not s.hostiles and move != (0, 0): utility -= .08
                 if wall: utility -= 100

@@ -126,6 +126,34 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         self.assertEqual(action.diagnostics["movement_target"], opened_id)
         self.assertIsNone(action.diagnostics["engagement_reason"])
 
+    def test_closed_host_route_overrides_generic_kiting_at_rock_corner(self):
+        # A later visit to the same room reached this corner with the firing
+        # stance below the player. Generic kite scoring used to pull northwest
+        # forever although the Host-specific route was valid.
+        s = self.load("closed_hosts_room109.json")
+        s.player.pos = Vec(x=466.92398071289,y=209.31443786621)
+        s.player.vel = Vec(x=1.9143525362015,y=-1.9143525362015)
+        target = next(enemy for enemy in s.enemies if enemy.pos.x > 500)
+        target.pos = Vec(x=515.76177978516,y=155.98181152344)
+        solver = JointActionSolver()
+        action = solver.solve(s,default_plan(context(s)),BuildResolver().update(s))
+        self.assertEqual(action.diagnostics["engagement_reason"],"closed_host_firing_stance")
+        self.assertEqual(action.diagnostics["route_goal"],[516,280])
+        self.assertGreater(action.move[1],0)
+        self.assertEqual(action.shoot,(0,0))
+
+    def test_open_host_retries_exhausted_firing_stances(self):
+        s = self.load("closed_hosts_room109.json")
+        s.player.pos = Vec(x=396.5993347168,y=224.6315612793)
+        target = next(enemy for enemy in s.enemies if enemy.pos.x > 500)
+        target.vulnerable = True
+        solver = JointActionSolver()
+        solver.failed_goals.extend(((520,280),(520,320)))
+        action = solver.solve(s,default_plan(context(s)),BuildResolver().update(s))
+        self.assertIn(action.diagnostics["route_goal"],([520,280],[520,320]))
+        self.assertFalse(action.diagnostics["occlusion_reposition"])
+        self.assertEqual(action.diagnostics["movement_target"],target.instance_id)
+
     def test_closed_host_engagement_adapter_can_be_replaced(self):
         class NoEngagement(ClosedHost):
             def route(self, *args): return None
