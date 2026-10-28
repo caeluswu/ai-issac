@@ -56,6 +56,8 @@ async def run(updates,seed,fight=False,current_build=False,loadout=()):
                 s=await session.next_snapshot(after=s.snapshot_id,timeout=15)
             if command == 'stage 6':judge.begin(s)
         if fight:
+            report['initial_mom']=[{k:getattr(e,k,None) for k in ('instance_id','variant','subtype','hp','max_hp','state','champion_color')}
+                                   for e in s.enemies if e.type==45]
             result=await asyncio.wait_for(session.execute_room(s),120)
             s=session.observation.latest
             deadline=s.frame+90
@@ -99,6 +101,11 @@ async def run(updates,seed,fight=False,current_build=False,loadout=()):
         report.update(result="FAILED",error=type(exc).__name__+": "+str(exc))
         return 1
     finally:
+        latest=session.observation.latest
+        if latest:
+            report['final_observation']={'frame':latest.frame,'alive':latest.alive,'health':latest.health,
+                'mom':[{k:getattr(e,k) for k in ('instance_id','variant','subtype','hp','max_hp','state')}
+                       for e in latest.enemies if e.type==45]}
         try:await session.close()
         finally:
             if not current_build:launcher.collect_evidence()
