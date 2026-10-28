@@ -18,7 +18,7 @@ class Vec(Strict):
     def __sub__(self, b): return Vec(x=self.x-b.x, y=self.y-b.y)
     def __mul__(self, n): return Vec(x=self.x*n, y=self.y*n)
     def length(self): return math.hypot(self.x, self.y)
-    def distance(self, b): return (self-b).length()
+    def distance(self, b): return math.hypot(self.x-b.x,self.y-b.y)
     def dot(self, b): return self.x*b.x+self.y*b.y
     def unit(self): return self*(1/max(1e-9, self.length()))
 
