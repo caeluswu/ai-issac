@@ -169,8 +169,31 @@ function Network.send(data)
     if not State.connected then return false end
     local success, sent, err, expected = pcall(function()
         local payload = json.encode(data) .. "\n"
-        local count, sendErr = State.socket:send(payload)
-        return count, sendErr, #payload
+        local first = 1
+        local attempts = 0
+        local deadline = Isaac.GetTime() + 20
+        while first <= #payload do
+            attempts = attempts + 1
+            if attempts > 8 or Isaac.GetTime() >= deadline then
+                return nil, "send budget exceeded", #payload
+            end
+            -- LuaSocket returns the last payload index written, including on
+            -- partial timeout. Continue from that index so a large snapshot
+            -- is never turned into a truncated JSON line followed by EOF.
+            local last, sendErr, partial = State.socket:send(payload, first)
+            if sendErr and sendErr ~= "timeout" then
+                return nil, sendErr, #payload
+            end
+            local advanced = last or partial
+            if advanced and advanced >= first then
+                first = advanced + 1
+            elseif sendErr == "timeout" then
+                -- Retry only within the total time and attempt budget.
+            else
+                return nil, sendErr or "send made no progress", #payload
+            end
+        end
+        return #payload, nil, #payload
     end)
     if not success or not sent or sent ~= expected then
         if Config.DEBUG then print("[SocketBridge] Send failed: " .. tostring(err)) end

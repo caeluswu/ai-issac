@@ -23,7 +23,38 @@ class TestLuaInput(unittest.TestCase):
         source = (Path(__file__).parents[2]/"main.lua").read_text(encoding="utf-8")
         self.api = self.lua.execute(source+"\nreturn {State=State, Network=Network, Input=InputExecutor, Commands=CommandHandler, Custom=CustomCollectors, Sensors=SensorRegistry, Helpers=Helpers}")
         self.lua.globals().api = self.api
+        self.lua.globals().realSend = self.api.Network.send
         self.lua.execute("api.Network.send=function(value) lastSent=value; return true end; api.State.controlMode='FORCE_AI'")
+
+    def test_partial_send_resumes_at_last_index(self):
+        self.lua.execute('''
+            writes={}; api.State.connected=true
+            api.State.socket={send=function(self,payload,first)
+                table.insert(writes,first)
+                if first==1 then return nil,'timeout',1 end
+                return #payload
+            end}
+            sendResult=realSend({})
+        ''')
+        self.assertTrue(self.lua.globals().sendResult)
+        self.assertEqual(list(self.lua.globals().writes.values()), [1,2])
+
+    def test_send_progress_does_not_bypass_budget_or_closed_error(self):
+        for mode in ('timeout', 'closed'):
+            self.lua.globals().sendMode = mode
+            self.lua.execute('''
+                calls=0; clock=0; api.State.connected=true
+                Isaac.GetTime=function() clock=clock+5; return clock end
+                api.State.socket={close=function() end,send=function(self,payload,first)
+                    calls=calls+1; return nil,sendMode,first-1
+                end}
+                sendResult=realSend({})
+            ''')
+            self.assertFalse(self.lua.globals().sendResult)
+            self.assertFalse(self.api.State.connected)
+            self.assertEqual(self.api.State.controlMode, 'MANUAL')
+            self.assertLessEqual(self.lua.globals().calls, 3)
+            if mode == 'closed': self.assertEqual(self.lua.globals().calls, 1)
 
     def test_watchdog_releases_after_three_updates(self):
         self.lua.execute("api.Input.applyCommand({move={x=1,y=0},shoot={x=0,y=-1}})")
