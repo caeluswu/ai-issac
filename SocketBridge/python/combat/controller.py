@@ -256,6 +256,20 @@ class JointActionSolver:
         initial_route_cost = s.player.pos.distance(route[0])+suffix[0] if route else 0.
         threats = ThreatField(s, self.enemy_adapters)
         extra = profile.evade.params["extra_margin_px"]
+        route_suspended = False
+        if route_control:
+            distance = 0.
+            previous = s.player.pos
+            for point in route:
+                distance += previous.distance(point);previous=point
+                arrival = distance/max(1.,build.move_speed)
+                if arrival > 12: break
+                location=(point.x,point.y)
+                if threats.collides(location,location,12,s.player.collision_radius+extra,begin=max(0,arrival-2)):
+                    # A tactical route is a preference, not a commitment to
+                    # return into a forecast danger after the first escape
+                    # update. Evaluate sustained local controls instead.
+                    route_control=False;route_suspended=True;break
         self.positions.append((s.frame, s.player.pos))
         history = [p for f, p in self.positions if f <= s.frame-profile.recovery.params["stall_window_ticks"]]
         if history and self.previous_move != (0, 0) and s.player.pos.distance(history[-1]) < 8 and s.frame > self.recover_until:
@@ -403,6 +417,7 @@ class JointActionSolver:
                                "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),
                                "blocked_steps": best["blocked_steps"],
                                "invalid_pose_stall": best["invalid_pose_stall"],
+                               "route_follow_suspended_for_threat":route_suspended,
                                "near_risk_tolerance_px": 8,
                                "occlusion_reposition": repositioning,
                                "navigation_forward_override": forward_override, "first_route_progress": best["first_route_progress"],

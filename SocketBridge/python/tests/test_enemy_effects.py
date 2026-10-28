@@ -99,6 +99,8 @@ class TestRecordedEnemyEffects(unittest.TestCase):
             'state_frame':0,'collision_class':4,'pos':Vec(x=320,y=280)})
         s.enemies=[foot]
         self.assertLess(ThreatField(s).gap((320,280),(320,280),1,8.5),0)
+        foot.collision_class=0
+        self.assertLess(ThreatField(s).gap((320,280),(320,280),1,8.5),0)
 
     def test_closed_hosts_reposition_without_firing_then_yield_to_open_target(self):
         # Frame 17400 from the fourth-floor room that previously stalled.

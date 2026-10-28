@@ -56,5 +56,13 @@ class TestTargetVolume(unittest.TestCase):
         route=solver.engagement.choose(solver.geometry,s,b,solver.modules['position'],solver.modules['fire'])
         self.assertGreaterEqual(route.waypoints[-1].distance(route.enemy.pos),140)
 
+    def test_escape_rollout_does_not_return_to_a_dangerous_firing_lane(self):
+        s=WorldSnapshot.model_validate(json.loads((Path(__file__).parent/'fixtures/fast_mom_shadow.json').read_text(encoding='utf8')))
+        solver=JointActionSolver();a=solver.solve(s,default_plan(context(s)),BuildResolver().update(s))
+        self.assertTrue(a.diagnostics['route_follow_suspended_for_threat'])
+        self.assertNotEqual(a.move,(0,0))
+        chosen=next(c for c in solver.last_candidates if c['move']==a.move and c['shoot']==a.shoot)
+        self.assertGreater(chosen['escape_directions'],0)
+
 
 if __name__ == '__main__':unittest.main()

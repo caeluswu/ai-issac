@@ -172,13 +172,14 @@ class MomFoot(GenericEnemy):
 
     def forecast(self, enemy, snapshot):
         if enemy.state == 7:
-            # The same room showed state 7 from frame 24; collision became
-            # active at frame 51 and ended at 85. Do not infer a moving impact
-            # location from this single stationary-foot observation.
+            # Treat the observed shadow and its short motion sweep as an
+            # immediate planning exclusion. One fixed windup delay is not
+            # valid for every stomp sequence; future motion must not erase
+            # the threat at the currently observed landing position.
             return super().forecast(enemy,snapshot)+[ThreatForecast(enemy.instance_id+":foot_windup", enemy.pos.x, enemy.pos.y,
-                enemy.vel.x, enemy.vel.y, enemy.collision_radius,
-                start=max(0, 25-(enemy.state_frame or 0)),
-                end=max(1, 65-(enemy.state_frame or 0)), uncertainty=8,
+                0,0,enemy.collision_radius,
+                segment_end=(enemy.pos.x+enemy.vel.x*2,enemy.pos.y+enemy.vel.y*2),
+                uncertainty=8,
                 source="mom_foot_visible_windup")]
         return super().forecast(enemy, snapshot)
 
