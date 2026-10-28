@@ -20,6 +20,7 @@ def main():
     pools={p.get("Name"):{int(item.get("Id")) for item in p.findall("Item")}
            for p in ET.parse(game/"itempools.xml").getroot().findall("Pool")}
     boss,treasure=pools["boss"],pools["treasure"]
+    shop,angel=pools["shop"],pools["angel"]
     treasure_passives={i for i in treasure if collectible_types.get(i) in ("passive","familiar")}
     takeable=set(ITEM_SUPPORT)-{105}
     records={}
@@ -35,6 +36,8 @@ def main():
             "supported_collectible_ids":len(ITEM_SUPPORT)-1,
             "boss_pool_supported":len(boss&takeable),"boss_pool_total":len(boss),
             "boss_pool_unsupported":[{"id":i,"name":records.get(i,{}).get("name")} for i in sorted(boss-takeable)],
+            "shop_pool_takeable":len(shop&takeable),"shop_pool_total":len(shop),
+            "angel_pool_takeable":len(angel&takeable),"angel_pool_total":len(angel),
             "treasure_pool_takeable":len(treasure&takeable),"treasure_pool_total":len(treasure),
             "treasure_passive_familiar_takeable":len(treasure_passives&takeable),
             "treasure_passive_familiar_total":len(treasure_passives),

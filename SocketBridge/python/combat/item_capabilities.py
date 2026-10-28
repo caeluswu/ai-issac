@@ -14,14 +14,14 @@ ATTACK_ATTRIBUTES=frozenset({
     194,196,197,213,216,228,240,254,255,259,301,304,307,309,310,
     339,341,342,345,355,359,370,381,411,415,438,442,443,455,465,
     493,513,547,564,567,573,600,601,621,644,659,695,708,730,731,
-    732,
+    732,182,208,407,686,
 })
-MOVEMENT_ATTRIBUTES=frozenset({20,27,28,71,82,232,340,571,590,632})
+MOVEMENT_ATTRIBUTES=frozenset({20,27,28,71,82,232,340,571,590,632,185})
 HEALTH_AND_UTILITY=frozenset({
     15,16,17,19,22,23,24,25,26,31,46,75,76,91,92,
     108,119,129,141,142,162,173,184,190,195,198,218,219,223,225,
     226,242,253,303,312,313,334,335,343,344,346,354,375,428,456,
-    501,538,541,591,614,624,676,690,707,724,
+    501,538,541,591,614,624,676,690,707,724,64,199,203,227,249,260,414,535,
 })
 # These add autonomous damage/defence. They do not replace Isaac's normal
 # movement or tear input. Their contribution is observed, not promised DPS.
@@ -31,7 +31,7 @@ SUPPLEMENTAL_PASSIVES=frozenset({
     217,234,247,248,264,265,266,267,268,269,270,271,274,275,277,
     279,280,318,319,322,350,360,361,362,363,364,387,390,403,404,
     405,412,413,430,435,436,467,469,470,471,473,509,511,525,526,
-    528,542,581,607,608,610,615,629,645,649,661,693,698,702,717,
+    528,542,581,607,608,610,615,629,645,649,661,693,698,702,717,243,374,574,
 })
 assert not any(a & b for a,b in (
     (ATTACK_ATTRIBUTES,MOVEMENT_ATTRIBUTES),
@@ -51,7 +51,7 @@ for _items,_class in ((ATTACK_ATTRIBUTES,"attributes"),
 # does not authorize picking up or activating the corresponding active item.
 INSTANT_ROOM_DAMAGE_EFFECTS=frozenset({35})
 MECHANISMS={69:"charge",114:"knife"}
-PASSIVE_MODIFIERS={154:"left_eye_damage",169:"overkill_pierce",
+PASSIVE_MODIFIERS={182:"homing_estimated",185:"spectral",374:"holy_light",407:"changing_aura",574:"damage_aura",686:"soul_stat_growth",154:"left_eye_damage",169:"overkill_pierce",
                    213:"tear_projectile_interception",240:"random_stat_tradeoff",
                    254:"left_eye_damage",538:"trinket_generation",
                    600:"left_eye_fire_rate",731:"right_eye_damage"}

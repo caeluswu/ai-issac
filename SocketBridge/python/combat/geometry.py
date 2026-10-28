@@ -39,6 +39,11 @@ class GeometryService:
                 self.dangerous.add(int(i))
         self.dangerous.update(self.cell(Vec(**h["pos"])) for h in snapshot.hazards
                               if h.get("type") == "FIREPLACE" and not h.get("is_extinguished", False))
+        # Dead Dove keeps ordinary tear input but changes rock obstruction.
+        # Room boundaries/walls and player collision remain independent.
+        if snapshot.inventory.get("collectibles",{}).get("185",0) and snapshot.stats.get("weapon_type") == 1:
+            self.shootable.update(int(i) for i,c in grid.items()
+                if c["type"] in (2,3,4,5,6,14) and self.cells.get(str(i),{}).get("inside"))
         self.walkable -= self.dangerous
         self.motion_cells = set(self.walkable)
         self.walkable = {i for i in self.walkable if all(self.positions[i].distance(p)>r+self.radius for p,r in self.pickup_obstacles)}
