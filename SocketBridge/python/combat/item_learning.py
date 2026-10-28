@@ -2,7 +2,7 @@
 import asyncio
 import math
 from .builds import digest, observed_build
-from .item_interaction import PickupExecutor
+from .item_interaction import PickupExecutor, pickup_approach_allowed
 from .boundary_safety import boundary_danger
 
 
@@ -52,7 +52,8 @@ class ItemLearning:
             await self.prepare_room(current,build)
             candidates = [(p,self.decisions[(p.instance_id,p.sub_type,p.price)]) for p in current.pickups or []
                 if (p.instance_id,p.sub_type,p.price) not in self.attempted
-                and self.decisions[(p.instance_id,p.sub_type,p.price)].decision == "take"]
+                and self.decisions[(p.instance_id,p.sub_type,p.price)].decision == "take"
+                and pickup_approach_allowed(current,p)]
             if not candidates: break
             pickup,decision = min(candidates,key=lambda pair:(pair[0].variant != 10,current.player.pos.distance(pair[0].pos)))
             self.attempted.add((pickup.instance_id,pickup.sub_type,pickup.price))

@@ -6,6 +6,7 @@ from combat.boundary_safety import boundary_danger
 from combat.builds import BuildResolver
 from combat.item_knowledge import KnowledgeGateway
 from combat.item_learning import ItemLearning
+from combat.item_interaction import pickup_approach_allowed
 from combat.runtime import CombatSession, RunLog
 from facade import SocketBridge
 from tests.test_combat_session import SimulatedRoom
@@ -40,6 +41,13 @@ class TestFloorPickups(unittest.TestCase):
         self.assertTrue(boundary_danger(s))
         s.hazards=[];s.projectiles["enemy_projectiles"]=[{"id":1}]
         self.assertTrue(boundary_danger(s))
+
+    def test_pickup_on_fire_is_skipped_while_adjacent_safe_pickup_remains_reachable(self):
+        s=floor_snapshot()
+        s.hazards=[{"type":"FIREPLACE","is_shooting":False,
+                    "pos":{"x":400,"y":160},"collision_radius":13}]
+        self.assertFalse(pickup_approach_allowed(s,pickup(1,variant=10,pos={"x":400,"y":160})))
+        self.assertTrue(pickup_approach_allowed(s,pickup(2,variant=10,pos={"x":440,"y":160})))
 
 
 class TestHealthPickupTCP(unittest.IsolatedAsyncioTestCase):

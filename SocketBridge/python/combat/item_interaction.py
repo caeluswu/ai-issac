@@ -7,7 +7,19 @@ from .catalog import default_plan
 from .controller import JointActionSolver
 from .item_knowledge import pickup_authority
 from .boundary_safety import boundary_danger
+from .geometry import GeometryService
 from .supervision import ProgressSupervisor
+
+
+def pickup_approach_allowed(snapshot, pickup):
+    """Require a safe standing point at the pickup before authorizing movement."""
+    probe = snapshot.model_copy(update={"player": snapshot.player.model_copy(update={"pos": pickup.pos}),
+                                        "pickup_exclusions": []})
+    if boundary_danger(probe):
+        return False
+    geometry = GeometryService(probe)
+    return bool(geometry.walkable and geometry.clear(pickup.pos)
+                and geometry.path(snapshot.player.pos, pickup.pos))
 
 
 class PickupExecutor:
@@ -33,6 +45,7 @@ class PickupExecutor:
             if stored != json.loads(json.dumps(asdict(decision))): raise ValueError("PICKUP_DECISION_NOT_RECORDED")
             if decision.target_signature != pickup_authority(start,build,pickup): raise ValueError("PICKUP_TARGET_NOT_AUTHORIZED")
             if start.frame > decision.deadline_frame: raise ValueError("PICKUP_DECISION_EXPIRED")
+            if not pickup_approach_allowed(start,pickup): raise ValueError("PICKUP_TARGET_UNSAFE")
             await session.release()
             await session.set_mode("FORCE_AI")
             stamp = session.observation.latest.snapshot_id
@@ -78,6 +91,7 @@ class PickupExecutor:
                     current = await session.next_snapshot(after=current.snapshot_id)
                     continue
                 if (instance.variant,instance.sub_type,instance.price) != (pickup.variant,pickup.sub_type,pickup.price): raise RuntimeError("PICKUP_CHANGED")
+                if not pickup_approach_allowed(current,instance): raise RuntimeError("PICKUP_TARGET_UNSAFE")
                 if pickup.price and (current.inventory.get("coins") is None or current.inventory["coins"]-pickup.price < decision.reserve_coins):
                     raise RuntimeError("PICKUP_RESOURCE_BUDGET_CHANGED")
                 updated = session.build_resolver.update(current)
