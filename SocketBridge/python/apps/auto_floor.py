@@ -28,7 +28,7 @@ async def main(args):
     log = RunLog(args.output_dir or ROOT/"artifacts/runs"/stamp)
     log.manifest(ROOT,client.model if client else None)
     package = KnowledgeGateway.from_config(ROOT)
-    package.purchase_budget = 0
+    package.purchase_budget = None
     learning = ItemLearning(package)
     planner = FloorPlanner(Planner(client,KnowledgeStore(ROOT/"configs/knowledge"),log),log) if client else None
     pause = NativePause(game_executable=ROOT/"The Binding of Isaac Rebirth Repentance/isaac-ng.exe")
