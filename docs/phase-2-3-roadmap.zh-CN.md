@@ -8,7 +8,7 @@
 - Little Horn 的移动陷阱 `291/2` 曾在 Boss 死亡附近与玩家重叠，旧运行失去 1 个半心。现有危险场已读取该实体的位置、速度和碰撞半径，清房边界也保留近身威胁。修复后的正常首层运行最小边缘间距约 15.7 像素、零失血、正常离层；该问题已有针对性修复和证据，不再作为当前阻塞。[旧反例与修复证据](evidence/j835-passive-item-support.zh-CN.md)。
 - 固定种子 `3BYH A82R` 的同局四层运行已完成 M3-B：第四层 Host 房清理、Boss 击杀与正常出口均有证据；累计损失 7 个半心，0 次 DeepSeek 请求。[四层验收](evidence/phase-3b-four-floor-validation.zh-CN.md)。当前优先推进 Mom 阶段与随机种子泛化，第三层的高失血仍需后续优化。
 - M3-C 的 Mom 终点判定仍处于开发状态，尚无从第一层到 Mom 的连续成功证据。J835 开发房间诊断确认了 `45/0` 身体预备状态和 `45/10` 中央脚的碰撞时序，已据此添加专属危险预测；[诊断证据](evidence/phase-3c-mom-probe.zh-CN.md)不计入连续通关验收。
-- 无怪周期地形房由独立解谜控制器处理。J835 房间 961 已实测从上方、左侧和底部入口零损失触发踏板并出门；其他机关变体不在当前覆盖内。[定时地形证据](evidence/phase-3c-timed-terrain-room961.zh-CN.md)。
+- 无怪周期地形房由独立解谜控制器处理。J835 房间 961 已实测从上方、左侧和底部入口零损失触发踏板并出门；已增加无踏板的 955、959 零损失通路案例，并实现独立周期、分阶段踏板与重入相位重建；通用机制的覆盖范围见 [Host 与地形泛化](evidence/phase-3c-host-terrain-generalization.zh-CN.md)。[961 原始证据](evidence/phase-3c-timed-terrain-room961.zh-CN.md)。
 
 ## 1. 里程碑与独立成功证据
 
