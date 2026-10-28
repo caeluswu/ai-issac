@@ -5,7 +5,7 @@ from combat.models import WorldSnapshot, Enemy, Vec
 from combat.threats import ThreatField, EnemyAdapters
 from combat.boundary_safety import boundary_danger
 from combat.controller import JointActionSolver, BuildResolver
-from combat.engagement import ClosedHost
+from combat.engagement import ClosedHost, EngagementPlanner, EngagementRoute
 from combat.catalog import default_plan
 from tests.combat_fixtures import context, snapshot
 
@@ -124,7 +124,8 @@ class TestRecordedEnemyEffects(unittest.TestCase):
         s.frame += 1
         action = solver.solve(s, plan, build)
         self.assertEqual(action.diagnostics["movement_target"], opened_id)
-        self.assertIsNone(action.diagnostics["engagement_reason"])
+        self.assertIsNotNone(action.diagnostics["engagement_reason"])
+        self.assertEqual(action.diagnostics["engagement_phase"], "attack")
 
     def test_closed_host_route_overrides_generic_kiting_at_rock_corner(self):
         # A later visit to the same room reached this corner with the firing
@@ -162,3 +163,26 @@ class TestRecordedEnemyEffects(unittest.TestCase):
             s, default_plan(context(s)), BuildResolver().update(s))
         self.assertIsNone(action.diagnostics["engagement_reason"])
         self.assertIsNone(action.diagnostics["movement_target"])
+
+    def test_host_wait_expires_and_knockback_invalidates_stance_memory(self):
+        class Stances:
+            def route(self, geometry, snapshot, enemy, build, position, weapon, excluded):
+                for point in (Vec(x=200,y=200),Vec(x=240,y=200)):
+                    if (round(point.x),round(point.y)) not in excluded:
+                        return EngagementRoute(enemy,(point,),"test_stance")
+        s = self.load("closed_hosts_room109.json")
+        s.enemies = [s.enemies[0]]
+        enemy = s.enemies[0]
+        s.player.pos = Vec(x=200,y=200)
+        planner = EngagementPlanner({(27,0):Stances()})
+        start = s.frame
+        first = planner.choose(None,s,None,None,None)
+        self.assertEqual(first.phase,"wait_open")
+        s.frame = start+121
+        second = planner.choose(None,s,None,None,None)
+        self.assertEqual(second.waypoints[-1],Vec(x=240,y=200))
+        self.assertIn((200,200),planner.memory[enemy.instance_id]["blocked"])
+        enemy.pos = enemy.pos+Vec(x=20,y=0)
+        s.frame += 1
+        planner.choose(None,s,None,None,None)
+        self.assertFalse(planner.memory[enemy.instance_id]["blocked"])

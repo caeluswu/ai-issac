@@ -1,5 +1,5 @@
 """Enemy-specific movement goals while no enemy is currently attackable."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from .models import Enemy, Vec
 
@@ -10,6 +10,8 @@ class EngagementRoute:
     waypoints: tuple[Vec, ...]
     reason: str
     priority: int = 0
+    phase: str = "approach"
+    deadline: int | None = None
 
 
 class ClosedHost:
@@ -41,19 +43,65 @@ class EngagementPlanner:
     def __init__(self, adapters=None):
         self.adapters = {(27, 0): ClosedHost()} if adapters is None else dict(adapters)
         self.preferred_id = None
+        self.memory = {}
+        self.scope = None
 
     def choose(self, geometry, snapshot, build, position, weapon, excluded=()):
-        if any(enemy.vulnerable for enemy in snapshot.hostiles):
-            self.preferred_id = None
+        scope = (snapshot.run_id, snapshot.room_visit_id)
+        if scope != self.scope:
+            self.scope, self.memory, self.preferred_id = scope, {}, None
+        # Other enemy families retain their own targeting policy. A Host opening
+        # must not discard its route and restore generic kite scoring.
+        if any(enemy.vulnerable and (enemy.type, enemy.variant) not in self.adapters
+               for enemy in snapshot.hostiles):
             return None
         options = []
         for enemy in snapshot.hostiles:
             adapter = self.adapters.get((enemy.type, enemy.variant))
             if adapter is None:
                 continue
-            route = adapter.route(geometry, snapshot, enemy, build, position, weapon, excluded)
+            memory = self.memory.get(enemy.instance_id)
+            if memory is None or memory["origin"].distance(enemy.pos) >= 16:
+                memory = {"origin": enemy.pos, "blocked": {}, "goal": None,
+                          "since": snapshot.frame, "progress": snapshot.frame,
+                          "best": float("inf"), "hp": enemy.hp, "retry": False}
+                self.memory[enemy.instance_id] = memory
+            memory["blocked"] = {goal: until for goal, until in memory["blocked"].items()
+                                 if until > snapshot.frame}
+            if enemy.hp < memory["hp"]:
+                memory.update(progress=snapshot.frame, since=snapshot.frame, retry=False)
+                memory["blocked"].clear()
+            memory["hp"] = enemy.hp
+            if memory["goal"] is not None:
+                wait_expired = snapshot.frame-memory["since"] >= 120
+                stalled = snapshot.frame-memory["progress"] >= 60
+                if wait_expired or stalled:
+                    memory["blocked"][memory["goal"]] = snapshot.frame+180
+                    memory.update(goal=None, best=float("inf"), since=snapshot.frame,
+                                  progress=snapshot.frame)
+            blocked = tuple(excluded)+tuple(memory["blocked"])
+            route = adapter.route(geometry, snapshot, enemy, build, position, weapon, blocked)
+            if route and route.reason == "closed_host_retry_firing_stance":
+                retry_goal = (round(route.waypoints[-1].x), round(route.waypoints[-1].y))
+                if memory["retry"] and memory["goal"] != retry_goal:
+                    continue
+                memory["retry"] = True
             if route:
-                options.append(route)
+                goal = (round(route.waypoints[-1].x), round(route.waypoints[-1].y))
+                distance = sum(a.distance(b) for a,b in
+                               zip((snapshot.player.pos,*route.waypoints),route.waypoints))
+                if goal != memory["goal"]:
+                    memory.update(goal=goal, since=snapshot.frame, progress=snapshot.frame,
+                                  best=distance)
+                if distance < memory["best"]-4:
+                    memory.update(best=distance, progress=snapshot.frame)
+                phase = "attack" if enemy.vulnerable else "wait_open" if distance < 14 else "approach"
+                # Holding a valid firing stance is deliberate waiting, not a
+                # failed movement. Its separate 120-update deadline still runs.
+                if phase == "wait_open": memory["progress"] = snapshot.frame
+                options.append(replace(route, phase=phase,
+                    deadline=memory["since"]+120,
+                    priority=route.priority+(0 if enemy.vulnerable else 2)))
         if not options:
             self.preferred_id = None
             return None

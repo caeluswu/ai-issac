@@ -198,10 +198,12 @@ class JointActionSolver:
             self.last_recovery_route = s.frame
             self.route_failures += 1
         engagement = (self.engagement.choose(g, s, build, modules["position"], modules["fire"], self.failed_goals)
-                      if target is None and not movement_only and navigation_goal is None else None)
+                      if not movement_only and navigation_goal is None else None)
+        if engagement is not None:
+            target = engagement.enemy if engagement.enemy.vulnerable else None
         movement_focus = target or (engagement.enemy if engagement else None)
         route = (list(modules["position"].route(g, s, target.pos, build, modules["fire"], self.failed_goals).waypoints)
-                 if target else list(engagement.waypoints) if engagement else [])
+                 if target and engagement is None else list(engagement.waypoints) if engagement else [])
         if target and not route and self.failed_goals:
             # Failed stances guide local recovery; they are not permanent
             # exclusions. If every genuine firing lane was tried, revisit one
@@ -390,8 +392,13 @@ class JointActionSolver:
                            diagnostics={"route_goal": [round(route_goal.x), round(route_goal.y)] if route_goal else None,
                                "movement_target": movement_focus.instance_id if movement_focus else None,
                                "engagement_reason": engagement.reason if engagement else None,
+                               "engagement_phase": engagement.phase if engagement else None,
+                               "engagement_deadline": engagement.deadline if engagement else None,
                                "route_remaining": sum(a.distance(b) for a, b in zip([s.player.pos]+route, route)),
-                               "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"],
+                               "no_safe_candidate": not any(c["safe"] for c in candidates), "fire_reason": best["fire_reason"], "wait": best["wait"] or ({"reason":"known_invulnerability",
+                                   "deadline_frame":engagement.deadline,
+                                   "evidence":engagement.enemy.instance_id}
+                                   if engagement and engagement.phase == "wait_open" else None),
                                "budget_exhausted": self.budget_exhausted, "evaluated_candidates": len(candidates),
                                "blocked_steps": best["blocked_steps"],
                                "invalid_pose_stall": best["invalid_pose_stall"],
