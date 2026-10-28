@@ -56,6 +56,21 @@ class TestLuaInput(unittest.TestCase):
             self.assertLessEqual(self.lua.globals().calls, 3)
             if mode == 'closed': self.assertEqual(self.lua.globals().calls, 1)
 
+    def test_large_snapshot_partial_writes_keep_the_complete_line(self):
+        self.lua.execute('''
+            package.loaded.json.encode=function() return string.rep('x',20000) end
+            chunks={}; api.State.connected=true
+            api.State.socket={send=function(self,payload,first)
+                local last=math.min(first+8191,#payload)
+                table.insert(chunks,string.sub(payload,first,last))
+                if last < #payload then return nil,'timeout',last end
+                return last
+            end}
+            sendResult=realSend({}); delivered=table.concat(chunks)
+        ''')
+        self.assertTrue(self.lua.globals().sendResult)
+        self.assertEqual(self.lua.globals().delivered, 'x'*20000+'\n')
+
     def test_diagnostic_fixture_requires_explicit_confirmation_and_room(self):
         self.lua.execute("""
             function Game() return {
