@@ -24,7 +24,8 @@ class TestFloorPickups(unittest.TestCase):
             s.floor_progress.can_pick_red=True;s.health["red_hearts"]=3
             self.assertEqual(gateway.decide(s,build,pickup(1,variant=10)).decision,"take")
             self.assertEqual(gateway.decide(s,build,pickup(3,variant=10)).decision,"take")
-            self.assertEqual(gateway.decide(s,build,pickup(6,variant=10)).decision,"skip")
+            self.assertEqual(gateway.decide(s,build,pickup(6,variant=10)).decision,"take")
+            self.assertEqual(gateway.decide(s,build,pickup(4,variant=10)).decision,"skip")
             self.assertEqual(gateway.decide(s,build,pickup(4,variant=40)).decision,"skip")
             self.assertEqual(gateway.decide(s,build,pickup(1,variant=40)).decision,"take")
             s.inventory["bombs"]=99

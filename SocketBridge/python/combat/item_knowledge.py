@@ -26,7 +26,7 @@ class PickupDecision:
 
 def pickup_authority(s, build, pickup):
     return digest([s.run_id, s.floor.instance_id if s.floor else None, s.room_visit_id,
-                   pickup.instance_id, pickup.variant, pickup.sub_type, pickup.price,
+                   pickup.instance_id, pickup.variant, pickup.sub_type, pickup.price, pickup.options_pickup_index,
                    build.revision, build.signature])
 
 
@@ -101,8 +101,8 @@ class KnowledgeGateway:
             decision="take"; cost=pickup.price; reasons.append("FREE_KEY" if not cost else "BUY_KEY")
         elif pickup.variant == 40 and pickup.sub_type in (1, 2) and (s.inventory.get("bombs") or 0) < 99:
             decision="take"; cost=pickup.price; reasons.append("FREE_BOMB_PICKUP" if not cost else "BUY_BOMB")
-        elif pickup.variant == 10 and pickup.sub_type in (1,2,3):
-            eligible = s.floor_progress and (s.floor_progress.can_pick_soul if pickup.sub_type == 3 else s.floor_progress.can_pick_red)
+        elif pickup.variant == 10 and pickup.sub_type in (1,2,3,6):
+            eligible = s.floor_progress and (s.floor_progress.can_pick_soul if pickup.sub_type in (3,6) else s.floor_progress.can_pick_red)
             if eligible is True: decision="take"; cost=pickup.price; reasons.append("SUPPORTED_FREE_HEALTH" if not cost else "BUY_HEALTH")
             else: reasons.append("HEALTH_CAPACITY_FULL_OR_UNKNOWN")
         else: reasons.append("PICKUP_STRATEGY_NOT_IMPLEMENTED")

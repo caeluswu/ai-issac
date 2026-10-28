@@ -16,6 +16,9 @@ from tests.test_item_knowledge import package_fixture, pickup
 from tests.test_combat_session import SimulatedRoom
 from facade import SocketBridge
 from combat.runtime import CombatSession, RunLog
+from combat.controller import JointActionSolver
+from combat.catalog import default_plan
+from tests.combat_fixtures import context
 
 
 class TestEconomy(unittest.TestCase):
@@ -30,11 +33,23 @@ class TestEconomy(unittest.TestCase):
         self.assertEqual(FloorGraph().choose(s)[1].target_room_type,2)
 
     def test_new_passive_builds_keep_normal_input_and_observed_damage(self):
-        for item in (64,199,203,208,227,249,260,414,535,182,185,243,374,407,574,686):
+        for item in (64,199,203,208,227,249,260,414,535,182,185,243,374,407,574,686,499):
             s=floor_snapshot();s.inventory['collectibles'][str(item)]=1;s.stats['damage']=7.25
             build=BuildResolver().update(s)
             self.assertEqual(build.family,'normal_tears',item)
             self.assertEqual(build.damage_per_hit,7.25,item)
+
+    def test_known_shop_health_can_be_revisited_below_fifteen_coins(self):
+        graph=FloorGraph();s=floor_snapshot();s.layout['doors']={'2':door(85,kind=2)}
+        source=graph.observe(s).key
+        shop=floor_snapshot(85);shop.room['room_type']=2
+        shop.pickups=[pickup(3,variant=10,price=5)]
+        shop.layout['doors']={'0':door(84)}
+        graph.confirm(source,2,shop)
+        s.inventory['coins']=5;s.health['red_hearts']=1
+        choice=graph.choose(s)
+        self.assertIsNotNone(choice)
+        self.assertEqual(choice[1].target_room_type,2)
 
     def test_spectral_rock_permission_does_not_allow_player_collision(self):
         s=floor_snapshot();index=70;cell=s.layout['cells'][str(index)]
@@ -52,6 +67,16 @@ class TestEconomy(unittest.TestCase):
         heart=pickup(3,variant=10,price=5)
         item=pickup(1,price=15,instance_id='other')
         self.assertIs(policy.choose(s,[(item,None),(heart,None)])[0],heart)
+
+    def test_spectral_pickup_invalidates_geometry_when_already_flying(self):
+        s=floor_snapshot();s.stats['can_fly']=True;s.inventory['collectibles']['20']=1
+        solver=JointActionSolver();resolver=BuildResolver();build=resolver.update(s)
+        solver.solve(s,default_plan(context(s)),build)
+        previous=solver.geometry
+        s.inventory['collectibles']['185']=1;build=resolver.update(s)
+        ref=context(s).model_copy(update={'build_revision':build.revision})
+        solver.solve(s,default_plan(ref),build)
+        self.assertIsNot(solver.geometry,previous)
 
     def test_buy_health_respects_capacity_price_and_room(self):
         with tempfile.TemporaryDirectory() as root:

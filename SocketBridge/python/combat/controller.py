@@ -189,7 +189,7 @@ class JointActionSolver:
         portals = tuple(sorted((slot, d['x'], d['y']) for slot, d in (s.layout['doors'] or {}).items()
                                if d['is_open'] and not d['is_locked']))
         pickup_key = tuple((p["id"],p["x"],p["y"],p["radius"]) for p in getattr(s,"pickup_exclusions",[]))
-        geometry_key = (s.room_visit_id, s.stats["can_fly"], s.player.collision_radius, str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices),tuple(allowed_exits),fire_cells,portals,pickup_key)
+        geometry_key = (s.room_visit_id, bool(s.inventory.get("collectibles",{}).get("185")), s.stats["can_fly"], s.player.collision_radius, str(s.layout["grid"]), str(s.layout["cells"]), tuple(allowed_devices),tuple(allowed_exits),fire_cells,portals,pickup_key)
         if geometry_key != self.geometry_key:
             self.geometry, self.geometry_key = GeometryService(s,allowed_devices,allowed_exits), geometry_key
         g = self.geometry

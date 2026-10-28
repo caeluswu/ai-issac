@@ -2,6 +2,8 @@
 from collections import deque
 from dataclasses import dataclass, field
 from .models import RoomKey, DoorObservation
+from combat.economy import PickupChoicePolicy
+from combat.item_capabilities import ITEM_SUPPORT
 
 
 @dataclass
@@ -12,6 +14,8 @@ class Node:
     doors: dict = field(default_factory=dict)
     links: dict = field(default_factory=dict)
     healing: bool = False
+    stock: tuple = ()
+    inspected_coins: int | None = None
 
 
 class TreasureFirstRoutePolicy:
@@ -69,8 +73,28 @@ class FloorGraph:
         self.grid_aliases[s.room["room_idx"]] = key
         node.doors = {int(slot):DoorObservation(slot=int(slot),**{k:v for k,v in d.items() if k in DoorObservation.model_fields and k != "slot"})
                       for slot,d in (s.layout["doors"] or {}).items()}
-        node.healing = any(p.variant == 10 and p.sub_type in (1,2,3) and p.price == 0 for p in s.pickups or [])
+        node.healing = any(p.variant == 10 and p.sub_type in (1,2,3,6) and p.price == 0 for p in s.pickups or [])
+        if node.room_type == 2:
+            node.stock = tuple((s.pickups or [])[:16])
+            node.inspected_coins = s.inventory.get("coins")
         return node
+
+    def shop_wanted(self, node, snapshot):
+        if node.room_type != 2: return False
+        coins = snapshot.inventory.get("coins")
+        if coins is None: return False
+        policy = PickupChoicePolicy()
+        for pickup in node.stock:
+            if (pickup.is_empty or pickup.price is None or pickup.price < 0 or pickup.price > coins
+                    or pickup.identity_visibility != "visible"): continue
+            if pickup.variant == 10 and pickup.sub_type in (1,2,3,6) and snapshot.hp <= 2:
+                eligible = snapshot.floor_progress and (snapshot.floor_progress.can_pick_soul if pickup.sub_type in (3,6)
+                                                       else snapshot.floor_progress.can_pick_red)
+                if eligible is True: return True
+            if (coins != node.inspected_coins and pickup.variant == 100
+                    and pickup.sub_type in ITEM_SUPPORT and pickup.sub_type != 105
+                    and policy.score(snapshot,pickup) > 0): return True
+        return False
 
     def destination(self, door):
         if door.target_room in self.grid_aliases: return self.grid_aliases[door.target_room]
@@ -91,6 +115,10 @@ class FloorGraph:
         for slot,door in node.doors.items():
             if self.failures.get((node.key,slot),0) >= 2 or door.target_room < 0: continue
             rank = self.route_policy.rank(door,snapshot,depth)
+            target = node.links.get(slot) or self.destination(door)
+            if (door.target_room_type == 2 and door.is_open and not door.is_locked
+                    and target in self.nodes and self.shop_wanted(self.nodes[target],snapshot)):
+                rank = (-2,depth)
             if rank is not None: yield slot,door,rank
 
     def choose(self, s):
@@ -103,7 +131,8 @@ class FloorGraph:
             key,first,depth = queue.popleft()
             node = self.nodes[key]
             if depth and s.hp <= 2 and node.healing:
-                candidates.append((-1,depth,first))
+                candidates.append((-3,depth,first))
+            if depth and self.shop_wanted(node,s): candidates.append((-2,depth,first))
             for slot,door,rank in self.available(node,s,depth):
                 target = node.links.get(slot) or self.destination(door)
                 step = slot if first is None else first

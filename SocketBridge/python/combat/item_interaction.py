@@ -65,7 +65,7 @@ class PickupExecutor:
                 if pickup.variant == 100:
                     acquired = collectibles(current).get(str(pickup.sub_type),0) > before.get(str(pickup.sub_type),0)
                 elif pickup.variant == 10:
-                    metric = "soul_hearts" if pickup.sub_type == 3 else "red_hearts"
+                    metric = "soul_hearts" if pickup.sub_type in (3,6) else "red_hearts"
                     acquired = current.health.get(metric,0) > start.health.get(metric,0)
                 else:
                     resource = {20:"coins",30:"keys",40:"bombs"}.get(pickup.variant)

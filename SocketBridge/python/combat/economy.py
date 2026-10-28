@@ -7,7 +7,7 @@ class PickupChoicePolicy:
         price = pickup.price or 0
         if pickup.variant == 20: return 120 if price == 0 else -1
         if pickup.variant == 10:
-            value = (140 if snapshot.hp <= 2 else 85) if pickup.sub_type == 3 else (150 if snapshot.hp <= 2 else 65)
+            value = (140 if snapshot.hp <= 2 else 85) if pickup.sub_type in (3,6) else (150 if snapshot.hp <= 2 else 65)
         elif pickup.variant in (30,40):
             count = snapshot.inventory.get("keys" if pickup.variant == 30 else "bombs") or 0
             value = 55 if count < 2 else 8
