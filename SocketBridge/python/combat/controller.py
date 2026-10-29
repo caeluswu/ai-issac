@@ -217,35 +217,34 @@ class JointActionSolver:
             if len(route) > 1 and g.line_clear(s.player.pos, route[1], radius=g.physical_radius): route.pop(0)
         weapon_capabilities = getattr(modules["fire"], "capabilities", None)
         if target and not route and weapon_capabilities and (weapon_capabilities.break_plain_poop or weapon_capabilities.extinguish_fire):
-            # Normal tears can open an otherwise sealed lane through ordinary
-            # poop. TNT, explosive/red poop and unknown variants are excluded.
+            # Open a sealed firing lane through supported ordinary poop or
+            # normal/red fire. Other variants and TNT are not authorized.
             blockers = []
             for index, grid in (s.layout["grid"] or {}).items():
                 if weapon_capabilities.break_plain_poop and grid["type"] == 14 and grid["variant"] == 0 and grid["collision"] != 0:
                     position = Vec(x=grid["x"], y=grid["y"])
-                    obstacle = Enemy(instance_id="terrain:"+index,type=0,variant=0,pos=position,vel=ZERO,
-                        hp=1,max_hp=1,collision_radius=18,vulnerable=True,friendly=False,dead=False,collision_class=0)
-                    blockers.append((position.distance(s.player.pos), index, position,obstacle))
+                    blockers.append((position.distance(s.player.pos), index, position,None))
             if weapon_capabilities.extinguish_fire:
                 for fire in s.hazards:
                     if fire.get('type')!='FIREPLACE' or fire.get('variant') not in (0,1) or fire.get('is_extinguished') is True:continue
                     position=Vec(**fire['pos']);identity='fire:'+str(fire['id'])
-                    obstacle=Enemy(instance_id='terrain:'+identity,type=33,variant=fire['variant'],pos=position,vel=ZERO,
-                        hp=max(1,fire.get('hp',5)),max_hp=max(5,fire.get('max_hp',5)),collision_radius=fire['collision_radius'],
-                        vulnerable=True,friendly=False,dead=False,collision_class=0)
-                    blockers.append((position.distance(s.player.pos),identity,position,obstacle))
+                    blockers.append((position.distance(s.player.pos),identity,position,fire))
             best_blocker = None
-            for distance, index, position, obstacle in sorted(blockers, key=lambda x: (x[0], x[1])):
+            for distance, index, position, fire in sorted(blockers, key=lambda x: (x[0], x[1])):
                 # Every usable proposal has at least one waypoint, hence its
                 # existing score is >=40+distance. Skip only targets proven
                 # unable to beat the current minimum, including custom weapons.
                 if best_blocker is not None and 40+distance > best_blocker[0]: break
                 path = list(modules["position"].route(g, s, position, build, modules["fire"], terrain=True).waypoints)
                 if path:
-                    proposal = (len(path)*40+distance, index, obstacle, path)
+                    proposal = (len(path)*40+distance, index, position, path,fire)
                     if best_blocker is None or proposal[:2] < best_blocker[:2]: best_blocker = proposal
             if best_blocker:
-                _, index, target, route = best_blocker
+                _, index, position, route, fire = best_blocker
+                target=Enemy(instance_id='terrain:'+index,type=33 if fire else 0,variant=fire['variant'] if fire else 0,
+                    pos=position,vel=ZERO,hp=max(1,fire.get('hp',5)) if fire else 1,
+                    max_hp=max(5,fire.get('max_hp',5)) if fire else 1,collision_radius=fire['collision_radius'] if fire else 18,
+                    vulnerable=True,friendly=False,dead=False,collision_class=0)
                 movement_focus = target
         repositioning = False
         if target and not route and not movement_only:
