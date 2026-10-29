@@ -99,7 +99,29 @@ class RoomExecutor:
         errors = []
         current = s
         try:
-            result = combat_result = await self._engage(s)
+            configure=True
+            while True:
+                result = combat_result = await self._engage(current,configure=configure)
+                if result!='CLEARED':break
+                try:
+                    current = self.session.observation.latest or current
+                    if self.session.learning:current=await self.session.learning.collect(self.session,current)
+                    current = self.session.observation.latest or current
+                    if self.identity(current)==self.identity(s) and current.alive and not current.blocking_combat and boundary_danger(current):
+                        current=await asyncio.wait_for(self.settle_boundary(current),5)
+                except Exception as exc:
+                    result='ITEM_BOUNDARY_FAILED';errors.append(type(exc).__name__+': '+str(exc));break
+                if (self.identity(current)!=self.identity(s) or not current.alive or not self.session.bridge.connected
+                        or not current.blocking_combat):break
+                # Destructible terrain/death effects can create a new enemy
+                # during pickup or residual handling. This is the same visit,
+                # not a fresh room budget or a new paid planning request.
+                self.session.log('post_clear_combat_resumed',frame=current.frame,room_visit_id=current.room_visit_id)
+                self.state.clear_started=self.state.clear_safe_since=None
+                await self.session.release()
+                await self.session.set_mode('FORCE_AI')
+                current=await self.session.next_snapshot(after=self.session.observation.latest.snapshot_id)
+                configure=False
         finally:
             if self.state.pending:
                 self.state.pending.cancel()
@@ -107,11 +129,6 @@ class RoomExecutor:
                 self.state.pending = None
             current = self.session.observation.latest or current
             try:
-                if result == "CLEARED" and self.session.learning:
-                    current = await self.session.learning.collect(self.session,current)
-                current = self.session.observation.latest or current
-                if result == "CLEARED" and self.identity(current)==self.identity(s) and current.alive and not current.blocking_combat and boundary_danger(current):
-                    current=await asyncio.wait_for(self.settle_boundary(current),5)
                 if self.identity(current) != self.identity(s): result = "POST_CLEAR_CONTEXT_CHANGED"
                 elif self.session.death_observed or not current.alive: result = "DEAD"
                 elif self.session.death_event_frame is not None: result = "REVIVAL_UNCONFIRMED"
@@ -154,10 +171,10 @@ class RoomExecutor:
             self.session.log("room_finished",**row)
         return result
 
-    async def _engage(self, s):
+    async def _engage(self, s, *, configure=True):
         session = self.session
         session.target_room = s.room_visit_id
-        s = await session.configure_room(s)
+        if configure:s = await session.configure_room(s)
         while True:
             if s.room_visit_id != session.target_room: raise RuntimeError("UNEXPECTED_ROOM_CHANGE")
             if s.mode == "MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
