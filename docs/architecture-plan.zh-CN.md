@@ -39,13 +39,15 @@ flowchart LR
 
 ## 3. 战斗组件与机制替换
 
+道具、敌人与环境的目标代码边界、机制族映射、职责组合、公共接口及版本替换规则以[玩法模块架构契约 v1](gameplay-module-contract.zh-CN.md)为准。它是后续迁移合同；当前实现仍以源码和[当前组件合同](component-contract.zh-CN.md)为准，不因目标合同落盘而视为完成重构。
+
 现有七槽位是 target、position、aim、fire、evade、escape、recovery，适合表达房间战术。敌人交战意图通过 EngagementPlanner 保持跨开闭盖的连续路线，武器保留攻击时序所有权；无怪机关通过 EnvironmentController/TimedTerrainPuzzle 分阶段规划，并与战斗共享运动、身份及有界监督。Host 和地形的当前实机范围见[专项证据](evidence/phase-3c-host-terrain-generalization.zh-CN.md)。道具映射到能力变化，敌人映射到行为与危险模型，不按“一道具一整套控制器”扩展。
 
 下层职责逐步稳定为：Movement/Collision、攻击来源、WeaponTiming、Trajectory、HitEffect、AttackConsequence；不要求立即为每项建立框架或文件。当前普通泪弹最小实现不等于完整能力依赖图。新增武器应替换对应时序/弹道/后果，保留目标、躲避、任务与独立判定的通用部分。
 
 局部控制联合比较移动和射击，先考虑已知致命碰撞、非主动损失、未来逃生余量，再比较输出与任务进度。静态路径与动态危险分开；飞行不等于免疫所有伤害，能穿墙的攻击不意味着玩家可穿墙。被包围预测看未来可达空间，不能只保证下一帧不碰撞。
 
-攻击有预测时间窗、单位、目标/足迹、危险后果和未知范围。亡语、反射、自伤、TNT 等在攻击决策前纳入；释放型武器的输入释放可能产生攻击。工程保护不承诺未知机制绝对安全。具体 DTO/限额只在 [组件合同](component-contract.zh-CN.md) 维护。
+攻击有预测时间窗、单位、目标/足迹、危险后果和未知范围。亡语、反射、自伤、TNT 等在攻击决策前纳入；释放型武器的输入释放可能产生攻击。工程保护不承诺未知机制绝对安全。当前具体 DTO/限额只在 [组件合同](component-contract.zh-CN.md) 维护，目标模块接口由玩法模块契约维护。
 
 ## 4. 生命周期与版本
 

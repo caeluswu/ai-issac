@@ -1,5 +1,7 @@
 # 战斗组件合同 v1
 
+本文维护当前实现接口。道具、敌人与环境的机制族拆分、职责装配及可替换性目标统一见[玩法模块架构契约 v1](gameplay-module-contract.zh-CN.md)；其中的目标接口和选择性状态重置尚未完成迁移，不覆盖本文描述的现有行为。
+
 当前接缝包括可信 Python 组件、M2-B 有界 AST 时序和 M2-C 常驻 QuickJS AttackModel。受伤采集及审核独立于动作执行；菜刀 114 的短测、边界加载与复用已有证据，模型修订后的局内优化仍未验收。当前完成状态见[进度](progress.zh-CN.md)，长期扩展见[能力设计](item-knowledge-and-skill-evolution.zh-CN.md)。
 
 适用：M2-A 的可信本地组件与 M2-B 的受限时序接缝。代码定义位于 `SocketBridge/python/combat/component_contracts.py`；七槽位与参数仍由 catalog 管理。普通可信组件不提供任意代码隔离；模型程序通过下述 AST 或 QuickJS 接缝运行，均无真实输入或系统 IO 权限。
