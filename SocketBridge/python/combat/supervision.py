@@ -56,6 +56,12 @@ class ProgressSupervisor:
                 self.evidence.append(ProgressEvidence("confirmed_npc_death", s.frame).__dict__)
                 self.last_damage = s.frame
         if self.previous:
+            old_fires={h['id']:h for h in self.previous.hazards if h.get('type')=='FIREPLACE' and h.get('is_extinguished') is not True}
+            for fire in s.hazards:
+                old=old_fires.get(fire.get('id')) if fire.get('type')=='FIREPLACE' else None
+                if old and (fire.get('is_extinguished') is True or fire.get('hp',float('inf'))<old.get('hp',0)):
+                    self.evidence.append(ProgressEvidence('fireplace_damaged_or_extinguished',s.frame,'terrain:fire:'+str(fire['id'])).__dict__)
+                    self.last_damage=s.frame
             for enemy in self.previous.hostiles:
                 current = enemies.get(enemy.instance_id)
                 # Disappearance is not proof of death (burrow/transform/partition).

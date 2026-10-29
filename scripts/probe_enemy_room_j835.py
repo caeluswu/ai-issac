@@ -75,7 +75,7 @@ async def main(stage="4", room=114, exact_fixture=False, current=False, retain_b
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage",choices=("1","1a","4","4a","5","5a"),default="4")
+    parser.add_argument("--stage",choices=("1","1a","4","4a","5","5a","6","6a"),default="4")
     parser.add_argument("--room",type=int,default=114)
     parser.add_argument("--exact-fixture",action="store_true")
     parser.add_argument("--current",action="store_true",help="Diagnose the matching current combat room without restarting or console initialization")

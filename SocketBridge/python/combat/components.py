@@ -184,7 +184,7 @@ class LocalRepath:
 
 
 class NormalTears:
-    capabilities = CapabilitySet("normal_tears", moving_attack=True, break_plain_poop=True)
+    capabilities = CapabilitySet("normal_tears", moving_attack=True, break_plain_poop=True,extinguish_fire=True)
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
     def __init__(self, params): self.params = params
     def begin_frame(self, snapshot, build):

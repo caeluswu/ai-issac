@@ -26,6 +26,7 @@ class CapabilitySet:
     family: str
     moving_attack: bool = False
     break_plain_poop: bool = False
+    extinguish_fire: bool = False
 
 
 @dataclass(frozen=True)
