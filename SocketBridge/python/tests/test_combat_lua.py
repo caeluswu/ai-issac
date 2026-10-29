@@ -118,6 +118,10 @@ class TestLuaInput(unittest.TestCase):
         self.assertFalse(self.api.Sensors.sensors.FIRE_HAZARDS.extract(self.lua.globals().fire,None).is_extinguished)
         self.lua.execute("fire.EntityCollisionClass=0;fire.GetSprite=function() return {GetAnimation=function() return 'Flickering' end} end")
         self.assertFalse(self.api.Sensors.sensors.FIRE_HAZARDS.extract(self.lua.globals().fire,None).is_extinguished)
+        self.lua.execute("fire.ToNPC=function() return {State=8} end;fire.HitPoints=5;fire.EntityCollisionClass=4")
+        self.assertFalse(self.api.Sensors.sensors.FIRE_HAZARDS.extract(self.lua.globals().fire,None).is_shooting)
+        self.lua.execute("fire.GetSprite=function() return {GetAnimation=function() return 'Shoot' end} end")
+        self.assertTrue(self.api.Sensors.sensors.FIRE_HAZARDS.extract(self.lua.globals().fire,None).is_shooting)
 
     def test_knight_directional_damage_queries_are_read_only_and_optional(self):
         self.lua.execute('''

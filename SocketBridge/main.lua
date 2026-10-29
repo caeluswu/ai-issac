@@ -918,7 +918,10 @@ SensorRegistry:register("FIRE_HAZARDS", {
                  entity.EntityCollisionClass == 0 and animation:match("^Dissapear") ~= nil))
             local isShooting = false
             if npc and (variant == 1 or variant == 3) then
-                isShooting = (npc.State == 8)
+                -- State 8 also persists during ordinary Flickering*. The
+                -- shipped red/purple fire sprites have a separate Shoot
+                -- animation; state alone would forbid every clear boundary.
+                isShooting = animation:match("^Shoot") ~= nil
             end
             return {
                 id = entity.Index, type = "FIREPLACE",
