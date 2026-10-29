@@ -2,7 +2,7 @@
 
 面向《以撒的结合：忏悔》原版 `1.7.9b.J835`，使用 SocketBridge 读取结构化状态，由可替换的底层控制组件执行移动与射击。启用模型规划时，DeepSeek 负责选择组件、填写参数和必要的异常诊断，也可通过独立开发流程编写有界机制程序。
 
-当前入口包括单房 `run_first_room.py`、首层 `run_floor.py`、连续两层 `run_two_floors.py` 和目标层 2–6 的主线 `run_mainline.py`。固定种子已有同局四层成功证据和 Mom 独立诊断击败记录；最新长途击败第五层 Boss 后出口停滞，仍判失败，完整第一层至 Mom 和随机稳定通关尚未验收。Host 连续交战、三种无怪地形通路、金币购买与天使房往返已有实机证据；方向护甲、潜地接敌、开放门权限及出口精细接近各有针对性验证。阶段状态、阻塞和下一步统一见 [当前进度](docs/progress.zh-CN.md)。原生入房暂停与战中异步诊断均受预算约束。
+当前入口包括单房 `run_first_room.py`、首层 `run_floor.py`、连续两层 `run_two_floors.py` 和目标层 2–6 的主线 `run_mainline.py`。**固定种子同局从第一层击败 Mom 的工程可行性已通过**：约 20 分钟，累计损失 16 个半心，最终剩 9 个半心，0 次付费规划；原始轨迹逐层重放核对通过。详见 [完整 Mom 验收](docs/evidence/phase-3c-mom-run-validation.zh-CN.md)。随机稳定性、竞速和 LLM 优于规则尚未证明。Host、无怪地形、金币购买、天使房、方向护甲和闭合楼梯等能力及其边界见 [当前进度](docs/progress.zh-CN.md)。原生入房暂停与战中异步诊断均受预算约束。
 
 P0–P6 的四项审查缺陷已修复并加入回归。道具采用固定 EID 说明与有样本身份的本地经验，支持范围仍有限；通用自主实验 P7 关闭，69/114 的必要局内短测另有受限流程。M2-B 已完成巧克力牛奶的模型时序程序、实机清房和另一个进程复用，采用显式语法恢复，范围与全部失败见 [M2-B 验收](docs/evidence/phase-2b-validation.zh-CN.md)。首层覆盖见 [M2-A 证据](docs/evidence/phase-2a-validation.zh-CN.md)，操作见 [首层运行手册](docs/phase-2a-runbook.zh-CN.md)。
 
@@ -144,7 +144,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 报告保存在 `artifacts/runs/<run>/run-report.json`，包含各层结果、损失、资源和请求账本。自动启动会恢复槽 1 基线并替换当前对局，初始化备份另存。主线默认加载已有技能，`allow_generate=False`，不会因遇到新道具自行付费生成代码。固定种子标为 `debug_replay`，省略种子标为 `normal_random`；后者不是封存随机样本的正式评测。
 
-最近固定种子正常完成四层，Host 房 114 用时 440 更新、损失半颗心；第五层因效果 35 检查中止，兼容修复只完成失败消息回放，尚无整局成功。随机种子 `LCC1 99WP` 在首层 Roundy 房死亡。地形 955、959、961 的零损出门属于诊断场景，不能替代正常地图重入或 Mom 通关。详见 [当前进度](docs/progress.zh-CN.md)与[最新证据](docs/evidence/phase-3c-host-terrain-generalization.zh-CN.md)。
+固定种子从第一层击败 Mom 已有[完整验收](docs/evidence/phase-3c-mom-run-validation.zh-CN.md)，六层独立重放通过；此前效果检查中止、楼梯停滞和第二层死亡均保留。随机种子 `LCC1 99WP` 的首层 Roundy 死亡与地形 955/959/961 的诊断证据仍有各自边界，不能用一次成功覆盖。详见 [当前进度](docs/progress.zh-CN.md)。
 
 两层兼容入口：
 
@@ -180,7 +180,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 
 ## 文档导航
 
-当前状态与执行队列见 [当前进度](docs/progress.zh-CN.md)，完整目录及职责见 [文档索引](docs/README.md)。M2 各阶段和 M3-A/B 有各自范围内的可行性证据，M3-C 至 Mom 尚未完成；历史成功不覆盖后续失败。
+当前状态与执行队列见 [当前进度](docs/progress.zh-CN.md)，完整目录及职责见 [文档索引](docs/README.md)。M2 各阶段与 M3-A/B/C 有各自范围内的工程可行性证据；固定种子 Mom 成功不证明随机稳定性，也不覆盖历史失败。
 
 | 入口 | 解决的问题 |
 |---|---|

@@ -1,6 +1,6 @@
 # 文档索引与维护边界
 
-当前实现包括单房、首层与同局连续四层控制、J835 被动道具能力表、DeepSeek 蓄力时序程序、受伤归因，以及妈妈的菜刀 JavaScript 组件的短测、加载、实机清房、战后保留决策与复用。阶段与当前阻塞统一见[当前进度](progress.zh-CN.md)，固定种子四层可行性见[M3-B 验收](evidence/phase-3b-four-floor-validation.zh-CN.md)；模型修订后的局内试用、随机种子稳定性与到 Mom 的连续运行仍缺独立验收。实机覆盖、全部失败与 API 用量以证据为准。
+当前实现包括单房、首层和固定种子同局从第一层击败 Mom、J835 被动道具能力表、DeepSeek 蓄力时序程序、受伤归因，以及妈妈的菜刀 JavaScript 组件的短测、加载、实机清房、战后保留决策与复用。完整主线见[M3-C 验收](evidence/phase-3c-mom-run-validation.zh-CN.md)，当前能力与待验证项统一见[当前进度](progress.zh-CN.md)。模型修订后的局内试用、随机稳定性和竞速仍未验收；实机覆盖、全部失败与 API 用量以证据为准。
 
 建议阅读顺序：当前进度 → 任务契约 → 总体架构 → 对应阶段证据 → 需要的专项合同。日常启动与付费验证政策从 [项目 README](../README.md) 进入。
 
@@ -51,6 +51,7 @@
 | [M3-C 妈腿房诊断证据](evidence/phase-3c-mom-probe.zh-CN.md) | J835 房间实体阶段、预警依据与正式验收边界 |
 | [M3-C 定时地形房证据](evidence/phase-3c-timed-terrain-room961.zh-CN.md) | 房间 961 的全房时序寻路、三个入口无损失触发踏板并出门 |
 | [M3-C 商店与天使房验证](evidence/phase-3c-economy-validation.zh-CN.md) | 15 币购买、血量资源、选择组、真实天使门往返、Roundy 波形与所有修复失败 |
+| [M3-C 完整 Mom 验收](evidence/phase-3c-mom-run-validation.zh-CN.md) | 同局从第一层击败 Mom、六层独立重放、实际损失、天使取得及适用边界 |
 | [M3-C Host 与地形泛化](evidence/phase-3c-host-terrain-generalization.zh-CN.md) | Host 连续交战、独立尖刺周期、多阶段踏板与三种房间实机边界 |
 | [当前准备审查诊断 JSON](../artifacts/validation/m2-readiness-audit.json) | 合成场景复现四项边界缺陷；不是游戏损失记录 |
 

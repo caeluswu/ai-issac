@@ -1,12 +1,12 @@
 # 第二、三阶段路线：首层、模型扩展与 Mom
 
-当前：M1、M2-A 首层、M2-B 蓄力程序、M2-C 有限道具扩展、M3-A 连续两层及 M3-B 连续四层均有工程可行性证据。M2-C 见[归因审核](evidence/phase-2c-attribution-review.zh-CN.md)和[道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md)；M3-A 见[连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md)，M3-B 见[连续四层验证](evidence/phase-3b-four-floor-validation.zh-CN.md)。M3-C 至 Mom 仍待实证。本文件维护里程碑与跨阶段取舍。
+当前：M1、M2-A 首层、M2-B 蓄力程序、M2-C 有限道具扩展、M3-A 连续两层、M3-B 连续四层与 M3-C 第一层至 Mom 均有有限工程可行性证据。M2-C 见[归因审核](evidence/phase-2c-attribution-review.zh-CN.md)和[道具适配证据](evidence/phase-2c-item-adaptation.zh-CN.md)；M3-A 见[连续两层验证](evidence/phase-3a-two-floor-validation.zh-CN.md)，M3-B 见[连续四层验证](evidence/phase-3b-four-floor-validation.zh-CN.md)，M3-C 见[完整 Mom 验收](evidence/phase-3c-mom-run-validation.zh-CN.md)。本文件维护里程碑与跨阶段取舍。
 
-当前执行方案见[M3-C 完整流程计划](phase-3c-completion-plan.zh-CN.md)：先做商店与天使房有限运营，再定位战斗阻塞并验证同局至 Mom。有限商店/天使运营和代表性场景已有[实机证据](evidence/phase-3c-economy-validation.zh-CN.md)，完整 Mom 流程仍待独立证明。
+当前实施范围见[M3-C 完整流程计划](phase-3c-completion-plan.zh-CN.md)：有限商店/天使运营与同局至 Mom 已分别有证据，不把独立购物诊断混作完整运行的自然分支。
 
 ### 当前推进状态
 
-当前能力、最近运行、失败和执行优先级统一见[当前进度](progress.zh-CN.md)。最新固定种子击败前五层 Boss，但第五层离层停滞，仍判整局失败；Mom 有独立诊断击败记录，不能替代从第一层正常通关。历史随机种子首层 Roundy 房死亡，修复后的局部清房仍损失 3 个半心。尚未证明随机稳定性。
+当前能力、最近运行、失败和执行优先级统一见[当前进度](progress.zh-CN.md)。最新固定种子完整 Mom 流程已通过；此前第五层离层停滞、第二层死亡和随机 Roundy 房死亡均保留。一次正常成功不证明随机稳定性。
 
 无怪地形 955、959、961 已有零损出门案例；多踏板、不同周期真实房间和正常地图重入仍待实机覆盖。[专项证据](evidence/phase-3c-host-terrain-generalization.zh-CN.md)维护具体结果，历史 M3-B 四层损失 7 个半心与最新前四层损失 12 个半心属于不同运行，不能合并或替换。
 
@@ -19,7 +19,7 @@
 | M2-C | 受伤归因与审核；属性、69及114的局内短测/采用与复用 | 六例审核、菜刀模型实机清房/底座拾取/进程复用、战后保留决策；修订后的局内试用未验证 |
 | M3-A | 同一局连续完成第一、二层；跨层状态和全局资源预算 | 已有 J835 固定种子正常实机：两层 Boss 与出口、第三层可行动、累计损失 5 个半心；随机覆盖待测 |
 | M3-B | 连续推进至主线第四层完成；新敌人、地形与装备组合 | 固定种子同局四层已通过；逐层损失与机制证据见 M3-B 验收，随机泛化待测 |
-| M3-C | 正常第一层开局至主线 Mom | Mom 实体/阶段/结束证据与存活可行动状态，同一 run 连续轨迹 |
+| M3-C | 正常第一层开局至主线 Mom | 已有固定种子同局成功，六层原始轨迹独立重放通过；随机稳定性与竞速待验证 |
 
 主线目标是 Mom，不混用 Mom's Heart、It Lives 或 Mother。XL 会改变实际地图数量，不能用“换层六次”判终点；替代路线、Home、Boss Rush 等不是默认目标。具体构建、存档和辅助边界以 [任务契约](task-contract.zh-CN.md) 为准。
 
