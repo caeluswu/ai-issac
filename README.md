@@ -185,6 +185,7 @@ uv pip install --python .venv/Scripts/python.exe -e knowledge_project
 | 入口 | 解决的问题 |
 |---|---|
 | [当前进度](docs/progress.zh-CN.md) | 阶段完成状态、最近失败、已验证范围和执行优先级 |
+| [当前代码结构](code-architecture/README.md) | 从源码入口、调用链和目录理解现有实现 |
 | [任务契约](docs/task-contract.zh-CN.md) / [总体架构](docs/architecture-plan.zh-CN.md) | 做什么，哪些辅助允许，模块如何分工 |
 | [玩法模块架构契约 v1](docs/gameplay-module-contract.zh-CN.md) | 道具与敌人按机制族拆分、组合和替换；环境插件边界及后续迁移验收，尚未完成代码重构 |
 | [P0–P6 实现审查](docs/phase-2a-preparation.zh-CN.md) | M2-A 准备基线、四项已修复问题及当时准入状态 |
