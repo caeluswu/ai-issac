@@ -343,3 +343,12 @@ class TestLuaInput(unittest.TestCase):
         exits = self.lua.eval("api.Helpers.exitObservations({grid={a={grid_index=1,type=17,variant=0,state=1,collision=0,x=100,y=120},b={grid_index=2,type=2}}})")
         self.assertEqual(len(exits),1)
         self.assertEqual(exits[1].type,17)
+
+    def test_exit_animation_is_read_without_changing_grid_state(self):
+        self.lua.execute("""
+            exitGrid={State=0,GetSprite=function() return {GetAnimation=function() return 'Closed' end} end}
+            Game=function() return {GetRoom=function() return {GetGridEntity=function() return exitGrid end} end} end
+        """)
+        exits=self.lua.eval("api.Helpers.exitObservations({grid={a={grid_index=37,type=17,variant=0,state=0,collision=0,x=320,y=200}}})")
+        self.assertEqual(exits[1].animation,'Closed')
+        self.assertEqual(self.lua.globals().exitGrid.State,0)

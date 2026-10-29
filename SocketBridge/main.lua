@@ -1036,7 +1036,10 @@ function Helpers.exitObservations(layout)
         if grid.type == 17 or grid.type == 18 or grid.type == 23 then
             table.insert(result, {instance_id=State.runId..":"..State.roomVisit..":grid:"..key,
                 grid_index=grid.grid_index, type=grid.type, variant=grid.variant, state=grid.state,
-                collision=grid.collision, pos={x=grid.x,y=grid.y}})
+                collision=grid.collision, pos={x=grid.x,y=grid.y},
+                animation=Helpers.optional(function()
+                    return Game():GetRoom():GetGridEntity(grid.grid_index):GetSprite():GetAnimation()
+                end)})
         end
     end
     return result

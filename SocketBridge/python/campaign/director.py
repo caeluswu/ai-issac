@@ -8,6 +8,7 @@ from combat.models import Vec
 from combat.navigation import DoorNavigator
 from combat.supervision import ProgressSupervisor
 from .graph import FloorGraph
+from .exit_navigation import ExitNavigator
 from .judge import FloorJudge, clear_of_threats
 from .models import FloorContext, FloorReport, FloorObjective, RoomKey, TransitionReceipt, RoomResult
 
@@ -236,6 +237,8 @@ class FloorDirector:
         s = await self.acquire(s)
         began,wall = s.frame,time.monotonic()
         solver,watcher,previous = JointActionSolver(),ProgressSupervisor(),None
+        navigator=ExitNavigator(found)
+        previous_phase=None
         while s.floor.instance_id == self.start.floor.instance_id:
             if s.mode == "MANUAL": raise RuntimeError("MANUAL_TAKEOVER")
             if s.frame-began > 300 or time.monotonic()-wall > 15: raise TimeoutError("FLOOR_EXIT_TIMEOUT")
@@ -248,8 +251,13 @@ class FloorDirector:
             if build.revision != intent.context_ref.build_revision: raise RuntimeError("EXIT_BUILD_CHANGED")
             solver.recovery_level=watcher.recovery_level
             plan=self.diagnose(s,build,watcher)
-            action = await asyncio.to_thread(solver.solve,s,plan,build,True,found.pos,(),(found.grid_index,),goal_tolerance=1.)
-            if s.player.pos.distance(found.pos)<45 and self.session.transition_wait is None:
+            goal=navigator.step(s)
+            if navigator.phase!=previous_phase:
+                self.session.log('exit_navigation_phase',phase=navigator.phase,frame=s.frame,target=found.instance_id,
+                    goal=goal.model_dump(),state=next(e.state for e in s.exit_observations if e.instance_id==found.instance_id))
+                previous_phase=navigator.phase
+            action = await asyncio.to_thread(solver.solve,s,plan,build,True,goal,(),(found.grid_index,),goal_tolerance=1. if navigator.phase=='approach' else 5.)
+            if navigator.phase=='approach' and s.player.pos.distance(found.pos)<45 and self.session.transition_wait is None:
                 self.session.transition_wait={"kind":"floor_transition","visit":s.room_visit_id,"run_id":s.run_id,"floor_instance_id":s.floor.instance_id,"expires":time.monotonic()+15}
                 self.session.log("transition_wait_authorized",kind_of_wait="floor_transition",room_visit_id=s.room_visit_id,wall_limit=15)
             await self.send(s,action.move,action.model_dump())

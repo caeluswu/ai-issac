@@ -152,6 +152,7 @@ class ExitObservation(Strict):
     state: int
     collision: int
     pos: Vec
+    animation: str | None = None
 
 
 class WorldSnapshot(Observed):

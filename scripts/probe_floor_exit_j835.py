@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'SocketBridge/python'))
 from facade import SocketBridge
 from campaign.director import FloorDirector
+from campaign.exit_navigation import ExitNavigator
 from campaign.judge import clear_of_threats
 from combat.catalog import default_plan
 from combat.controller import JointActionSolver
@@ -58,7 +59,7 @@ async def main(args):
         learning.authorized_exit=found.instance_id;learning.mask(s)
         await session.set_mode('FORCE_AI')
         s=await session.next_snapshot(after=session.observation.latest.snapshot_id)
-        began,wall=s.frame,time.monotonic();solver=JointActionSolver()
+        began,wall=s.frame,time.monotonic();solver=JointActionSolver();navigator=ExitNavigator(found);phase=None
         while s.floor.instance_id==source_floor:
             if s.run_id!=source_run or not clear_of_threats(s) or s.mode!='FORCE_AI':
                 raise RuntimeError('EXIT_CONTEXT_OR_SAFETY_CHANGED')
@@ -66,9 +67,14 @@ async def main(args):
             if not any(e.instance_id==found.instance_id for e in s.exit_observations or []):
                 raise RuntimeError('EXIT_TARGET_CHANGED')
             build=session.build_resolver.update(s)
+            goal=navigator.step(s)
+            if navigator.phase!=phase:
+                phase=navigator.phase
+                log('exit_navigation_phase',phase=phase,frame=s.frame,goal=goal.model_dump(),
+                    state=next(e.state for e in s.exit_observations if e.instance_id==found.instance_id))
             action=await asyncio.to_thread(solver.solve,s,default_plan(session.context_ref(s,build),family=build.family),
-                build,True,found.pos,(),(found.grid_index,),goal_tolerance=1.)
-            if s.player.pos.distance(found.pos)<45 and session.transition_wait is None:
+                build,True,goal,(),(found.grid_index,),goal_tolerance=1. if phase=='approach' else 5.)
+            if phase=='approach' and s.player.pos.distance(found.pos)<45 and session.transition_wait is None:
                 session.transition_wait={'kind':'floor_transition','visit':s.room_visit_id,'run_id':s.run_id,
                     'floor_instance_id':source_floor,'expires':time.monotonic()+15}
             await session.send_action(s,action.move,(0,0),action.model_dump())
