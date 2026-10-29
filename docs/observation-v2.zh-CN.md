@@ -58,6 +58,8 @@ V2 增加可选 `floor_progress` 与 `exit_observations`。旧 V2 轨迹可继�
 
 `floor_progress` 包含 curses、can_pick_red/can_pick_soul、controls_enabled、extra_animation_finished；原版 API 缺失或类型错误保留 null。`exit_observations` 保存当前房间的网格实例身份、grid_index、type/variant/state/collision 和位置；17/18/23 只是基础网格事实，不直接声明合法出口。门新增可选 target_list_index，用当前可见门的目标描述符确认大房归并身份，不读取目标内部实体、物品或 RNG。NPC 的 is_boss 为可空兼容字段；缺失不能用于证明 Boss 已出现。
 
+普通楼梯另有可选 `animation`，逐帧只读网格 Sprite；缺失保持 null。实机闭合为 State 0/`Closed`，退开后观察到 State 1，再接近可正常下楼。显式动画优先于状态猜测，`Open Animation` 尚不等于 `Opened`。观测字段不提供修改网格、强制开启或跨层的权限。
+
 Boss 入场或下楼可能只收到 paused 心跳。它们只有在门口/已授权出口附近生成对应过渡等待后，才能延长取帧等待至最多 15 秒；动作租约仍按真实观测帧检查，不能靠等待凭证发送旧输入。出处：[EntityPlayer API](https://wofsauge.github.io/IsaacDocs/rep/EntityPlayer.html)、[GridEntity API](https://wofsauge.github.io/IsaacDocs/rep/GridEntity.html)。
 
 ## M2-B 可选武器反馈
