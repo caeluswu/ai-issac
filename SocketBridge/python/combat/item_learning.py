@@ -63,7 +63,7 @@ class ItemLearning:
 
     async def collect(self, session, snapshot):
         current = snapshot
-        if current.blocking_combat or current.hostiles or boundary_danger(current): return current
+        if current.blocking_combat or not current.room['is_clear'] or boundary_danger(current): return current
         # Fresh shop stock has a short engine pickup cooldown. Leaving before
         # it expires silently loses the entire shop visit.
         wait_began = current.frame
@@ -71,7 +71,7 @@ class ItemLearning:
             if current.frame-wait_began >= 30: break
             await session.release()
             current = await session.next_snapshot(after=current.snapshot_id)
-            if current.blocking_combat or current.hostiles or boundary_danger(current) or not current.alive:
+            if current.blocking_combat or not current.room['is_clear'] or boundary_danger(current) or not current.alive:
                 return current
         if hasattr(session,"prepare_item_capabilities"):current=await session.prepare_item_capabilities(current)
         # Learning may inspect many candidates, but only a bounded number are

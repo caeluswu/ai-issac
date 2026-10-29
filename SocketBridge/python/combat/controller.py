@@ -140,7 +140,8 @@ class JointActionSolver:
         if shot == (0, 0): return 0.
         return self.registry.create(profile.fire).hit_score(s, build, self.registry.create(profile.aim), target, shot, velocity, geometry)
 
-    def solve(self, s, plan, build, movement_only=False, navigation_goal=None, allowed_devices=(), allowed_exits=(), allowed_portals=()):
+    def solve(self, s, plan, build, movement_only=False, navigation_goal=None, allowed_devices=(), allowed_exits=(), allowed_portals=(), goal_tolerance=5.):
+        if not 0 < goal_tolerance <= 5: raise ValueError('INVALID_GOAL_TOLERANCE')
         started = time.perf_counter()
         ref = plan.context_ref
         from .catalog import current_revision
@@ -248,7 +249,7 @@ class JointActionSolver:
         # rollout. Without it a safe local optimum can strand the controller.
         route_goal = route[-1] if route else None
         self.last_route_goal = (round(route_goal.x), round(route_goal.y)) if route_goal else None
-        while route and route[0].distance(s.player.pos) < (18 if len(route) > 1 else 5): route.pop(0)
+        while route and route[0].distance(s.player.pos) < (18 if len(route) > 1 else goal_tolerance): route.pop(0)
         waypoint = route[0] if route else None
         route_control = bool(route and ((movement_only and navigation_goal is not None) or engagement is not None))
         suffix = [0.]*len(route)
@@ -302,8 +303,9 @@ class JointActionSolver:
                 if route_control and tick > 1:
                     if future_index < len(route):
                         offset = route[future_index]-position
-                        direction = (0 if abs(offset.x) < 7 else (1 if offset.x > 0 else -1),
-                                     0 if abs(offset.y) < 7 else (1 if offset.y > 0 else -1))
+                        deadzone = goal_tolerance if future_index == len(route)-1 and goal_tolerance<5 else 7
+                        direction = (0 if abs(offset.x) < deadzone else (1 if offset.x > 0 else -1),
+                                     0 if abs(offset.y) < deadzone else (1 if offset.y > 0 else -1))
                         rollout_desired = PlayerMotion.desired(direction, build)
                         if future_index == len(route)-1:
                             rollout_desired = rollout_desired*min(1., offset.length()/max(1., 3*build.move_speed))
@@ -315,7 +317,7 @@ class JointActionSolver:
                 position = new_position
                 trajectory.append(position)
                 if route_control:
-                    while future_index < len(route) and position.distance(route[future_index]) < (18 if future_index < len(route)-1 else 5): future_index += 1
+                    while future_index < len(route) and position.distance(route[future_index]) < (18 if future_index < len(route)-1 else goal_tolerance): future_index += 1
                     remaining = position.distance(route[future_index])+suffix[future_index] if future_index < len(route) else 0.
                     discounted_progress += (initial_route_cost-remaining)*(.85**(tick-1))
                 if waypoint: closest_waypoint = min(closest_waypoint, position.distance(waypoint))
@@ -389,7 +391,8 @@ class JointActionSolver:
         # penetration before considering output; this is not a guarantee of life.
         best = select_joint_action(candidates)
         forward_override = False
-        if movement_only and navigation_goal is not None and initial_route_cost > 12 and s.player.vel.length() < .5 and best["move"] == (0, 0):
+        forward_threshold = goal_tolerance if goal_tolerance < 5 else 12
+        if movement_only and navigation_goal is not None and initial_route_cost > forward_threshold and s.player.vel.length() < .5 and best["move"] == (0, 0):
             forward = [c for c in candidates if c["safe"] and c["move"] != (0, 0) and c["first_route_progress"] > .25]
             if forward:
                 best = select_joint_action(forward)

@@ -217,6 +217,9 @@ class FloorDirector:
         if RoomKey.from_snapshot(s) != source or s.room["room_type"] != 5:
             raise RuntimeError("ANGEL_RETURN_MISMATCH")
         s = await self.settle(s,45)
+        if self.session.learning:
+            s = await self.session.learning.collect(self.session,s)
+            s = await self.settle(s)
         self.session.log("angel_returned",room_key=source.text(),room_visit_id=s.room_visit_id)
         return s
 
@@ -245,7 +248,7 @@ class FloorDirector:
             if build.revision != intent.context_ref.build_revision: raise RuntimeError("EXIT_BUILD_CHANGED")
             solver.recovery_level=watcher.recovery_level
             plan=self.diagnose(s,build,watcher)
-            action = await asyncio.to_thread(solver.solve,s,plan,build,True,found.pos,(),(found.grid_index,))
+            action = await asyncio.to_thread(solver.solve,s,plan,build,True,found.pos,(),(found.grid_index,),goal_tolerance=1.)
             if s.player.pos.distance(found.pos)<45 and self.session.transition_wait is None:
                 self.session.transition_wait={"kind":"floor_transition","visit":s.room_visit_id,"run_id":s.run_id,"floor_instance_id":s.floor.instance_id,"expires":time.monotonic()+15}
                 self.session.log("transition_wait_authorized",kind_of_wait="floor_transition",room_visit_id=s.room_visit_id,wall_limit=15)

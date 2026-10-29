@@ -57,7 +57,7 @@ class PickupExecutor:
                 queued = pickup.variant == 100 and current.inventory.get("queued_collectible_id") == pickup.sub_type
                 deadline = decision.deadline_frame + (90 if empty_since is not None else 0)
                 if current.frame > deadline: raise TimeoutError("PICKUP_DEADLINE")
-                if current.blocking_combat or current.hostiles or not current.alive: raise RuntimeError("PICKUP_NEW_THREAT_OR_DEATH")
+                if current.blocking_combat or not current.room['is_clear'] or not current.alive: raise RuntimeError("PICKUP_NEW_THREAT_OR_DEATH")
                 if boundary_danger(current):
                     raise RuntimeError("PICKUP_NEW_HAZARD")
                 instance = next((p for p in current.pickups or [] if p.instance_id == pickup.instance_id),None)

@@ -147,7 +147,7 @@ class TestEconomyAsync(unittest.IsolatedAsyncioTestCase):
         director=FloorDirector.__new__(FloorDirector)
         log=lambda *a,**k:None
         director.session=SimpleNamespace(navigate_door=AsyncMock(side_effect=[(angel,None),(returned,None)]),
-            log=log,learning=None,build_resolver=BuildResolver())
+            log=log,learning=SimpleNamespace(collect=AsyncMock(side_effect=lambda session,value:value)),build_resolver=BuildResolver())
         director.angel_excursions=set();director.rooms=[];director.judge=SimpleNamespace(visits={})
         director.acquire=AsyncMock(side_effect=lambda value:value)
         director.settle=AsyncMock(side_effect=lambda value,*args:value)
@@ -155,5 +155,7 @@ class TestEconomyAsync(unittest.IsolatedAsyncioTestCase):
         final=await director.visit_angel(s)
         self.assertEqual(final.room_visit_id,returned.room_visit_id)
         self.assertEqual(len(director.rooms),1)
+        self.assertEqual([call.args[1].room_visit_id for call in director.session.learning.collect.await_args_list],
+                         [angel.room_visit_id,returned.room_visit_id])
         await director.visit_angel(final)
         self.assertEqual(director.session.navigate_door.await_count,2)
