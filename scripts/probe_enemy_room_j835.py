@@ -14,22 +14,24 @@ from combat.launcher import GameLauncher
 from combat.runtime import CombatSession, NativePause, RunLog
 
 
-async def main(stage="4", room=114, exact_fixture=False, current=False):
+async def main(stage="4", room=114, exact_fixture=False, current=False, retain_build=False):
     directory = ROOT / "artifacts/runs" / datetime.now(timezone.utc).strftime("enemy-room-%Y%m%dT%H%M%S%fZ")
     log = RunLog(directory)
     log.manifest(ROOT, None)
     pause = NativePause(game_executable=ROOT / "The Binding of Isaac Rebirth Repentance/isaac-ng.exe")
     launcher = GameLauncher(ROOT, log, pause, slot=1, timeout=75)
     session = CombatSession(SocketBridge(), None, pause, log, ready_timeout=75,
-                            new_run=not current, seed=None if current else "3BYH A82R")
+                            new_run=not (current or retain_build), seed=None if current or retain_build else "3BYH A82R")
     report = {"source_mode":"diagnostic_continuation" if current else "diagnostic_initialization","formal_run_proof":False,
               "commands":[],"result":"INCOMPLETE"}
     print("Enemy probe artifacts: " + str(directory), flush=True)
     try:
-        snapshot = await session.open(bootstrap=None if current else launcher)
+        snapshot = await session.open(bootstrap=None if current or retain_build else launcher)
         if current and (snapshot.room.get('room_variant') != room or exact_fixture):
             raise ValueError('CURRENT_COMBAT_ROOM_MISMATCH')
-        commands = () if current else (
+        if retain_build and (not snapshot.alive or snapshot.blocking_combat or exact_fixture):
+            raise ValueError('RETAIN_BUILD_REQUIRES_CLEAR_ROOM')
+        commands = (("goto d."+str(room), lambda s: s.room.get("room_variant") == room and not s.room['is_clear']),) if retain_build else () if current else (
             ("stage "+stage, lambda s: s.floor and s.floor.stage == int(stage[0]) and s.room.get("is_starting_room")),
             ("goto d."+str(room), lambda s: s.room.get("room_variant") == room),
         )
@@ -64,7 +66,7 @@ async def main(stage="4", room=114, exact_fixture=False, current=False):
     finally:
         try: await session.close()
         finally:
-            if not current: launcher.collect_evidence()
+            if not current and not retain_build: launcher.collect_evidence()
             (directory / "enemy-probe.json").write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf8")
             log.file.close()
             print(json.dumps(report,ensure_ascii=False),flush=True)
@@ -77,5 +79,7 @@ if __name__ == "__main__":
     parser.add_argument("--room",type=int,default=114)
     parser.add_argument("--exact-fixture",action="store_true")
     parser.add_argument("--current",action="store_true",help="Diagnose the matching current combat room without restarting or console initialization")
+    parser.add_argument('--retain-build',action='store_true',help='Initialize only a diagnostic room with the current earned build')
     args = parser.parse_args()
-    raise SystemExit(asyncio.run(main(args.stage,args.room,args.exact_fixture,args.current)))
+    if args.current and args.retain_build:parser.error('choose current or retain-build')
+    raise SystemExit(asyncio.run(main(args.stage,args.room,args.exact_fixture,args.current,args.retain_build)))

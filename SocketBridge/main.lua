@@ -909,7 +909,13 @@ SensorRegistry:register("FIRE_HAZARDS", {
         elseif entity.Type == 33 then  -- ENTITY_FIREPLACE
             local variant = entity.Variant
             local npc = entity:ToNPC()
-            local isExtinguished = npc and npc.State == 1000
+            local animation = entity:GetSprite():GetAnimation()
+            -- J835 retains burnt fireplaces at HP 1 / State 3, collision 0,
+            -- with a Dissapear* animation. They are not dead NPCs. Keeping
+            -- these as live hazards seals corridors which the engine opened.
+            local isExtinguished = npc and (npc.State == 1000 or
+                (npc.State == 3 and entity.HitPoints <= 1 and
+                 entity.EntityCollisionClass == 0 and animation:match("^Dissapear") ~= nil))
             local isShooting = false
             if npc and (variant == 1 or variant == 3) then
                 isShooting = (npc.State == 8)
@@ -921,6 +927,7 @@ SensorRegistry:register("FIRE_HAZARDS", {
                 pos = Helpers.vectorToTable(entity.Position),
                 hp = entity.HitPoints, max_hp = entity.MaxHitPoints,
                 state = npc and npc.State or 0, is_extinguished = isExtinguished,
+                animation = animation, collision_class = entity.EntityCollisionClass,
                 collision_radius = entity.Size > 0 and entity.Size or 25,
                 distance = dist, is_shooting = isShooting,
                 sprite_scale = entity.SpriteScale.X,

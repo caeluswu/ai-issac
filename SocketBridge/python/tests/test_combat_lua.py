@@ -104,6 +104,21 @@ class TestLuaInput(unittest.TestCase):
         self.assertEqual(hazard.vel.x,3)
         self.assertEqual(hazard.max_radius,120)
 
+    def test_burnt_j835_fire_does_not_seal_a_corridor(self):
+        self.lua.execute('''
+            fire={Type=33,Variant=1,SubType=0,Index=7,HitPoints=1,MaxHitPoints=5,
+                Size=13,EntityCollisionClass=0,SpriteScale={X=1},Position={X=360,Y=200},
+                ToNPC=function() return {State=3} end,
+                GetSprite=function() return {GetAnimation=function() return 'Dissapear3' end} end}
+        ''')
+        hazard=self.api.Sensors.sensors.FIRE_HAZARDS.extract(self.lua.globals().fire,None)
+        self.assertTrue(hazard.is_extinguished)
+        # Neither HP 1 nor State 3 alone may discard an active collision.
+        self.lua.execute('fire.EntityCollisionClass=4')
+        self.assertFalse(self.api.Sensors.sensors.FIRE_HAZARDS.extract(self.lua.globals().fire,None).is_extinguished)
+        self.lua.execute("fire.EntityCollisionClass=0;fire.GetSprite=function() return {GetAnimation=function() return 'Flickering' end} end")
+        self.assertFalse(self.api.Sensors.sensors.FIRE_HAZARDS.extract(self.lua.globals().fire,None).is_extinguished)
+
     def test_knight_directional_damage_queries_are_read_only_and_optional(self):
         self.lua.execute('''
             Vector=function(x,y) return {X=x,Y=y} end
