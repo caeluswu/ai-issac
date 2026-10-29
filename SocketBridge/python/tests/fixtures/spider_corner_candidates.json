@@ -1,0 +1,938 @@
+[
+  {
+    "candidates": [
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 0,
+        "clearance": -53.798796893390325,
+        "early_risk": 50.773135313793134,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 448.41330363143004,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": -1.5502183575997321,
+        "hit": 0.9543937605673318,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          -1
+        ],
+        "predicted_next_position": [
+          487.8990643566129,
+          407.851945260697
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 53.798796893390325,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 2.0999183048792487,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 0,
+        "clearance": -53.798796893390325,
+        "early_risk": 50.773135313793134,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 448.41330363143004,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": -1.5502183575997321,
+        "hit": 0.728615817524303,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          -1
+        ],
+        "predicted_next_position": [
+          487.8990643566129,
+          407.851945260697
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 53.798796893390325,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": 0.7452506466210753,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 0,
+        "clearance": -62.218424315340165,
+        "early_risk": 55.0645589937032,
+        "escape": 0.5,
+        "escape_directions": 1,
+        "escape_slack": 28.133148037440293,
+        "exposure": 377.73979168210406,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 0.6114271156372411,
+        "hit": 0.8797442490493096,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          -1
+        ],
+        "predicted_next_position": [
+          489.921389676628,
+          407.0142706856162
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 62.218424315340165,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 4.994506074626963,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 0,
+        "clearance": -62.218424315340165,
+        "early_risk": 55.0645589937032,
+        "escape": 0.5,
+        "escape_directions": 1,
+        "escape_slack": 28.133148037440293,
+        "exposure": 377.73979168210406,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": 0.6114271156372411,
+        "hit": 0.7847241862249325,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          -1
+        ],
+        "predicted_next_position": [
+          489.921389676628,
+          407.0142706856162
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 62.218424315340165,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": 4.424385697680699,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 7,
+        "clearance": -57.64006538148389,
+        "early_risk": 45.461187194017285,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 615.0954700943432,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 2.3627550340167893,
+        "hit": 0.9105542118305399,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          -1
+        ],
+        "predicted_next_position": [
+          491.9437149966431,
+          407.851945260697
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 57.64006538148389,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 6.267587948324373,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 7,
+        "clearance": -57.64006538148389,
+        "early_risk": 45.461187194017285,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 615.0954700943432,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": 2.3627550340167893,
+        "hit": 0.8286720461836359,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          -1
+        ],
+        "predicted_next_position": [
+          491.9437149966431,
+          407.851945260697
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 57.64006538148389,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": 5.776294954442947,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 0,
+        "clearance": -51.74504447204825,
+        "early_risk": 39.69206802988438,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 474.1086455174956,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": -2.889750485607358,
+        "hit": 0.9146330686403253,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          0
+        ],
+        "predicted_next_position": [
+          487.0613897815321,
+          409.8742705807121
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 51.74504447204825,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 1.1688945646393596,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 0,
+        "clearance": -51.74504447204825,
+        "early_risk": 39.69206802988438,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 474.1086455174956,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": -2.889750485607358,
+        "hit": 0.6896992599585028,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          0
+        ],
+        "predicted_next_position": [
+          487.0613897815321,
+          409.8742705807121
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 51.74504447204825,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": -0.18070828745157508,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 0,
+        "clearance": -65.27786871648615,
+        "early_risk": 41.18240923812532,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 608.0708848750697,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": -0.16085422498141355,
+        "hit": 0.9349934349834441,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          0
+        ],
+        "predicted_next_position": [
+          489.921389676628,
+          409.8742705807121
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 65.27786871648615,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 2.0269026955273564,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 0,
+        "clearance": -65.27786871648615,
+        "early_risk": 41.18240923812532,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 608.0708848750697,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": -0.16085422498141355,
+        "hit": 0.7610524341867839,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          0
+        ],
+        "predicted_next_position": [
+          489.921389676628,
+          409.8742705807121
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 65.27786871648615,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": 0.9832566907473943,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 6,
+        "clearance": -62.3123622973126,
+        "early_risk": 35.01127001694039,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 532.6443392993153,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 2.5427247599846794,
+        "hit": 0.9584820381535933,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          0
+        ],
+        "predicted_next_position": [
+          492.7813895717239,
+          409.8742705807121
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 62.3123622973126,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 6.402990866515633,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 6,
+        "clearance": -62.3123622973126,
+        "early_risk": 35.01127001694039,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 532.6443392993153,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": 2.5427247599846794,
+        "hit": 0.8351970059622822,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          0
+        ],
+        "predicted_next_position": [
+          492.7813895717239,
+          409.8742705807121
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 62.3123622973126,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": 5.663280673367767,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 12,
+        "clearance": -49.26497610679801,
+        "early_risk": 40.69270931236069,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 496.509322453702,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": -2.125314403976901,
+        "hit": 0.9124903111025617,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          1
+        ],
+        "predicted_next_position": [
+          487.8990643566129,
+          409.9997253418
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 49.26497610679801,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 0.19263736913790358,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 12,
+        "clearance": -49.26497610679801,
+        "early_risk": 40.69270931236069,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 496.509322453702,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": -2.125314403976901,
+        "hit": 0.7091143122406126,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          1
+        ],
+        "predicted_next_position": [
+          487.8990643566129,
+          409.9997253418
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 49.26497610679801,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": -1.0276186240337915,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 12,
+        "clearance": -65.18616961841303,
+        "early_risk": 40.897336512643335,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 607.583654720275,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": -0.20020833471908972,
+        "hit": 0.9267834542811795,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          1
+        ],
+        "predicted_next_position": [
+          489.921389676628,
+          409.9997253418
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 65.18616961841303,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 1.7340383004703928,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 12,
+        "clearance": -65.18616961841303,
+        "early_risk": 40.897336512643335,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 607.583654720275,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": -0.20020833471908972,
+        "hit": 0.759963136643813,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          1
+        ],
+        "predicted_next_position": [
+          489.921389676628,
+          409.9997253418
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 65.18616961841303,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": 0.733116394646194,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 12,
+        "clearance": -61.432583427639955,
+        "early_risk": 37.1879490504083,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 552.9167343391775,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 1.7120104212680936,
+        "hit": 0.9425966966643475,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          1
+        ],
+        "predicted_next_position": [
+          491.9437149966431,
+          409.9997253418
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 61.432583427639955,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 6.077182416323468,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "168710582:2",
+        "blocked_steps": 12,
+        "clearance": -61.432583427639955,
+        "early_risk": 37.1879490504083,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 552.9167343391775,
+        "fire_reason": "opportunistic_secondary",
+        "first_contact": 1,
+        "first_route_progress": 1.7120104212680936,
+        "hit": 0.8122187321557487,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          1
+        ],
+        "predicted_next_position": [
+          491.9437149966431,
+          409.9997253418
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2680",
+        "risk": 61.432583427639955,
+        "safe": false,
+        "shoot": [
+          0,
+          -1
+        ],
+        "utility": 5.294914629271874,
+        "wait": null,
+        "wall": false
+      }
+    ],
+    "frame": 2680,
+    "kind": "candidates",
+    "room_visit_id": "3347517318:213438819:9",
+    "run_id": "3347517318:213438819",
+    "sequence": 10726
+  },
+  {
+    "candidates": [
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 2,
+        "clearance": -46.86741926978181,
+        "early_risk": 10.966005913335742,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 350.94496844680486,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 2.582083853911329,
+        "hit": 0.9108102999403325,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          -1
+        ],
+        "predicted_next_position": [
+          521.0246250202559,
+          407.81044172261045
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 46.86741926978181,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 2.119981568116806,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 9,
+        "clearance": -19.480517436848288,
+        "early_risk": 7.130171181121227,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 143.02379582757152,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 2.6383747041934678,
+        "hit": 0.9865767232837528,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          -1
+        ],
+        "predicted_next_position": [
+          523.046950340271,
+          406.9727671475297
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 19.480517436848288,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 3.5730111787766448,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 10,
+        "clearance": -18.40228061995581,
+        "early_risk": 5.818704462647197,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 135.5473114141808,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 0.7506697215796994,
+        "hit": 0.9374193957062021,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          -1
+        ],
+        "predicted_next_position": [
+          525.0692756602862,
+          407.81044172261045
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 18.40228061995581,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 3.3089391288362853,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 0,
+        "clearance": -42.72094540475854,
+        "early_risk": 7.411018907580271,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 236.78912902110082,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 0.6485104950170886,
+        "hit": 0.7049406746562465,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          0
+        ],
+        "predicted_next_position": [
+          520.1869504451752,
+          409.83276704262556
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 42.72094540475854,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": -0.593861240015539,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 1,
+        "clearance": -12.740304479165786,
+        "early_risk": 2.9417647060739256,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 64.7332859651136,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 0.07295362117454118,
+        "hit": 0.7051858232460975,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          0
+        ],
+        "predicted_next_position": [
+          523.046950340271,
+          409.83276704262556
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 12.740304479165786,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 1.6764328974740677,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 10,
+        "clearance": -11.918437516712615,
+        "early_risk": 2.9417647060739256,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 57.44077008887961,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": -1.3447707172649892,
+        "hit": 0.7053979452033832,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          0
+        ],
+        "predicted_next_position": [
+          525.9069502353669,
+          409.83276704262556
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 11.918437516712615,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 1.5135589943478045,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 12,
+        "clearance": -24.555064008654593,
+        "early_risk": 4.482193505453793,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 183.84695648871545,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 0.5813793672796654,
+        "hit": 0.7048132292435136,
+        "invalid_pose_stall": false,
+        "move": [
+          -1,
+          1
+        ],
+        "predicted_next_position": [
+          521.0246250202559,
+          409.8346862793
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 24.555064008654593,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": -0.06579174870382395,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 12,
+        "clearance": -12.735957236192114,
+        "early_risk": 2.9417647060739256,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 64.6955216372958,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": 0.07116760216563911,
+        "hit": 0.7049789298444961,
+        "invalid_pose_stall": false,
+        "move": [
+          0,
+          1
+        ],
+        "predicted_next_position": [
+          523.046950340271,
+          409.8346862793
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 12.735957236192114,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 1.4948555494286675,
+        "wait": null,
+        "wall": false
+      },
+      {
+        "attack_target": "192348729:52",
+        "blocked_steps": 12,
+        "clearance": -11.629146848751553,
+        "early_risk": 2.9417647060739256,
+        "escape": 0.0,
+        "escape_directions": 0,
+        "escape_slack": -45.0,
+        "exposure": 56.6762469116802,
+        "fire_reason": "attack_window",
+        "first_contact": 1,
+        "first_route_progress": -0.8623680144590811,
+        "hit": 0.705165779334652,
+        "invalid_pose_stall": false,
+        "move": [
+          1,
+          1
+        ],
+        "predicted_next_position": [
+          525.0692756602862,
+          409.8346862793
+        ],
+        "prediction_frame_offset": 1,
+        "prediction_origin_snapshot_id": "3347517318:213438819:9:2690",
+        "risk": 11.629146848751553,
+        "safe": false,
+        "shoot": [
+          -1,
+          0
+        ],
+        "utility": 1.4813261679854686,
+        "wait": null,
+        "wall": false
+      }
+    ],
+    "frame": 2690,
+    "kind": "candidates",
+    "room_visit_id": "3347517318:213438819:9",
+    "run_id": "3347517318:213438819",
+    "sequence": 10778
+  }
+]

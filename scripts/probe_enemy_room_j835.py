@@ -14,7 +14,7 @@ from combat.launcher import GameLauncher
 from combat.runtime import CombatSession, NativePause, RunLog
 
 
-async def main(stage="4", room=114, exact_fixture=False, current=False, retain_build=False):
+async def main(stage="4", room=114, exact_fixture=False, current=False, retain_build=False,items=()):
     directory = ROOT / "artifacts/runs" / datetime.now(timezone.utc).strftime("enemy-room-%Y%m%dT%H%M%S%fZ")
     log = RunLog(directory)
     log.manifest(ROOT, None)
@@ -27,6 +27,15 @@ async def main(stage="4", room=114, exact_fixture=False, current=False, retain_b
     print("Enemy probe artifacts: " + str(directory), flush=True)
     try:
         snapshot = await session.open(bootstrap=None if current or retain_build else launcher)
+        if items and (current or retain_build):raise ValueError('ITEMS_REQUIRE_FRESH_DIAGNOSTIC')
+        for item in items:
+            before=snapshot.inventory['collectibles'].get(str(item),0)
+            command='giveitem c'+str(item)
+            await session.rpc('EXEC_CONSOLE',{'command':command});report['commands'].append(command)
+            deadline=time.monotonic()+5
+            while snapshot.inventory['collectibles'].get(str(item),0)<=before:
+                if time.monotonic()>deadline:raise TimeoutError('DIAGNOSTIC_ITEM_NOT_CONFIRMED')
+                snapshot=await session.next_snapshot(after=snapshot.snapshot_id)
         if current and (snapshot.room.get('room_variant') != room or exact_fixture):
             raise ValueError('CURRENT_COMBAT_ROOM_MISMATCH')
         if retain_build and (not snapshot.alive or snapshot.blocking_combat or exact_fixture):
@@ -75,11 +84,13 @@ async def main(stage="4", room=114, exact_fixture=False, current=False, retain_b
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage",choices=("1","1a","4","4a","5","5a","6","6a"),default="4")
+    parser.add_argument("--stage",choices=("1","1a","2","2a","4","4a","5","5a","6","6a"),default="4")
     parser.add_argument("--room",type=int,default=114)
     parser.add_argument("--exact-fixture",action="store_true")
     parser.add_argument("--current",action="store_true",help="Diagnose the matching current combat room without restarting or console initialization")
     parser.add_argument('--retain-build',action='store_true',help='Initialize only a diagnostic room with the current earned build')
+    parser.add_argument('--items',type=int,nargs='*',default=(),help='Explicit diagnostic loadout before measurement')
     args = parser.parse_args()
     if args.current and args.retain_build:parser.error('choose current or retain-build')
-    raise SystemExit(asyncio.run(main(args.stage,args.room,args.exact_fixture,args.current,args.retain_build)))
+    if any(item<=0 or item>732 for item in args.items):parser.error('unsupported diagnostic item ID')
+    raise SystemExit(asyncio.run(main(args.stage,args.room,args.exact_fixture,args.current,args.retain_build,args.items)))

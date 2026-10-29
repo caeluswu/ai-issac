@@ -24,10 +24,13 @@ def select_joint_action(candidates, uncertainty_px=8):
     """
     feasible = [c for c in candidates if not c["wall"]] or candidates
     minimum = min(c["early_risk"] for c in feasible)
+    trapped=minimum>0 and not any(c['safe'] for c in candidates)
     return max(candidates, key=lambda c: (
         c["safe"], not c["wall"], c["early_risk"] == 0,
         c["early_risk"] <= minimum+uncertainty_px,
-        c["escape_directions"] > 0, -c["risk"], -c["exposure"], c["first_contact"], c["utility"]))
+        c["escape_directions"] > 0,
+        not trapped or (c.get('blocked_steps',0)<6 and tuple(c.get('move',(0,0)))!=(0,0)),
+        -c["risk"], -c["exposure"], c["first_contact"], c["utility"]))
 
 
 @dataclass(frozen=True)

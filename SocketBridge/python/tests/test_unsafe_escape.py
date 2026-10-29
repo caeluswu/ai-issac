@@ -35,3 +35,13 @@ class TestUnsafeEscape(unittest.TestCase):
         self.assertGreater(action.score["escape"], 0)
         self.assertGreaterEqual(action.score["escape_slack"], 6)
         self.assertLess(action.diagnostics["blocked_steps"], 12)
+
+    def test_imminent_spider_corner_does_not_prefer_a_wall_pinned_rollout(self):
+        records=json.loads((Path(__file__).parent/'fixtures/spider_corner_candidates.json').read_text(encoding='utf8'))
+        for record in records:
+            chosen=select_joint_action(record['candidates'])
+            minimum=min(c['early_risk'] for c in record['candidates'] if not c['wall'])
+            self.assertLessEqual(chosen['early_risk'],minimum+8)
+            self.assertFalse(chosen['wall'])
+            self.assertLess(chosen['blocked_steps'],6)
+            self.assertNotEqual(tuple(chosen['move']),(0,0))
