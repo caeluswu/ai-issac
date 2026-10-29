@@ -74,3 +74,13 @@ V2 增加可选 `weapon_feedback`，其内部 `schema_version=1`、`provenance=e
 `projectiles.player_knives` 保存刀实例身份、owner_type、位置/速度、半径、可空 collision_damage/charge、entity_frame_count、is_flying、distance/distance_change，以及可读时的 knife_velocity/max_distance/rotation。`phase` 为 held/outbound/returning/turning/unknown：除 held 外依据实际飞行标记及跨帧距离变化推断，不是引擎内部阶段证明。原版 charge 字段不能单独证明充能进度，运行器可用已确认输入历史和校准估计，保留来源。
 
 周期尖刺直接读取网格 type/variant/state/collision 和游戏更新帧；单帧收回状态、room.is_clear 或踏板触发都不证明未来安全。当前规划器逐实体学习周期，离房后不保留旧相位；未知机制和观测空档按证据不足处理。字段消费及范围见[Host/地形证据](evidence/phase-3c-host-terrain-generalization.zh-CN.md)。
+
+## 方向护甲观测
+
+Knight 家族（41）可选输出 `damage_directions`：八个 `dx,dy` 字符串键对应布尔值，取自只读 `EntityNPC:CanBeDamagedFromVelocity(Vector(dx*10,dy*10))`。查询失败或旧轨迹缺字段时保留未知；`vulnerable=true` 不再等同任意方向都可击伤。此处是当前快照的方向许可，未预测下一帧转身，不是实弹命中的证明。接口依据见 [EntityNPC 文档](https://wofsauge.github.io/IsaacDocs/rep/EntityNPC.html#canbedamagedfromvelocity)。
+
+## 熄灭火焰
+
+`FIREPLACE` 增加可选 `animation` 与 `collision_class`。J835 实机观察到已熄灭红火仍为 HP 1、State 3、碰撞类 0，动画为 `Dissapear*`，实体不标记死亡。采集器用这些联合条件或原有 State 1000 设置 `is_extinguished`；不因 HP 1 或状态 3 单独忽略危险。几何和危险场只在确认熄灭后移除禁区，旧轨迹不会被自动改写。来源及限制见[运营验证](evidence/phase-3c-economy-validation.zh-CN.md)。
+
+红/紫火 `is_shooting` 根据 `Shoot*` 动画判断；State 8 可伴随持续 `Flickering*`，不能单独代表射击。此标记用于短暂安全边界等待，不保证接下来的帧不会发射；实际敌方弹体和火焰近身范围仍由危险场处理。
